@@ -11,12 +11,14 @@ public class Indexer extends SubsystemBase {
   public enum WantedState{
     OFF,
     INDEX,
+    INDEX_TO_SHOOTER,
     VOMIT,
     AGITATE
   }
-  public enum CurrentState{
+  private enum CurrentState{
     OFF,
     INDEXING,
+    INDEXING_TO_SHOOTER,
     VOMITING,
     AGITATING
   }
