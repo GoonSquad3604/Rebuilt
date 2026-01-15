@@ -7,11 +7,17 @@ package frc.robot.subsystems.indexer;
 /** Add your docs here. */
 public class IndexerIOPhoenix implements IndexerIO{
     public IndexerIOPhoenix(){
-        boolean isConnected = false;
-        double voltage;
-        double RPM;
-        double current;
+        boolean indexMotorIsConnected = false;
+        boolean indexToShootMotorIsConnected = false;
+
+        double indexMotorVoltage;
+        double indexToShootMotorVoltage;
+
+        double indexMotorCurrent;
+        double indexToShootMotorCurrent;
         
+        double indexMotorTemperature;
+        double indexToShootMotorTemperature;
     }
 
     @Override
