@@ -4,27 +4,27 @@
 
 package frc.robot.subsystems.intake;
 
+public class IntakeIOPhoenix implements IntakeIO {
 
-public class IntakeIOPhoenix implements IntakeIO{
+  // intaking motor variables
+  public double intakeMotorSpeed;
+  public double intakeMotorVoltage;
+  public double intakeMotorCurrent;
 
-        //intaking motor variables
-        public double intakeMotorSpeed;
-        public double intakeMotorVoltage;
-        public double intakeMotorCurrent;
+  // arm functions
+  public double armPos;
+  public double armMotorVoltage;
+  public double armMotorCurrent;
 
-        //arm functions
-        public double armPos;
-        public double armMotorVoltage;
-        public double armMotorCurrent;
+  // logging
+  public boolean intakeMotorConnected;
+  public boolean armMotorConnected;
 
-        //logging
-        public boolean intakeMotorConnected;
-        public boolean armMotorConnected;
-        
-        //intaking functions
-        void setVoltage(double voltage) {}
-        void setPower(double power) {}
+  // intaking functions
+  void setVoltage(double voltage) {}
 
-        //arm functions
-        void setArmPos(double pos){}
+  void setPower(double power) {}
+
+  // arm functions
+  void setArmPos(double pos) {}
 }

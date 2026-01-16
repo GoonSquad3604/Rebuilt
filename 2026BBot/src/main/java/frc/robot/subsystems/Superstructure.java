@@ -5,16 +5,21 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.Shooter.Shooter;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.led.LED;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class Superstructure extends SubsystemBase {
 
-  // private final Drive drive;
-  // private final Intake intake;
-  // private final Indexer indexer;
+  private final Drive drive;
+  private final Intake intake;
+  private final Indexer indexer;
   private final Shooter shooter;
-  // private final Climber climber;
-  // private final LED led;
+  private final Climber climber;
+  private final LED led;
 
   public enum WantedSuperState {
     IDLE,
@@ -62,14 +67,13 @@ public class Superstructure extends SubsystemBase {
 
   /** Creates a new Superstructure. */
   public Superstructure(
-      /*Drive drive, Intake intake, Indexer indexer, */ Shooter
-          shooter /* , Climber climber, LED led*/) {
-    // this.drive = drive;
-    // this.intake = intake;
-    // this.indexer = indexer;
+      Drive drive, Intake intake, Indexer indexer, Shooter shooter, Climber climber, LED led) {
+    this.drive = drive;
+    this.intake = intake;
+    this.indexer = indexer;
     this.shooter = shooter;
-    // this.climber = climber;
-    // this.led = led;
+    this.climber = climber;
+    this.led = led;
   }
 
   @Override

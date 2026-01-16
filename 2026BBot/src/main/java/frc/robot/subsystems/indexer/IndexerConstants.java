@@ -5,6 +5,4 @@
 package frc.robot.subsystems.indexer;
 
 /** Add your docs here. */
-public class IndexerConstants {
-    
-}
+public class IndexerConstants {}

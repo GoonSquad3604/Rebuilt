@@ -5,6 +5,4 @@
 package frc.robot.subsystems.climber;
 
 /** Add your docs here. */
-public class ClimberIOPhoenix implements ClimberIO {
-    
-}
+public class ClimberIOPhoenix implements ClimberIO {}

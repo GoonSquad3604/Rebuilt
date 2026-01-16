@@ -5,6 +5,4 @@
 package frc.robot.subsystems.climber;
 
 /** Add your docs here. */
-public final class ClimberConstants {
-    
-}
+public final class ClimberConstants {}
