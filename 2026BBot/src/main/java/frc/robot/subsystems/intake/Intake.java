@@ -30,10 +30,6 @@ public class Intake extends SubsystemBase {
     STOWING //arm is returning to inside the robot
   }
 
-  private WantedState wantedState = WantedState.IDLE;
-
-  private CurrentState currentState = CurrentState.IDLING;
-
   /** Creates a new Intake. */
   public Intake() {}
 

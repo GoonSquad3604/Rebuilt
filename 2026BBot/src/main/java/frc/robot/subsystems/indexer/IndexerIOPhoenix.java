@@ -24,5 +24,8 @@ public class IndexerIOPhoenix implements IndexerIO {
   public void setIndexPower(double power) {}
 
   @Override
-  public void setVoltage(double volts) {}
+  public void setIndexMotorVoltage(double volts) {}
+
+  @Override
+  public void setIndexToShootMotorVoltage(double volts) {}
 }

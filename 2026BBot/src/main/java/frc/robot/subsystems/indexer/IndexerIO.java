@@ -19,6 +19,9 @@ public interface IndexerIO {
     public double indexVoltage;
     public double indexToShootVoltage;
 
+    public double indexPower;
+    public double indexToShootPower;
+
     public double indexCurrent;
     public double indexToShootCurrent;
 
@@ -28,5 +31,7 @@ public interface IndexerIO {
 
   public void setIndexPower(double power);
 
-  public void setVoltage(double volts);
+  public void setIndexMotorVoltage(double volts);
+
+  public void setIndexToShootMotorVoltage(double volts);
 }
