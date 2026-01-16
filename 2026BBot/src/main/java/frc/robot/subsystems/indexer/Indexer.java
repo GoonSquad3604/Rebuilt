@@ -8,23 +8,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Indexer extends SubsystemBase {
   /** Creates a new Indexer. */
-  public enum WantedState{
+  public enum WantedState {
     OFF,
     INDEX,
     INDEX_TO_SHOOTER,
     VOMIT,
     AGITATE
   }
-  private enum CurrentState{
+
+  private enum CurrentState {
     OFF,
     INDEXING,
     INDEXING_TO_SHOOTER,
     VOMITING,
     AGITATING
   }
+
   public Indexer() {}
-
-
 
   @Override
   public void periodic() {

@@ -6,5 +6,5 @@ package frc.robot.subsystems.climber;
 
 /** Add your docs here. */
 public interface ClimberIO {
-    public class ClimberIOInputs{}
+  public class ClimberIOInputs {}
 }
