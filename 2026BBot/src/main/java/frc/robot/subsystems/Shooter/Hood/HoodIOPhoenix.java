@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shooter.Hood;
+package frc.robot.subsystems.shooter.hood;
 
 public class HoodIOPhoenix implements HoodIO {
 

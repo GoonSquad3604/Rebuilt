@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shooter.Launcher;
+package frc.robot.subsystems.shooter.launcher;
 
 public class LauncherIOPhoenix implements LauncherIO {
 
