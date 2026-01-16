@@ -40,8 +40,10 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     
-      //use wanted state to manage the transitions
+      //use states to do stuff
       currentState = handleStateTransitions();
+      applyStates();
+
   }
 
   private CurrentState handleStateTransitions(){
@@ -66,36 +68,44 @@ public class Intake extends SubsystemBase {
   };
 }
 
-private void applyStates(){
+  private void applyStates(){
+    double intakePower = 0;
+    double armIntakePower = 0;
+    double newArmPos = 0;
 
 
-  switch (currentState) {
-    case IDLING:
-      
-      break;
+    switch (currentState) {
+      case IDLING:
+        
+        break;
 
-    case INTAKING:
-      io.setPower(0.0);
-      break;
-  
-    case VOMITING:
-      io.setPower(0);
-      break;
+      case INTAKING:
+        intakePower = 0;
+        break;
+    
+      case VOMITING:
+        intakePower = 0;
+        break;
 
-    case DEPLOYED:
-      if(wantedState == wantedState.INTAKE) io.setArmIntakeMotorPower(0);
-      break;
-  
-    case DEPLOYING:
-      io.setArmPos(0);
-      break;
+      case DEPLOYED:
+        if(wantedState == wantedState.INTAKE) armIntakePower = 0;
+        break;
+    
+      case DEPLOYING:
+        newArmPos = 0;
+        break;
 
-    case STOWING:
-      io.setArmPos(0);
-      break;
+      case STOWING:
+        newArmPos = 0;
+        break;
 
-    default:
-      break;
+      default:
+        break;
+    }
+
+    io.setPower(intakePower);
+    io.setArmPos(newArmPos);
+    io.setArmIntakeMotorPower(armIntakePower);
+    
   }
-}
 }
