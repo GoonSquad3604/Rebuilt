@@ -29,6 +29,8 @@ public interface IntakeIO {
     public boolean armIntakeMotorConnected;
     public boolean armMotorConnected;
 
+  //TODO: declare motors -> 1 minion, one kraken x44
+
     // intaking functions
     void setIntakeVoltage(double voltage) {}
 

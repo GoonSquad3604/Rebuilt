@@ -8,11 +8,17 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
 
+  //declare motors
+
+  //io declaration
+    IntakeIOPhoenix io = new IntakeIOPhoenix();
+
   public enum WantedState {
     IDLE,
     INTAKE,
     VOMIT,
-    DEPLOYED
+    DEPLOYED,
+    STOWED // arm is stowed away / lift arm
   }
 
   private enum CurrentState {
@@ -20,14 +26,86 @@ public class Intake extends SubsystemBase {
     INTAKING,
     VOMITING,
     DEPLOYED, // arm is down and ready
-    DEPLOYING // arm is dropping / entering desired pos
+    DEPLOYING,// arm is dropping / entering desired pos
+    STOWING //arm is returning to inside the robot
   }
+
+  private WantedState wantedState = WantedState.IDLE;
+
+  private CurrentState currentState = CurrentState.IDLING;
 
   /** Creates a new Intake. */
   public Intake() {}
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    
+      //use states to do stuff
+      currentState = handleStateTransitions();
+      applyStates();
+
+  }
+
+  private CurrentState handleStateTransitions(){
+    
+    return switch(wantedState){
+
+      case IDLE: 
+        yield CurrentState.IDLING;
+
+      case INTAKE: 
+        yield CurrentState.INTAKING;
+
+      case VOMIT: 
+        yield CurrentState.VOMITING;
+
+      case DEPLOYED: 
+        yield CurrentState.DEPLOYING;
+      
+      case STOWED:
+        yield CurrentState.STOWING;
+
+  };
+}
+
+  private void applyStates(){
+    double intakePower = 0;
+    double armIntakePower = 0;
+    double newArmPos = 0;
+
+
+    switch (currentState) {
+      case IDLING:
+        
+        break;
+
+      case INTAKING:
+        intakePower = 0;
+        break;
+    
+      case VOMITING:
+        intakePower = 0;
+        break;
+
+      case DEPLOYED:
+        if(wantedState == wantedState.INTAKE) armIntakePower = 0;
+        break;
+    
+      case DEPLOYING:
+        newArmPos = 0;
+        break;
+
+      case STOWING:
+        newArmPos = 0;
+        break;
+
+      default:
+        break;
+    }
+
+    io.setPower(intakePower);
+    io.setArmPos(newArmPos);
+    io.setArmIntakeMotorPower(armIntakePower);
+    
   }
 }
