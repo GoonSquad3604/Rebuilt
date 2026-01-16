@@ -15,8 +15,7 @@ public class Intake extends SubsystemBase {
     DEPLOYED
   }
 
-
-  private enum CurrentState{
+  private enum CurrentState {
     IDLING,
     INTAKING,
     VOMITING,
@@ -24,10 +23,8 @@ public class Intake extends SubsystemBase {
     DEPLOYING // arm is dropping / entering desired pos
   }
 
-
   /** Creates a new Intake. */
   public Intake() {}
-
 
   @Override
   public void periodic() {
