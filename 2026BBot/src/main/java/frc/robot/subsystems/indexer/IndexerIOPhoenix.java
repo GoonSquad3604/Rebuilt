@@ -5,26 +5,27 @@
 package frc.robot.subsystems.indexer;
 
 /** Add your docs here. */
-public class IndexerIOPhoenix implements IndexerIO{
-    public IndexerIOPhoenix(){
-        boolean indexMotorIsConnected = false;
-        boolean indexToShootMotorIsConnected = false;
+public class IndexerIOPhoenix implements IndexerIO {
+  public IndexerIOPhoenix() {
+    boolean indexMotorIsConnected = false;
+    boolean indexToShootMotorIsConnected = false;
 
-        double indexMotorVoltage;
-        double indexToShootMotorVoltage;
+    double indexMotorVoltage;
+    double indexToShootMotorVoltage;
 
-        double indexMotorCurrent;
-        double indexToShootMotorCurrent;
-        
-        double indexMotorTemperature;
-        double indexToShootMotorTemperature;
-    }
+    double indexMotorCurrent;
+    double indexToShootMotorCurrent;
 
-    @Override
-    public void setIndexPower(double power) {}
+    double indexMotorTemperature;
+    double indexToShootMotorTemperature;
+  }
 
-    @Override
-    public void setVoltage(double volts) {}
+  @Override
+  public void setIndexPower(double power) {}
 
-    
+  @Override
+  public void setIndexMotorVoltage(double volts) {}
+
+  @Override
+  public void setIndexToShootMotorVoltage(double volts) {}
 }

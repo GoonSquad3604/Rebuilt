@@ -8,26 +8,30 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface IndexerIO {
-    
 
-    default void updateInputs(IndexerIOInputs inputs) {}
+  default void updateInputs(IndexerIOInputs inputs) {}
 
-    @AutoLog
-    class IndexerIOInputs{
-        public boolean indexMotorIsConnected = false;
-        public boolean indexToShootMotorIsConnected = false;
+  @AutoLog
+  class IndexerIOInputs {
+    public boolean indexMotorIsConnected = false;
+    public boolean indexToShootMotorIsConnected = false;
 
-        public double indexVoltage;
-        public double indexToShootVoltage;
+    public double indexVoltage;
+    public double indexToShootVoltage;
 
-        public double indexCurrent;
-        public double indexToShootCurrent;
+    public double indexPower;
+    public double indexToShootPower;
 
-        public double indexTemperature;
-        public double indexToShootTemperature;
+    public double indexCurrent;
+    public double indexToShootCurrent;
 
+    public double indexTemperature;
+    public double indexToShootTemperature;
+  }
 
-    }
-    public void setIndexPower(double power);
-    public void setVoltage(double volts);
+  public void setIndexPower(double power);
+
+  public void setIndexMotorVoltage(double volts);
+
+  public void setIndexToShootMotorVoltage(double volts);
 }

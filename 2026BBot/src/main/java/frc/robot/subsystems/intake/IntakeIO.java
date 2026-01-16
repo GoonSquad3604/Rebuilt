@@ -4,44 +4,42 @@
 
 package frc.robot.subsystems.intake;
 
-
 public interface IntakeIO {
 
-    class IntakeIOInputs {
+  class IntakeIOInputs {
 
-        //intaking motor variables
-        public double intakeMotorSpeed;
-        public double intakeMotorVoltage;
-        public double intakeMotorCurrent;
+    // intaking motor variables
+    public double intakeMotorSpeed;
+    public double intakeMotorVoltage;
+    public double intakeMotorCurrent;
 
-        //arm variables
-        public double armPos;
-        public double armMotorSpeed;
-        public double armMotorVoltage;
-        public double armMotorCurrent;
+    // arm variables
+    public double armPos;
+    public double armMotorSpeed;
+    public double armMotorVoltage;
+    public double armMotorCurrent;
 
-        //arm intake motor variables
-        public double armIntakeMotorSpeed;
-        public double armIntakeMotorVoltage;
-        public double armIntakeMotorCurrent;
+    // arm intake motor variables
+    public double armIntakeMotorSpeed;
+    public double armIntakeMotorVoltage;
+    public double armIntakeMotorCurrent;
 
-        //logging
-        public boolean intakeMotorConnected;
-        public boolean armIntakeMotorConnected;
-        public boolean armMotorConnected;
+    // logging
+    public boolean intakeMotorConnected;
+    public boolean armIntakeMotorConnected;
+    public boolean armMotorConnected;
 
-        //intaking functions
-        void setIntakeVoltage(double voltage) {}
-        void setIntakePower(double power) {}
+    // intaking functions
+    void setIntakeVoltage(double voltage) {}
 
-        //arm intake motor functions
-        void setArmIntakeMotorVoltage(double voltage) {}
-        void setArmIntakeMotorPower(double power) {}
+    void setIntakePower(double power) {}
 
-        //arm functions
-        void setArmPos(double pos){}
-        
+    // arm intake motor functions
+    void setArmIntakeMotorVoltage(double voltage) {}
 
-    }
-    
+    void setArmIntakeMotorPower(double power) {}
+
+    // arm functions
+    void setArmPos(double pos) {}
+  }
 }
