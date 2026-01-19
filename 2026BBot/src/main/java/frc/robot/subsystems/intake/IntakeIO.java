@@ -19,11 +19,6 @@ public interface IntakeIO {
     public double armMotorVoltage;
     public double armMotorCurrent;
 
-    // arm intake motor variables
-    public double armIntakeMotorSpeed;
-    public double armIntakeMotorVoltage;
-    public double armIntakeMotorCurrent;
-
     // logging
     public boolean intakeMotorConnected;
     public boolean armIntakeMotorConnected;
@@ -33,11 +28,6 @@ public interface IntakeIO {
     void setIntakeVoltage(double voltage) {}
 
     void setIntakePower(double power) {}
-
-    // arm intake motor functions
-    void setArmIntakeMotorVoltage(double voltage) {}
-
-    void setArmIntakeMotorPower(double power) {}
 
     // arm functions
     void setArmPos(double pos) {}

@@ -4,14 +4,15 @@
 
 package frc.robot.subsystems.indexer;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
   /** Creates a new Indexer. */
   private IndexerIO io;
+
   private IndexerIOInputsAutoLogged inputs = new IndexerIOInputsAutoLogged();
+
   public Indexer() {}
 
   public enum WantedState {
@@ -41,53 +42,56 @@ public class Indexer extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     synchronized (inputs) {
-            Logger.processInputs("Subsystems/Intake", inputs);
+      Logger.processInputs("Subsystems/Intake", inputs);
 
-            currentState = handleStateTransition();
-            applyState();
-            Logger.recordOutput("Subsystems/Intake/SystemState", currentState);
-            Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
-        }
+      currentState = handleStateTransition();
+      applyState();
+      Logger.recordOutput("Subsystems/Intake/SystemState", currentState);
+      Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
+    }
   }
 
-  private CurrentState handleStateTransition(){
-    return switch(wantedState){
-      case OFF : {
-        yield CurrentState.OFF;
-      }
-      case INDEX : {
-        yield CurrentState.INDEXING;
-      }
-      case INDEX_TO_SHOOTER : {
-        yield CurrentState.INDEXING_TO_SHOOTER;
-      }
-      case VOMIT : {
-        yield CurrentState.VOMITING;
-      }
-      case AGITATE : {
-        yield CurrentState.AGITATING;
-      }
+  private CurrentState handleStateTransition() {
+    return switch (wantedState) {
+      case OFF:
+        {
+          yield CurrentState.OFF;
+        }
+      case INDEX:
+        {
+          yield CurrentState.INDEXING;
+        }
+      case INDEX_TO_SHOOTER:
+        {
+          yield CurrentState.INDEXING_TO_SHOOTER;
+        }
+      case VOMIT:
+        {
+          yield CurrentState.VOMITING;
+        }
+      case AGITATE:
+        {
+          yield CurrentState.AGITATING;
+        }
     };
   }
-  private void applyState(){
+
+  private void applyState() {
     double indexMotorVoltage = 0.0;
     double indexToShootMotorVoltage = 0.0;
-    switch (currentState){
-      case OFF : 
+    switch (currentState) {
+      case OFF:
         break;
-      case INDEXING :
+      case INDEXING:
         break;
-      case INDEXING_TO_SHOOTER :
+      case INDEXING_TO_SHOOTER:
         break;
-      case VOMITING :
+      case VOMITING:
         break;
-      case AGITATING :
+      case AGITATING:
         break;
     }
     io.setIndexMotorVoltage(indexMotorVoltage);
     io.setIndexToShootMotorVoltage(indexToShootMotorVoltage);
-
-
   }
-  
 }

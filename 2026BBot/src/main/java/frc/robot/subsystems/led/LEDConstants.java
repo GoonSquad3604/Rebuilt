@@ -14,5 +14,4 @@ public class LEDConstants {
   public static final RGBWColor kRed = new RGBWColor(255, 0, 0, 0);
   public static final RGBWColor kWhite = RGBWColor.fromHex("#ffffff").orElseThrow();
   public static final RGBWColor kOrange = RGBWColor.fromHex("#fc7f03").orElseThrow();
-  
 }

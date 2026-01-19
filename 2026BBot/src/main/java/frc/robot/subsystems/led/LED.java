@@ -1,10 +1,10 @@
 package frc.robot.subsystems.led;
 
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class LED extends SubsystemBase {
-    
+
   public enum AnimationType {
     STROBE_HUB,
     STROBE_CORRAL,
@@ -46,7 +46,7 @@ public class LED extends SubsystemBase {
   private final LEDIO ledIO;
 
   private CurrentState getStateTransition() {
-    return switch(wantedAction) {
+    return switch (wantedAction) {
       case DISPLAY_CLIMB -> CurrentState.DISPLAYING_CLIMB;
       case DISPLAY_CORRAL -> CurrentState.DISPLAYING_CORRAL;
       case DISPLAY_FORWARD -> CurrentState.DISPLAYING_FORWARD;
@@ -73,7 +73,7 @@ public class LED extends SubsystemBase {
   public void periodic() {
     Logger.recordOutput("Subsystems/LED/WantedState", wantedAction);
 
-    switch(getStateTransition()) {
+    switch (getStateTransition()) {
       case DISPLAYING_OFF:
         ledIO.clearAnimation();
         ledIO.setLEDs(LEDConstants.kBlack);

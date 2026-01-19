@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.hardware.TalonFXS;
+
 public class IntakeIOPhoenix implements IntakeIO {
 
   // intaking motor variables
@@ -20,11 +22,20 @@ public class IntakeIOPhoenix implements IntakeIO {
   public boolean intakeMotorConnected;
   public boolean armMotorConnected;
 
-  // intaking functions
-  void setVoltage(double voltage) {}
+  TalonFXS intakeMotor = new TalonFXS(IntakeConstants.intakeMotorID);
+  TalonFXS armMotor = new TalonFXS(IntakeConstants.armMotorID);
 
-  void setPower(double power) {}
+  // intaking functions
+  void setVoltage(double voltage) {
+    intakeMotor.setVoltage(voltage);
+  }
+
+  void setPower(double power) {
+    intakeMotor.set(power);
+  }
 
   // arm functions
-  void setArmPos(double pos) {}
+  void setArmPos(double pos) {
+    armMotor.setPosition(pos);                                                        
+  }
 }

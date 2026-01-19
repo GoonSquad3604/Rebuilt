@@ -10,7 +10,6 @@ import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
-
 import frc.robot.subsystems.led.LED.AnimationType;
 
 public class LEDIOCANdle implements LEDIO {
@@ -32,24 +31,39 @@ public class LEDIOCANdle implements LEDIO {
 
   @Override
   public void setAnimation(AnimationType animation) {
-    switch(animation) {
+    switch (animation) {
       case IDLE:
-        candle.setControl(new LarsonAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0).withColor(LEDConstants.kViolet));
+        candle.setControl(
+            new LarsonAnimation(0, LEDConstants.NUMBER_OF_LEDS)
+                .withSlot(0)
+                .withColor(LEDConstants.kViolet));
         break;
       case RAINBOW:
         candle.setControl(new RainbowAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0));
         break;
       case STROBE_CORRAL:
-        candle.setControl(new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0).withColor(LEDConstants.kYellow));
+        candle.setControl(
+            new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS)
+                .withSlot(0)
+                .withColor(LEDConstants.kYellow));
         break;
       case STROBE_FORWARD:
-        candle.setControl(new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0).withColor(LEDConstants.kWhite));
+        candle.setControl(
+            new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS)
+                .withSlot(0)
+                .withColor(LEDConstants.kWhite));
         break;
       case STROBE_HUB:
-        candle.setControl(new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0).withColor(LEDConstants.kRed));
+        candle.setControl(
+            new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS)
+                .withSlot(0)
+                .withColor(LEDConstants.kRed));
         break;
       case STROBE_ZONE:
-        candle.setControl(new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS).withSlot(0).withColor(LEDConstants.kOrange));
+        candle.setControl(
+            new StrobeAnimation(0, LEDConstants.NUMBER_OF_LEDS)
+                .withSlot(0)
+                .withColor(LEDConstants.kOrange));
         break;
     }
   }
