@@ -1,7 +1,6 @@
 package frc.robot.subsystems.led;
 
 import com.ctre.phoenix6.signals.RGBWColor;
-
 import frc.robot.subsystems.led.LED.AnimationType;
 
 public interface LEDIO {
