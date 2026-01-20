@@ -8,9 +8,11 @@ public interface HoodIO {
 
   @AutoLog
   class HoodIOInputs {
-    public boolean isConnected = false;
+    public boolean motorConnected = false;
+    public boolean encoderConnected = false;
     public double voltage;
     public double current;
+    public double velocity;
     public double temperature;
     public double position;
   }
@@ -18,6 +20,8 @@ public interface HoodIO {
   default void setPower(double power) {}
 
   default void setPosition(double position) {}
+
+  default double getPosition() {return 0;}
 
   default void setVoltage(double volts) {}
 }

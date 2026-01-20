@@ -1,8 +1,11 @@
 package frc.robot.subsystems.shooter.turret;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 public class TurretIOPhoenix implements TurretIO {
 
-  /** Creates a new TurretIOPhoenix. */
+  // private final TalonFX turretMotor;
+
   public TurretIOPhoenix() {
     // turretmotor = new motor, woohoo
   }

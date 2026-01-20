@@ -1,8 +1,11 @@
 package frc.robot.subsystems.shooter.launcher;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 public class LauncherIOPhoenix implements LauncherIO {
 
-  /** Creates a new LauncherIOPhoenix. */
+  // private final TalonFX launcherMotor;
+  
   public LauncherIOPhoenix() {
     // launchermotor = new motor, woohoo
   }
