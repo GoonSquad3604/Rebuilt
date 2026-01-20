@@ -36,6 +36,6 @@ public class IntakeIOPhoenix implements IntakeIO {
 
   // arm functions
   void setArmPos(double pos) {
-    armMotor.setPosition(pos);                                                        
+    armMotor.setPosition(pos);
   }
 }
