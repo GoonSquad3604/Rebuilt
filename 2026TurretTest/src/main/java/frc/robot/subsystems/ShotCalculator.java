@@ -10,6 +10,7 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.util.AllianceFlipUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -108,7 +109,7 @@ public class ShotCalculator {
     Translation2d target =
         AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
     Pose2d turretPosition =
-        RobotState.getInstance().getEstimatedPose().transformBy(robotToTurret.toTransform2d());
+        RobotState.getInstance().getEstimatedPose().transformBy(ShooterConstants.robotToTurret.toTransform2d());
     double turretToTargetDistance = target.getDistance(turretPosition.getTranslation());
 
     // Calculate field relative turret velocity
