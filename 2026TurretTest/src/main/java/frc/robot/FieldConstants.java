@@ -16,8 +16,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import java.io.IOException;
 import java.nio.file.Path;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Contains information for location of field element and other useful reference points.
@@ -26,7 +24,6 @@ import lombok.RequiredArgsConstructor;
  * perspective of the blue alliance station
  */
 public class FieldConstants {
-  public static final FieldType fieldType = FieldType.WELDED;
 
   // AprilTag related constants
   public static final int aprilTagCount = AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();
@@ -307,13 +304,13 @@ public class FieldConstants {
         new Translation2d(0, AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(29).get().getY());
   }
 
-//   @RequiredArgsConstructor
-//   public enum FieldType {
-//     ANDYMARK("andymark"),
-//     WELDED("welded");
+  //   @RequiredArgsConstructor
+  //   public enum FieldType {
+  //     ANDYMARK("andymark"),
+  //     WELDED("welded");
 
-//     @Getter private final String jsonFolder;
-//   }
+  //     @Getter private final String jsonFolder;
+  //   }
 
   public enum AprilTagLayoutType {
     OFFICIAL("2026-official"),
@@ -334,17 +331,11 @@ public class FieldConstants {
             try {
               Path p =
                   Constants.disableHAL
-                      ? Path.of(
-                          "src",
-                          "main",
-                          "deploy",
-                          "apriltags",
-                          fieldType.getJsonFolder(),
-                          name + ".json")
+                      ? Path.of("src", "main", "deploy", "apriltags", "welded", name + ".json")
                       : Path.of(
                           Filesystem.getDeployDirectory().getPath(),
                           "apriltags",
-                          fieldType.getJsonFolder(),
+                          "welded",
                           name + ".json");
               layout = new AprilTagFieldLayout(p);
               layoutString = new ObjectMapper().writeValueAsString(layout);

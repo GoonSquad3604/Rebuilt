@@ -34,7 +34,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  // private final Superstructure superstructure;
   private final Turret turret;
   private final Shooter shooter;
 
@@ -50,7 +49,6 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new DriveIOSpark(), new GyroIOPigeon2());
-        // superstructure = new Superstructure(new SuperstructureIOTalonSRX());
         turret = new Turret();
         shooter = new Shooter();
         break;
@@ -58,7 +56,6 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new DriveIOSim(), new GyroIO() {});
-        // superstructure = new Superstructure(new SuperstructureIOSim());
         turret = new Turret();
         shooter = new Shooter();
         break;
@@ -66,7 +63,6 @@ public class RobotContainer {
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new DriveIO() {}, new GyroIO() {});
-        // superstructure = new Superstructure(new SuperstructureIO() {});
         turret = new Turret();
         shooter = new Shooter();
         break;
@@ -106,15 +102,21 @@ public class RobotContainer {
         DriveCommands.arcadeDrive(
             drive, () -> -controller.getLeftY(), () -> -controller.getRightX()));
 
-    // Control bindings for robot
-    controller.rightBumper().onTrue(Commands.runOnce(() -> shooter.setPower(-.6)));
-    controller.rightBumper().onFalse(Commands.runOnce(() -> shooter.setPower(0)));
+    // Control bindings for robo
+
+    controller.start().onTrue(Commands.runOnce(() -> turret.zeroEncoder()));
 
     controller.a().onTrue(Commands.runOnce(() -> turret.turnClockwise()));
     controller.a().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
     controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
     controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+
+    controller.x().onTrue(Commands.runOnce(() -> turret.setPosition(0)));
+    controller.x().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+
+    controller.rightBumper().onTrue(Commands.runOnce(() -> shooter.setRPM(shooter.getWantedRPM())));
+    controller.rightBumper().onFalse(Commands.runOnce(() -> shooter.setPower(0)));
   }
 
   /**

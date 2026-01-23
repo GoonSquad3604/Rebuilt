@@ -4,9 +4,18 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Turret extends SubsystemBase {
@@ -18,7 +27,16 @@ public class Turret extends SubsystemBase {
 
     turretMotor = new SparkMax(7, MotorType.kBrushless);
     turretEncoder = turretMotor.getEncoder();
-    
+
+    SparkFlexConfig turretConfig = new SparkFlexConfig();
+    turretConfig.idleMode(IdleMode.kBrake);
+    turretConfig
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pid(ShooterConstants.turretP, ShooterConstants.turretI, ShooterConstants.turretD);
+
+    turretMotor.configure(
+        turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void turnCounterClockwise() {
@@ -34,11 +52,28 @@ public class Turret extends SubsystemBase {
   }
 
   public void setPosition(double position) {
-    turretEncoder.setPosition(position);
+    turretMotor
+        .getClosedLoopController()
+        .setSetpoint(
+            position,
+            SparkFlex.ControlType.kPosition,
+            ClosedLoopSlot.kSlot0,
+            ShooterConstants.turretFF);
+  }
+
+  public void setAngle(Rotation2d angle) {
+
+    
+
+  }
+
+  public void zeroEncoder() {
+    turretEncoder.setPosition(0);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("turret encoder", turretEncoder.getPosition());
   }
 }

@@ -23,12 +23,14 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.RobotState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -108,10 +110,21 @@ public class Drive extends SubsystemBase {
       rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       lastLeftPositionMeters = getLeftPositionMeters();
       lastRightPositionMeters = getRightPositionMeters();
+
+      SmartDashboard.putNumber("velocity", this.getVelocity());
     }
 
     // Update odometry
     poseEstimator.update(rawGyroRotation, getLeftPositionMeters(), getRightPositionMeters());
+
+    // RobotState.getInstance()
+    //     .addOdometryObservation(
+    //         new OdometryObservation(
+    //             Timer.getTimestamp(),
+    //             ,
+    //             Optional.ofNullable(gyroInputs.connected ? gyroInputs.yawPosition : null)));
+    RobotState.getInstance().resetPose(getPose());
+    RobotState.getInstance().setRobotVelocity(getChassisSpeeds());
   }
 
   /** Runs the drive at the desired velocity. */
@@ -206,5 +219,20 @@ public class Drive extends SubsystemBase {
   /** Returns the average velocity in radians/second. */
   public double getCharacterizationVelocity() {
     return (inputs.leftVelocityRadPerSec + inputs.rightVelocityRadPerSec) / 2.0;
+  }
+
+  public double getVelocity() {
+    var wheelSpeeds =
+        new DifferentialDriveWheelSpeeds(
+            getLeftVelocityMetersPerSec(), getRightVelocityMetersPerSec());
+    ChassisSpeeds chassisSpeeds = kinematics.toChassisSpeeds(wheelSpeeds);
+    return chassisSpeeds.vxMetersPerSecond;
+  }
+
+  public ChassisSpeeds getChassisSpeeds() {
+    var wheelSpeeds =
+        new DifferentialDriveWheelSpeeds(
+            getLeftVelocityMetersPerSec(), getRightVelocityMetersPerSec());
+    return kinematics.toChassisSpeeds(wheelSpeeds);
   }
 }
