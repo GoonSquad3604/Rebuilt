@@ -34,9 +34,14 @@ public class IntakeIOPhoenix implements IntakeIO {
     intakeMotor.set(power);
   }
 
+
+
   // arm functions
   void setArmPos(double pos) {
     armMotor.setPosition(pos);
   }
-  
+
+    double getPosition(){
+    return armMotor.getPosition().getValueAsDouble();
+  }
 }
