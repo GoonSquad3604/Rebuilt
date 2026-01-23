@@ -106,13 +106,13 @@ public class RobotContainer {
 
     controller.start().onTrue(Commands.runOnce(() -> turret.zeroEncoder()));
 
-    controller.a().onTrue(Commands.runOnce(() -> turret.turnClockwise()));
-    controller.a().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+    // controller.a().onTrue(Commands.runOnce(() -> turret.turnClockwise()));
+    // controller.a().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
-    controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
-    controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+    // controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
+    // controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
-    controller.x().onTrue(Commands.runOnce(() -> turret.setPosition(0)));
+    controller.x().onTrue(Commands.runOnce(() -> turret.setAngle(turret.getWantedAngle())));
     controller.x().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
     controller.rightBumper().onTrue(Commands.runOnce(() -> shooter.setRPM(shooter.getWantedRPM())));

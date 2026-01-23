@@ -14,7 +14,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -22,6 +21,8 @@ public class Turret extends SubsystemBase {
 
   private SparkMax turretMotor;
   private RelativeEncoder turretEncoder;
+
+  private double wantedAngle;
 
   public Turret() {
 
@@ -52,6 +53,12 @@ public class Turret extends SubsystemBase {
   }
 
   public void setPosition(double position) {
+
+    if (position > ShooterConstants.maxEncoderPos) {
+      position = ShooterConstants.maxEncoderPos;
+    } else if (position < ShooterConstants.minEncoderPos) {
+      position = ShooterConstants.minEncoderPos;
+    }
     turretMotor
         .getClosedLoopController()
         .setSetpoint(
@@ -61,19 +68,39 @@ public class Turret extends SubsystemBase {
             ShooterConstants.turretFF);
   }
 
-  public void setAngle(Rotation2d angle) {
+  public void setAngle(double angle) {
+    if (angle > ShooterConstants.maxAngle) {
+      angle = ShooterConstants.maxAngle;
+    } else if (angle < ShooterConstants.minAngle) {
+      angle = ShooterConstants.minAngle;
+    }
+    turretMotor
+        .getClosedLoopController()
+        .setSetpoint(
+            getEncoderValueFromDegrees(angle),
+            SparkFlex.ControlType.kPosition,
+            ClosedLoopSlot.kSlot0,
+            ShooterConstants.turretFF);
+  }
 
-    
-
+  private double getEncoderValueFromDegrees(double degrees) {
+    double result = (ShooterConstants.maxEncoderPos / ShooterConstants.maxAngle) * degrees;
+    return result;
   }
 
   public void zeroEncoder() {
     turretEncoder.setPosition(0);
   }
 
+  public double getWantedAngle() {
+    return wantedAngle;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("turret encoder", turretEncoder.getPosition());
+    wantedAngle = SmartDashboard.getNumber("wantedAngle", 0);
+    SmartDashboard.putNumber("wantedAngle", wantedAngle);
   }
 }

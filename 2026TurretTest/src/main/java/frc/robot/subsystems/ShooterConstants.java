@@ -23,9 +23,10 @@ public class ShooterConstants {
   public static final double turretD = 0;
   public static final double turretFF = 0;
 
-  public static final double maxEncoderPosNegative = -100;
-  public static final double maxEncoderPosPositive = 300;
-
+  public static final double minEncoderPos = 0.0;
+  public static final double minAngle = 0.0;
+  public static final double maxEncoderPos = 475.0;
+  public static final double maxAngle = 315.0;
 
   // shooter
   public static final double shooterP = .6;
