@@ -120,13 +120,31 @@ public class HoodIOPhoenix implements HoodIO {
   }
 
   @Override
+  public void setAngle(double angle) {
+    hoodMotor.setControl(hoodRequest.withPosition(convertAngleToRotations(angle)));
+  }
+
+  @Override
   public double getPosition() {
     return hoodMotor.getPosition().getValueAsDouble();
   }
 
   @Override
+  public double getAngle() {
+    return convertRotationsToAngle(hoodMotor.getPosition().getValueAsDouble());
+  }
+
+  @Override
   public void setVoltage(double voltage) {
     hoodMotor.setVoltage(voltage);
+  }
+
+  private double convertAngleToRotations(double angle) {
+    return 0.0;
+  }
+
+  private double convertRotationsToAngle(double rotations) {
+    return 0.0;
   }
 
 }
