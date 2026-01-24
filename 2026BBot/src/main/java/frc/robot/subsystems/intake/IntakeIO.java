@@ -29,7 +29,10 @@ public interface IntakeIO {
 
     void setIntakePower(double power) {}
 
+
     // arm functions
     void setArmPos(double pos) {}
+    
+    double getPosition(){return 0;}
   }
 }
