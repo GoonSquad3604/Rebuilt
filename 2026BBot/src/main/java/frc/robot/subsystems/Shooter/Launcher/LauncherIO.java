@@ -8,11 +8,11 @@ public interface LauncherIO {
 
   @AutoLog
   class LauncherIOInputs {
-    public boolean isConnected = false;
+    public boolean motorConnected = false;
     public double voltage;
     public double current;
-    public double temperature;
     public double RPM;
+    public double temperature;
   }
 
   default void setPower(double power) {}
