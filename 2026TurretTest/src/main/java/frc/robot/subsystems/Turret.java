@@ -14,8 +14,11 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FieldConstants;
+import frc.robot.util.RobotState;
 
 public class Turret extends SubsystemBase {
 
@@ -23,6 +26,8 @@ public class Turret extends SubsystemBase {
   private RelativeEncoder turretEncoder;
 
   private double wantedAngle;
+
+  // private ShootingParameters shootingParameters;
 
   public Turret() {
 
@@ -88,6 +93,11 @@ public class Turret extends SubsystemBase {
     return result;
   }
 
+  private double getDegreesFromRotations(double rotations) {
+    double result = (ShooterConstants.maxAngle / ShooterConstants.maxEncoderPos) * rotations;
+    return result;
+  }
+
   public void zeroEncoder() {
     turretEncoder.setPosition(0);
   }
@@ -96,11 +106,44 @@ public class Turret extends SubsystemBase {
     return wantedAngle;
   }
 
+  public double trackHub() {
+    Translation2d hubPos = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+    Translation2d robotPos = RobotState.getInstance().getPose().getTranslation();
+    Translation2d turretPos = robotPos.plus(ShooterConstants.robotToTurret.getTranslation());
+
+    double targetX = hubPos.getX() - turretPos.getX();
+    double targetY = hubPos.getY() - turretPos.getY();
+    Translation2d targetPosition = new Translation2d(targetX, targetY);
+
+    Translation2d robotVelocity =
+        new Translation2d(
+            RobotState.getInstance().getFieldVelocity().vxMetersPerSecond,
+            RobotState.getInstance().getFieldVelocity().vyMetersPerSecond);
+
+    Translation2d futurePos = turretPos.plus(robotVelocity.times(.02));
+
+    Translation2d toGoal = targetPosition.minus(futurePos);
+    double distance = toGoal.getNorm();
+    Translation2d targetDirection = toGoal.div(distance);
+    // ShooterParams baseline = shooterTable.get(distance);
+    double baselineVelocity = distance / 1.2;
+    Translation2d targetVelocity = targetDirection.times(baselineVelocity);
+    Translation2d shotVelocity = targetVelocity.minus(robotVelocity);
+
+    // setAngle(shotVelocity.getAngle().getDegrees());
+    return shotVelocity.getAngle().getDegrees();
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("turret encoder", turretEncoder.getPosition());
     wantedAngle = SmartDashboard.getNumber("wantedAngle", 0);
     SmartDashboard.putNumber("wantedAngle", wantedAngle);
+    SmartDashboard.putNumber("turret angle", getDegreesFromRotations(turretEncoder.getPosition()));
+
+    // shootingParameters = ShotCalculator.getInstance().getParameters();
+
+    SmartDashboard.putNumber("calculated turret angle", trackHub());
   }
 }

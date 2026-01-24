@@ -8,6 +8,8 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -105,12 +107,15 @@ public class RobotContainer {
     // Control bindings for robo
 
     controller.start().onTrue(Commands.runOnce(() -> turret.zeroEncoder()));
+    controller
+        .back()
+        .onTrue(Commands.runOnce(() -> drive.setPose(new Pose2d(3.590, 4.277, Rotation2d.kZero))));
 
-    // controller.a().onTrue(Commands.runOnce(() -> turret.turnClockwise()));
-    // controller.a().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+    controller.a().onTrue(Commands.runOnce(() -> turret.turnClockwise()));
+    controller.a().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
-    // controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
-    // controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+    controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
+    controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
     controller.x().onTrue(Commands.runOnce(() -> turret.setAngle(turret.getWantedAngle())));
     controller.x().onFalse(Commands.runOnce(() -> turret.stopTurret()));
