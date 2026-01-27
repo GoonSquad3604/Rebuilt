@@ -99,4 +99,8 @@ public class Intake extends SubsystemBase {
     io.setPower(intakePower);
     io.setArmPos(newArmPos);
   }
+
+  public void setWantedState(WantedState wantedState) {
+    this.wantedState = wantedState;
+  }
 }
