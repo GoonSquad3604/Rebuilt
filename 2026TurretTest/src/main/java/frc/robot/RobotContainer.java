@@ -117,8 +117,13 @@ public class RobotContainer {
     controller.b().onTrue(Commands.runOnce(() -> turret.turnCounterClockwise()));
     controller.b().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
-    controller.x().onTrue(Commands.runOnce(() -> turret.setAngle(turret.getWantedAngle())));
-    controller.x().onFalse(Commands.runOnce(() -> turret.stopTurret()));
+    controller
+        .x()
+        .onTrue(
+            Commands.run(() -> turret.setAngle(turret.trackHub()))
+                .until(controller.x().negate())
+                .andThen(Commands.runOnce(() -> turret.stopTurret())));
+    // controller.x().onFalse(Commands.runOnce(() -> turret.stopTurret()));
 
     controller.rightBumper().onTrue(Commands.runOnce(() -> shooter.setRPM(shooter.getWantedRPM())));
     controller.rightBumper().onFalse(Commands.runOnce(() -> shooter.setPower(0)));
