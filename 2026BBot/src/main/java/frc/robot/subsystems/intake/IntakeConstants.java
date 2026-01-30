@@ -6,11 +6,6 @@ package frc.robot.subsystems.intake;
 
 public class IntakeConstants {
 
-  // arm motor constants
-  public static final double armHomePosition = 0;
-  public static final double armDeployedPosition = 0;
-  public static final int armMotorID = 0;
-
   // intake motor constants
   public static final double intakeSpeed = 0;
   public static final double vomitSpeed = 0;

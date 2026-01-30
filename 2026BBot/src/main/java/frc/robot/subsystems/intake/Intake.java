@@ -17,17 +17,12 @@ public class Intake extends SubsystemBase {
     IDLE,
     INTAKE,
     VOMIT,
-    DEPLOYED,
-    STOWED // arm is stowed away / lift arm
   }
 
   private enum CurrentState {
     IDLING,
     INTAKING,
     VOMITING,
-    DEPLOYED, // arm is down and ready
-    DEPLOYING, // arm is dropping / entering desired pos
-    STOWING // arm is returning to inside the robot
   }
 
   private CurrentState currentState = CurrentState.IDLING;
@@ -55,18 +50,11 @@ public class Intake extends SubsystemBase {
 
       case VOMIT:
         yield CurrentState.VOMITING;
-
-      case DEPLOYED:
-        yield CurrentState.DEPLOYING;
-
-      case STOWED:
-        yield CurrentState.STOWING;
     };
   }
 
   private void applyStates() {
     double intakePower = 0;
-    double newArmPos = 0;
 
     switch (currentState) {
       case IDLING:
@@ -80,23 +68,10 @@ public class Intake extends SubsystemBase {
         intakePower = 0;
         break;
 
-      case DEPLOYED:
-        if (wantedState == wantedState.INTAKE) intakePower = 0;
-        break;
-
-      case DEPLOYING:
-        newArmPos = 0;
-        break;
-
-      case STOWING:
-        newArmPos = 0;
-        break;
-
       default:
         break;
     }
 
     io.setPower(intakePower);
-    io.setArmPos(newArmPos);
   }
 }
