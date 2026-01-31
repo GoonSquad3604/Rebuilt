@@ -16,6 +16,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import frc.robot.autos.AutoChooser;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -23,7 +25,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
+  // private Command autonomousCommand;
+
+  private AutoChooser autoChooser;
+
   private RobotContainer robotContainer;
 
   public Robot() {
@@ -69,6 +74,8 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    autoChooser = AutoChooser.create(robotContainer);
   }
 
   /** This function is called periodically during all modes. */
@@ -91,21 +98,26 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    autoChooser.reset(Constants.autoChooserName)
+  }
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    autoChooser.update();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
+    // autonomousCommand = robotContainer.getAutonomousCommand();
+    autoChooser.getSelectedCommand().ifPresent(CommandScheduler.getInstance()::schedule);
 
     // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(autonomousCommand);
-    }
+    // if (autonomousCommand != null) {
+    //   CommandScheduler.getInstance().schedule(autonomousCommand);
+    // }
   }
 
   /** This function is called periodically during autonomous. */
@@ -119,9 +131,9 @@ public class Robot extends LoggedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-    }
+    // if (autonomousCommand != null) {
+    //   autonomousCommand.cancel();
+    // }
   }
 
   /** This function is called periodically during operator control. */
