@@ -13,26 +13,13 @@ public interface IntakeIO {
     public double intakeMotorVoltage;
     public double intakeMotorCurrent;
 
-    // arm variables
-    public double armPos;
-    public double armMotorSpeed;
-    public double armMotorVoltage;
-    public double armMotorCurrent;
-
     // logging
     public boolean intakeMotorConnected;
-    public boolean armIntakeMotorConnected;
-    public boolean armMotorConnected;
 
     // intaking functions
     void setIntakeVoltage(double voltage) {}
 
     void setIntakePower(double power) {}
 
-
-    // arm functions
-    void setArmPos(double pos) {}
-    
-    double getPosition(){return 0;}
   }
 }

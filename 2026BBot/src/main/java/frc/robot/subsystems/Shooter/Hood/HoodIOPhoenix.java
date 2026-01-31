@@ -11,7 +11,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -38,13 +37,13 @@ public class HoodIOPhoenix implements HoodIO {
   private final StatusSignal<Current> supplyCurrent;
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
-  
+
   public HoodIOPhoenix() {
 
     hoodMotor = new TalonFX(ShooterConstants.HoodConstants.hoodID);
     hoodRequest = new PositionVoltage(0);
 
-    hoodEncoder  = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID);
+    hoodEncoder = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID);
     hoodEncoderConfig = new CANcoderConfiguration();
 
     hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
@@ -87,7 +86,7 @@ public class HoodIOPhoenix implements HoodIO {
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.optimizeBusUtilization(0, 1.0));
 
     var slot0Configs = new Slot0Configs();
-    
+
     slot0Configs.kP = ShooterConstants.HoodConstants.hoodP;
     slot0Configs.kI = ShooterConstants.HoodConstants.hoodI;
     slot0Configs.kD = ShooterConstants.HoodConstants.hoodD;
@@ -95,7 +94,6 @@ public class HoodIOPhoenix implements HoodIO {
     slot0Configs.kV = ShooterConstants.HoodConstants.hoodV;
 
     hoodMotor.getConfigurator().apply(slot0Configs);
-
   }
 
   @Override
@@ -146,5 +144,4 @@ public class HoodIOPhoenix implements HoodIO {
   private double convertRotationsToAngle(double rotations) {
     return 0.0;
   }
-
 }

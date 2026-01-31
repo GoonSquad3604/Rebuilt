@@ -11,7 +11,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -38,13 +37,13 @@ public class TurretIOPhoenix implements TurretIO {
   private final StatusSignal<Current> supplyCurrent;
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
-  
+
   public TurretIOPhoenix() {
 
     turretMotor = new TalonFX(ShooterConstants.TurretConstants.turretID);
     turretRequest = new PositionVoltage(0);
 
-    turretEncoder  = new CANcoder(ShooterConstants.TurretConstants.turretEncoderID);
+    turretEncoder = new CANcoder(ShooterConstants.TurretConstants.turretEncoderID);
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
@@ -54,7 +53,8 @@ public class TurretIOPhoenix implements TurretIO {
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.TurretConstants.turretEncoderID;
+    turretMotorConfig.Feedback.FeedbackRemoteSensorID =
+        ShooterConstants.TurretConstants.turretEncoderID;
     turretMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
@@ -87,7 +87,7 @@ public class TurretIOPhoenix implements TurretIO {
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.optimizeBusUtilization(0, 1.0));
 
     var slot0Configs = new Slot0Configs();
-    
+
     slot0Configs.kP = ShooterConstants.TurretConstants.turretP;
     slot0Configs.kI = ShooterConstants.TurretConstants.turretI;
     slot0Configs.kD = ShooterConstants.TurretConstants.turretD;
@@ -95,7 +95,6 @@ public class TurretIOPhoenix implements TurretIO {
     slot0Configs.kV = ShooterConstants.TurretConstants.turretV;
 
     turretMotor.getConfigurator().apply(slot0Configs);
-
   }
 
   @Override
@@ -146,5 +145,4 @@ public class TurretIOPhoenix implements TurretIO {
   private double convertRotationsToAngle(double rotations) {
     return 0.0;
   }
-
 }
