@@ -16,7 +16,7 @@ public class Indexer extends SubsystemBase {
   public Indexer() {}
 
   public enum WantedState {
-    OFF,
+    IDLE,
     INDEX,
     INDEX_TO_SHOOTER,
     VOMIT,
@@ -24,16 +24,16 @@ public class Indexer extends SubsystemBase {
   }
 
   private enum CurrentState {
-    OFF,
+    IDLING,
     INDEXING,
     INDEXING_TO_SHOOTER,
     VOMITING,
     AGITATING
   }
 
-  private WantedState wantedState = WantedState.OFF;
+  private WantedState wantedState = WantedState.IDLE;
 
-  private CurrentState currentState = CurrentState.OFF;
+  private CurrentState currentState = CurrentState.IDLING;
 
   private boolean isAllowedToCheckIfAlgaeHasEntered = false;
   private boolean hasAlgaeEntered = false;
@@ -53,9 +53,9 @@ public class Indexer extends SubsystemBase {
 
   private CurrentState handleStateTransition() {
     return switch (wantedState) {
-      case OFF:
+      case IDLE:
         {
-          yield CurrentState.OFF;
+          yield CurrentState.IDLING;
         }
       case INDEX:
         {
@@ -80,7 +80,7 @@ public class Indexer extends SubsystemBase {
     double indexMotorVoltage = 0.0;
     double indexToShootMotorVoltage = 0.0;
     switch (currentState) {
-      case OFF:
+      case IDLING:
         break;
       case INDEXING:
         break;
@@ -93,5 +93,9 @@ public class Indexer extends SubsystemBase {
     }
     io.setIndexMotorVoltage(indexMotorVoltage);
     io.setIndexToShootMotorVoltage(indexToShootMotorVoltage);
+  }
+
+  public void setWantedState(WantedState wantedState) {
+    this.wantedState = wantedState;
   }
 }

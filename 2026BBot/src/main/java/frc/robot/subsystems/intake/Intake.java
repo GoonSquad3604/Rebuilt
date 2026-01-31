@@ -74,4 +74,8 @@ public class Intake extends SubsystemBase {
 
     io.setPower(intakePower);
   }
+
+  public void setWantedState(WantedState wantedState) {
+    this.wantedState = wantedState;
+  }
 }

@@ -115,23 +115,38 @@ public class Turret extends SubsystemBase {
     double targetY = hubPos.getY() - turretPos.getY();
     Translation2d targetPosition = new Translation2d(targetX, targetY);
 
+    double distance = targetPosition.getNorm();
+    double idealSpeed = getShooterSpeedForDistance(distance);
+
+    Translation2d targetVector = targetPosition.div(distance).times(idealSpeed);
+
     Translation2d robotVelocity =
         new Translation2d(
             RobotState.getInstance().getFieldVelocity().vxMetersPerSecond,
             RobotState.getInstance().getFieldVelocity().vyMetersPerSecond);
 
-    Translation2d futurePos = turretPos.plus(robotVelocity.times(.02));
+    Translation2d shotVector = targetVector.minus(robotVelocity);
 
-    Translation2d toGoal = targetPosition.minus(futurePos);
-    double distance = toGoal.getNorm();
-    Translation2d targetDirection = toGoal.div(distance);
-    // ShooterParams baseline = shooterTable.get(distance);
-    double baselineVelocity = distance / 1.2;
-    Translation2d targetVelocity = targetDirection.times(baselineVelocity);
-    Translation2d shotVelocity = targetVelocity.minus(robotVelocity);
+    double turretAngle =
+        shotVector.getAngle().getDegrees()
+            - RobotState.getInstance().getPose().getRotation().getDegrees()
+            - 90;
+
+    if (turretAngle > 360) {
+      turretAngle -= 360;
+    } else if (turretAngle < 0) {
+      turretAngle += 360;
+    }
+
+    return turretAngle;
 
     // setAngle(shotVelocity.getAngle().getDegrees());
-    return shotVelocity.getAngle().getDegrees();
+    // return (shotVelocity.getAngle().getDegrees() + 180)
+    //     + (RobotState.getInstance().getPose().getRotation().getDegrees() + 180);
+  }
+
+  public double getShooterSpeedForDistance(double distance) {
+    return .5;
   }
 
   @Override

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
   public enum WantedState {
+    IDLE,
     DEPLOY_CLIMBER,
     STOWED,
     GO_TO_GROUND_FROM_LOW_RUNG,
@@ -17,6 +18,7 @@ public class Climber extends SubsystemBase {
   }
 
   public enum CurrentState {
+    IDLING,
     CLIMBER_DEPLOYED,
     DEPLOYING_CLIMBER,
     STOWING_CLIMBER,
@@ -39,5 +41,9 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  public void setWantedState(WantedState wantedState) {
+    this.wantedState = wantedState;
   }
 }
