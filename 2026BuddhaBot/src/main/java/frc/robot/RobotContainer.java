@@ -31,6 +31,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import frc.robot.util.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -172,17 +173,15 @@ public class RobotContainer {
             drive,
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX()));
+            () -> -driverController.getRightX(),
+            () -> driverController.getLeftTriggerAxis() > 0.05));
 
-    // Lock to 0° when B button is held
+    // Lock to 45° when B button is held
     driverController
         .b()
         .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.kZero));
+            DriveCommands.joystickDriveAtClosest45(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -197,6 +196,12 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    driverController
+        .rightBumper()
+        .whileTrue(
+            AutoDrive.alignToPose(
+                drive, AllianceFlipUtil.apply(new Pose2d(2.6, 5.7, Rotation2d.kZero))));
   }
 
   /**
@@ -204,7 +209,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    return autoChooser.get();
-  }
+  //   public Command getAutonomousCommand() {
+  //     return autoChooser.get();
+  //   }
 }
