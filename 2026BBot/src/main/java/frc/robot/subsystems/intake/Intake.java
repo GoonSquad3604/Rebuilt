@@ -11,30 +11,25 @@ public class Intake extends SubsystemBase {
   // declare motors
 
   // io declaration
-  IntakeIOPhoenix io = new IntakeIOPhoenix();
+  private final IntakeIOPhoenix io = new IntakeIOPhoenix();
 
-  public enum WantedState {
+  public enum IntakeWantedState {
     IDLE,
     INTAKE,
     VOMIT,
-    DEPLOYED,
-    STOWED // arm is stowed away / lift arm
   }
 
   private enum CurrentState {
     IDLING,
     INTAKING,
     VOMITING,
-    DEPLOYED, // arm is down and ready
-    DEPLOYING, // arm is dropping / entering desired pos
-    STOWING // arm is returning to inside the robot
   }
 
   private CurrentState currentState = CurrentState.IDLING;
-  private WantedState wantedState = WantedState.IDLE;
+  private IntakeWantedState wantedState = IntakeWantedState.IDLE;
 
   /** Creates a new Intake. */
-  public Intake() {}
+  public Intake(IntakeIOPhoenix io) {}
 
   @Override
   public void periodic() {
@@ -55,52 +50,42 @@ public class Intake extends SubsystemBase {
 
       case VOMIT:
         yield CurrentState.VOMITING;
-
-      case DEPLOYED:
-        yield CurrentState.DEPLOYING;
-
-      case STOWED:
-        yield CurrentState.STOWING;
     };
   }
 
   private void applyStates() {
-    double intakePower = 0;
-    double newArmPos = 0;
 
     switch (currentState) {
       case IDLING:
+        stopIntake();
         break;
 
       case INTAKING:
-        intakePower = 0;
+        runIntake();
         break;
 
       case VOMITING:
-        intakePower = 0;
-        break;
-
-      case DEPLOYED:
-        if (wantedState == wantedState.INTAKE) intakePower = 0;
-        break;
-
-      case DEPLOYING:
-        newArmPos = 0;
-        break;
-
-      case STOWING:
-        newArmPos = 0;
+        vomit();
         break;
 
       default:
         break;
     }
-
-    io.setPower(intakePower);
-    io.setArmPos(newArmPos);
   }
 
-  public void setWantedState(WantedState wantedState) {
+  public void setWantedState(IntakeWantedState wantedState) {
     this.wantedState = wantedState;
+  }
+
+  public void runIntake(){
+    io.setPower(IntakeConstants.intakeSpeed);
+  }
+
+  public void stopIntake(){
+    io.setPower(0);
+  }
+
+  public void vomit(){
+    io.setPower(IntakeConstants.vomitSpeed);
   }
 }

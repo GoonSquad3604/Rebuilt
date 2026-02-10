@@ -20,12 +20,29 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIORev;
+import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
+import frc.robot.subsystems.intake.Intake.IntakeWantedState;
+import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
+
+
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOPhoenix;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
+import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
+import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -42,9 +59,16 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  private final Climber climber;
+  private final Indexer indexer;
+  private final Intake intake;
+  private final Shooter shooter;
+  private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandXboxController testController = new CommandXboxController(2);
+
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -69,6 +93,11 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
+        climber = new Climber(new ClimberIOPhoenix());
+        indexer = new Indexer(new IndexerIORev());
+        intake = new Intake(new IntakeIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -104,6 +133,11 @@ public class RobotContainer {
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+        climber = new Climber(new ClimberIOPhoenix());
+        indexer = new Indexer(new IndexerIORev());
+        intake = new Intake(new IntakeIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
 
       default:
@@ -119,6 +153,11 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         // (Use same number of dummy implementations as the real robot)
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        climber = new Climber(new ClimberIOPhoenix());
+        indexer = new Indexer(new IndexerIORev());
+        intake = new Intake(new IntakeIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
     }
 
@@ -183,6 +222,42 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    
+    // test controller
+    testController.leftBumper().onTrue(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.INDEX)));
+    testController.leftBumper().onFalse(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+
+    testController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.INTAKE)));
+    testController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.IDLE)));
+
+    testController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setLauncherPower(0.6)));
+    testController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+
+    testController.b().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.3)));
+    testController.b().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    testController.a().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.3)));
+    testController.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.3)));
+    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.3)));
+    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    testController.povUp().onTrue(Commands.runOnce(() -> climber.moveLowRung()));
+    testController.povUp().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
+    
+    testController.povDown().onTrue(Commands.runOnce(() -> climber.moveLowRungBack()));
+    testController.povDown().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
+
+    testController.povRight().onTrue(Commands.runOnce(() -> climber.moveMidRung()));
+    testController.povRight().onFalse(Commands.runOnce(() -> climber.stopMidRung()));
+
+    testController.povLeft().onTrue(Commands.runOnce(() -> climber.moveMidRungBack()));
+    testController.povLeft().onFalse(Commands.runOnce(() -> climber.stopMidRung()));
+
   }
 
   /**

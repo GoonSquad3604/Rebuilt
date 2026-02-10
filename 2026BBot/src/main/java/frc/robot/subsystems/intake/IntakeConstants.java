@@ -5,14 +5,15 @@
 package frc.robot.subsystems.intake;
 
 public class IntakeConstants {
-
-  // arm motor constants
-  public static final double armHomePosition = 0;
-  public static final double armDeployedPosition = 0;
-  public static final int armMotorID = 0;
-
   // intake motor constants
   public static final double intakeSpeed = 0;
   public static final double vomitSpeed = 0;
   public static final int intakeMotorID = 0;
+
+  public static final double intakeP = 0;
+  public static final double intakeI = 0;
+  public static final double intakeD = 0;
+  public static final double intakeS = 0;
+  public static final double intakeV = 0;
+
 }

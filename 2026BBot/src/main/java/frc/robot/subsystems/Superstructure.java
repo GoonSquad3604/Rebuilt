@@ -4,17 +4,19 @@
 
 package frc.robot.subsystems;
 
-import org.littletonrobotics.junction.Logger;
-
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeWantedState;
 import frc.robot.subsystems.led.LED;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.Shooter.WantedState;
+import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
+
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {
 
@@ -23,7 +25,7 @@ public class Superstructure extends SubsystemBase {
   private final Indexer indexer;
   private final Shooter shooter;
   private final Climber climber;
-  private final LED led;
+  // private final LED led;
 
   private enum TurretTarget {
     HUB,
@@ -62,13 +64,13 @@ public class Superstructure extends SubsystemBase {
 
   /** Creates a new Superstructure. */
   public Superstructure(
-      Drive drive, Intake intake, Indexer indexer, Shooter shooter, Climber climber, LED led) {
+      Drive drive, Intake intake, Indexer indexer, Shooter shooter, Climber climber) {
     this.drive = drive;
     this.intake = intake;
     this.indexer = indexer;
     this.shooter = shooter;
     this.climber = climber;
-    this.led = led;
+    // this.led = led;
   }
 
   @Override
@@ -86,12 +88,11 @@ public class Superstructure extends SubsystemBase {
 
     currentSuperState = handleStateTransitions();
     applyStates();
-
   }
 
   private CurrentSuperState handleStateTransitions() {
     previousSuperState = currentSuperState;
-    switch(wantedSuperState) {
+    switch (wantedSuperState) {
       case CLIMB:
         currentSuperState = CurrentSuperState.CLIMBING;
         break;
@@ -118,12 +119,12 @@ public class Superstructure extends SubsystemBase {
         break;
       default:
         break;
-
     }
-        return currentSuperState;
+    return currentSuperState;
   }
-  private void applyStates(){
-    switch(currentSuperState){
+
+  private void applyStates() {
+    switch (currentSuperState) {
       case CLIMBING:
         climb();
         break;
@@ -151,98 +152,98 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
-  private void stopped(){
-    shooter.setWantedState(Shooter.WantedState.IDLE);
-    intake.setWantedState(Intake.WantedState.IDLE);
-    indexer.setWantedState(Indexer.WantedState.IDLE);
-    climber.setWantedState(Climber.WantedState.IDLE);
+  private void stopped() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void intake(){
-    shooter.setWantedState(Shooter.WantedState.IDLE);
-    intake.setWantedState(Intake.WantedState.INTAKE);
-    indexer.setWantedState(Indexer.WantedState.IDLE);
-    climber.setWantedState(Climber.WantedState.IDLE);
+  private void intake() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.INTAKE);
+    indexer.setWantedState(IndexerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void vomit(){
-    shooter.setWantedState(Shooter.WantedState.IDLE);
-    intake.setWantedState(Intake.WantedState.VOMIT);
-    indexer.setWantedState(Indexer.WantedState.VOMIT);
-    climber.setWantedState(Climber.WantedState.IDLE);
+  private void vomit() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.VOMIT);
+    indexer.setWantedState(IndexerWantedState.VOMIT);
+    climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void shoot(){
-    switch(turretTarget) {
+  private void shoot() {
+    switch (turretTarget) {
       case CORRAL:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_CORRAL);
+        shooter.setWantedState(ShooterWantedState.SHOOT_CORRAL);
         break;
       case FORWARD:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_FORWARD);
+        shooter.setWantedState(ShooterWantedState.SHOOT_FORWARD);
         break;
       case HUB:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_HUB);
+        shooter.setWantedState(ShooterWantedState.SHOOT_HUB);
         break;
       case ZONE:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_ZONE);
+        shooter.setWantedState(ShooterWantedState.SHOOT_ZONE);
         break;
     }
-    intake.setWantedState(Intake.WantedState.IDLE);
-    indexer.setWantedState(Indexer.WantedState.INDEX);
-    climber.setWantedState(Climber.WantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.INDEX);
+    climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void intakeAndShoot(){
-    switch(turretTarget) {
+  private void intakeAndShoot() {
+    switch (turretTarget) {
       case CORRAL:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_CORRAL);
+        shooter.setWantedState(ShooterWantedState.SHOOT_CORRAL);
         break;
       case FORWARD:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_FORWARD);
+        shooter.setWantedState(ShooterWantedState.SHOOT_FORWARD);
         break;
       case HUB:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_HUB);
+        shooter.setWantedState(ShooterWantedState.SHOOT_HUB);
         break;
       case ZONE:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_ZONE);
+        shooter.setWantedState(ShooterWantedState.SHOOT_ZONE);
         break;
     }
-    intake.setWantedState(Intake.WantedState.INTAKE);
-    indexer.setWantedState(Indexer.WantedState.INDEX);
-    climber.setWantedState(Climber.WantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.INTAKE);
+    indexer.setWantedState(IndexerWantedState.INDEX);
+    climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void climb(){
-    shooter.setWantedState(Shooter.WantedState.IDLE);
-    intake.setWantedState(Intake.WantedState.IDLE);
-    indexer.setWantedState(Indexer.WantedState.IDLE);
-    climber.setWantedState(Climber.WantedState.DEPLOY_CLIMBER); //tbd
+  private void climb() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
   }
 
   private void declimb() {
-    shooter.setWantedState(Shooter.WantedState.IDLE);
-    intake.setWantedState(Intake.WantedState.IDLE);
-    indexer.setWantedState(Indexer.WantedState.IDLE);
-    climber.setWantedState(Climber.WantedState.GO_TO_GROUND_FROM_LOW_RUNG);
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
   }
 
   private void climbAndShoot() {
-switch(turretTarget) {
+    switch (turretTarget) {
       case CORRAL:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_CORRAL);
+        shooter.setWantedState(ShooterWantedState.SHOOT_CORRAL);
         break;
       case FORWARD:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_FORWARD);
+        shooter.setWantedState(ShooterWantedState.SHOOT_FORWARD);
         break;
       case HUB:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_HUB);
+        shooter.setWantedState(ShooterWantedState.SHOOT_HUB);
         break;
       case ZONE:
-        shooter.setWantedState(Shooter.WantedState.SHOOT_ZONE);
+        shooter.setWantedState(ShooterWantedState.SHOOT_ZONE);
         break;
     }
-    intake.setWantedState(Intake.WantedState.IDLE);
-    indexer.setWantedState(Indexer.WantedState.INDEX);
-    climber.setWantedState(Climber.WantedState.DEPLOY_CLIMBER); // tbd
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.INDEX);
+    climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
   }
 }

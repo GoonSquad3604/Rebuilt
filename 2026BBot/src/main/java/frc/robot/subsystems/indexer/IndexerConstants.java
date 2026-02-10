@@ -5,4 +5,7 @@
 package frc.robot.subsystems.indexer;
 
 /** Add your docs here. */
-public class IndexerConstants {}
+public class IndexerConstants {
+
+  static final int indexID = 0;
+}

@@ -14,24 +14,19 @@ public interface IndexerIO {
   @AutoLog
   class IndexerIOInputs {
     public boolean indexMotorIsConnected = false;
-    public boolean indexToShootMotorIsConnected = false;
 
     public double indexVoltage;
-    public double indexToShootVoltage;
 
     public double indexPower;
-    public double indexToShootPower;
 
     public double indexCurrent;
-    public double indexToShootCurrent;
 
     public double indexTemperature;
-    public double indexToShootTemperature;
+
+    public Object indexMotorVoltage;
   }
 
   public void setIndexPower(double power);
 
   public void setIndexMotorVoltage(double volts);
-
-  public void setIndexToShootMotorVoltage(double volts);
 }

@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
@@ -30,16 +29,17 @@ public class LauncherIOPhoenix implements LauncherIO {
   private final StatusSignal<Current> supplyCurrent;
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
-  
+
   public LauncherIOPhoenix() {
     launcherMotor = new TalonFX(ShooterConstants.LauncherConstants.launcherID);
     launcherMotorConfig = new TalonFXConfiguration();
     launcherRequest = new VelocityVoltage(0).withSlot(0);
 
-        launcherMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    launcherMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    launcherMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.LauncherConstants.launcherEncoderID;
+    launcherMotorConfig.Feedback.FeedbackRemoteSensorID =
+        ShooterConstants.LauncherConstants.launcherEncoderID;
     launcherMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     launcherMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     launcherMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
@@ -61,12 +61,7 @@ public class LauncherIOPhoenix implements LauncherIO {
         5,
         () ->
             BaseStatusSignal.setUpdateFrequencyForAll(
-                50.0,
-                velocity,
-                appliedVoltage,
-                supplyCurrent,
-                torqueCurrent,
-                tempCelsius));
+                50.0, velocity, appliedVoltage, supplyCurrent, torqueCurrent, tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> launcherMotor.optimizeBusUtilization(0, 1.0));
 
     var slot0Configs = new Slot0Configs();
@@ -102,5 +97,4 @@ public class LauncherIOPhoenix implements LauncherIO {
   public void setVoltage(double voltage) {
     launcherMotor.setVoltage(voltage);
   }
-
 }

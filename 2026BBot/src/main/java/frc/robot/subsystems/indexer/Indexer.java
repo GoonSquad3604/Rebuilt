@@ -13,30 +13,26 @@ public class Indexer extends SubsystemBase {
 
   private IndexerIOInputsAutoLogged inputs = new IndexerIOInputsAutoLogged();
 
-  public Indexer() {}
+  public Indexer(IndexerIO io) {
+    this.io = io;
+  }
 
-  public enum WantedState {
+  public enum IndexerWantedState {
     IDLE,
     INDEX,
-    INDEX_TO_SHOOTER,
     VOMIT,
-    AGITATE
   }
 
   private enum CurrentState {
     IDLING,
     INDEXING,
-    INDEXING_TO_SHOOTER,
     VOMITING,
-    AGITATING
   }
 
-  private WantedState wantedState = WantedState.IDLE;
+  private IndexerWantedState wantedState = IndexerWantedState.IDLE;
 
   private CurrentState currentState = CurrentState.IDLING;
 
-  private boolean isAllowedToCheckIfAlgaeHasEntered = false;
-  private boolean hasAlgaeEntered = false;
 
   @Override
   public void periodic() {
@@ -61,41 +57,43 @@ public class Indexer extends SubsystemBase {
         {
           yield CurrentState.INDEXING;
         }
-      case INDEX_TO_SHOOTER:
-        {
-          yield CurrentState.INDEXING_TO_SHOOTER;
-        }
       case VOMIT:
         {
           yield CurrentState.VOMITING;
-        }
-      case AGITATE:
-        {
-          yield CurrentState.AGITATING;
         }
     };
   }
 
   private void applyState() {
     double indexMotorVoltage = 0.0;
-    double indexToShootMotorVoltage = 0.0;
     switch (currentState) {
       case IDLING:
+        stopped();
         break;
       case INDEXING:
-        break;
-      case INDEXING_TO_SHOOTER:
+        indexing();
         break;
       case VOMITING:
-        break;
-      case AGITATING:
+        vommiting();
         break;
     }
     io.setIndexMotorVoltage(indexMotorVoltage);
-    io.setIndexToShootMotorVoltage(indexToShootMotorVoltage);
   }
 
-  public void setWantedState(WantedState wantedState) {
+  public void setWantedState(IndexerWantedState wantedState) {
     this.wantedState = wantedState;
   }
+
+  private void stopped(){
+    io.setIndexPower(0);
+  }
+
+  private void indexing(){
+    io.setIndexPower(0.5);
+  }
+
+  private void vommiting(){
+    io.setIndexPower(-0.5);
+  }
+
 }

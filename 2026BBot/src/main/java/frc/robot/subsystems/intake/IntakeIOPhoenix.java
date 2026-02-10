@@ -4,7 +4,28 @@
 
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.util.PhoenixUtil;
 
 public class IntakeIOPhoenix implements IntakeIO {
 
@@ -13,17 +34,77 @@ public class IntakeIOPhoenix implements IntakeIO {
   public double intakeMotorVoltage;
   public double intakeMotorCurrent;
 
-  // arm functions
-  public double armPos;
-  public double armMotorVoltage;
-  public double armMotorCurrent;
-
   // logging
   public boolean intakeMotorConnected;
-  public boolean armMotorConnected;
 
-  TalonFXS intakeMotor = new TalonFXS(IntakeConstants.intakeMotorID);
-  TalonFXS armMotor = new TalonFXS(IntakeConstants.armMotorID);
+  TalonFX intakeMotor;
+  TalonFXConfiguration intakeMotorConfig;
+
+  // status signals
+  private final StatusSignal<Angle> position;
+  private final StatusSignal<AngularVelocity> velocity;
+  private final StatusSignal<Voltage> appliedVoltage;
+  private final StatusSignal<Current> supplyCurrent;
+  private final StatusSignal<Current> torqueCurrent;
+  private final StatusSignal<Temperature> tempCelsius;
+
+  public IntakeIOPhoenix(){
+    intakeMotorConfig = new TalonFXConfiguration();
+    intakeMotor = new TalonFX(IntakeConstants.intakeMotorID);
+
+    intakeMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    intakeMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    intakeMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    intakeMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    intakeMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    intakeMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
+    intakeMotorConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(IntakeConstants.intakeP)
+            .withKI(IntakeConstants.intakeI)
+            .withKD(IntakeConstants.intakeD);
+    intakeMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+    PhoenixUtil.tryUntilOk(5, () -> intakeMotor.getConfigurator().apply(intakeMotorConfig));
+
+    position = intakeMotor.getPosition();
+    velocity = intakeMotor.getVelocity();
+    appliedVoltage = intakeMotor.getMotorVoltage();
+    supplyCurrent = intakeMotor.getSupplyCurrent();
+    torqueCurrent = intakeMotor.getTorqueCurrent();
+    tempCelsius = intakeMotor.getDeviceTemp();
+
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                position,
+                velocity,
+                appliedVoltage,
+                supplyCurrent,
+                torqueCurrent,
+                tempCelsius));
+    PhoenixUtil.tryUntilOk(5, () -> intakeMotor.optimizeBusUtilization(0, 1.0));
+
+    var slot0Configs = new Slot0Configs();
+
+    slot0Configs.kP = IntakeConstants.intakeP;
+    slot0Configs.kI = IntakeConstants.intakeI;
+    slot0Configs.kD = IntakeConstants.intakeD;
+    slot0Configs.kS = IntakeConstants.intakeS;
+    slot0Configs.kV = IntakeConstants.intakeV;
+
+    intakeMotor.getConfigurator().apply(slot0Configs);
+
+  }
+
+  @Override
+  public void updateInputs(IntakeIOInputs inputs) {
+    inputs.intakeMotorConnected = intakeMotor.isConnected();
+    inputs.intakeMotorVoltage = intakeMotor.getMotorVoltage().getValueAsDouble();
+    inputs.intakeMotorCurrent = intakeMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.intakeMotorTemp = intakeMotor.getDeviceTemp().getValueAsDouble();
+  }
 
   // intaking functions
   void setVoltage(double voltage) {
@@ -34,8 +115,4 @@ public class IntakeIOPhoenix implements IntakeIO {
     intakeMotor.set(power);
   }
 
-  // arm functions
-  void setArmPos(double pos) {
-    armMotor.setPosition(pos);
-  }
 }
