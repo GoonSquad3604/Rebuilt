@@ -77,15 +77,15 @@ public class Intake extends SubsystemBase {
     this.wantedState = wantedState;
   }
 
-  public void runIntake(){
+  public void runIntake() {
     io.setPower(IntakeConstants.intakeSpeed);
   }
 
-  public void stopIntake(){
+  public void stopIntake() {
     io.setPower(0);
   }
 
-  public void vomit(){
+  public void vomit() {
     io.setPower(IntakeConstants.vomitSpeed);
   }
 }

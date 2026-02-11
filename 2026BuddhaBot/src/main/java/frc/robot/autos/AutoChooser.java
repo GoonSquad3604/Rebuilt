@@ -70,7 +70,7 @@ public class AutoChooser extends SendableChooser<Autos> {
 
     autoChooser.reset(null);
 
-    Shuffleboard.getTab("autoChooser")
+    Shuffleboard.getTab("Autonomous")
         .addString("Selected Auto", () -> autoChooser.getSelected().name())
         .withPosition(12, 3)
         .withSize(6, 2)

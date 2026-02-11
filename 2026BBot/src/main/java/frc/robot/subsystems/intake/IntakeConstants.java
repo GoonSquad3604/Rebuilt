@@ -15,5 +15,4 @@ public class IntakeConstants {
   public static final double intakeD = 0;
   public static final double intakeS = 0;
   public static final double intakeV = 0;
-
 }

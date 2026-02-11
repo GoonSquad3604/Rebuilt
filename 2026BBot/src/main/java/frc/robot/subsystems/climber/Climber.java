@@ -4,16 +4,15 @@
 
 package frc.robot.subsystems.climber;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.climber.ClimberIO.ClimberIOInputs;
+import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
 
   private final ClimberIOPhoenix io;
 
-  
+  private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
+
   public enum ClimberWantedState {
     IDLE,
     DEPLOY,
@@ -50,6 +49,8 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.processInputs("Subsystems/Climber", inputs);
+
     currentState = handleStateTransitions();
     applyStates();
   }
@@ -108,7 +109,6 @@ public class Climber extends SubsystemBase {
     }
   }
 
-
   private void stopped() {
     io.setPowerLowRung(0);
     io.setPowerMidRung(0);
@@ -124,29 +124,27 @@ public class Climber extends SubsystemBase {
 
   private void climbMidRung() {}
 
-  public void moveLowRung(){
+  public void moveLowRung() {
     io.setPowerLowRung(0.3);
   }
 
-  public void moveLowRungBack(){
+  public void moveLowRungBack() {
     io.setPowerLowRung(-0.3);
-
   }
 
-  public void moveMidRung(){
+  public void moveMidRung() {
     io.setPowerMidRung(0.3);
   }
 
-  public void moveMidRungBack(){
+  public void moveMidRungBack() {
     io.setPowerLowRung(-0.3);
   }
 
-  public void stopLowRung(){
+  public void stopLowRung() {
     io.setPowerLowRung(0);
   }
 
-  public void stopMidRung(){
+  public void stopMidRung() {
     io.setPowerLowRung(0);
   }
-
 }

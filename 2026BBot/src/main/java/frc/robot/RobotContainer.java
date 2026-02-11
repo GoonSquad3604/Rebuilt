@@ -30,14 +30,10 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.IndexerIO;
-import frc.robot.subsystems.indexer.IndexerIORev;
 import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
-import frc.robot.subsystems.intake.Intake.IntakeWantedState;
-import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
-
-
+import frc.robot.subsystems.indexer.IndexerIORev;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeWantedState;
 import frc.robot.subsystems.intake.IntakeIOPhoenix;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
@@ -68,7 +64,6 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandXboxController testController = new CommandXboxController(2);
-
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -223,13 +218,20 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    
     // test controller
-    testController.leftBumper().onTrue(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.INDEX)));
-    testController.leftBumper().onFalse(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+    testController
+        .leftBumper()
+        .onTrue(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.INDEX)));
+    testController
+        .leftBumper()
+        .onFalse(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
 
-    testController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.INTAKE)));
-    testController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.IDLE)));
+    testController
+        .rightTrigger()
+        .onTrue(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.INTAKE)));
+    testController
+        .rightTrigger()
+        .onFalse(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.IDLE)));
 
     testController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setLauncherPower(0.6)));
     testController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
@@ -248,7 +250,7 @@ public class RobotContainer {
 
     testController.povUp().onTrue(Commands.runOnce(() -> climber.moveLowRung()));
     testController.povUp().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
-    
+
     testController.povDown().onTrue(Commands.runOnce(() -> climber.moveLowRungBack()));
     testController.povDown().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
 
@@ -257,7 +259,6 @@ public class RobotContainer {
 
     testController.povLeft().onTrue(Commands.runOnce(() -> climber.moveMidRungBack()));
     testController.povLeft().onFalse(Commands.runOnce(() -> climber.stopMidRung()));
-
   }
 
   /**

@@ -12,10 +12,8 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeWantedState;
-import frc.robot.subsystems.led.LED;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {

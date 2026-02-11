@@ -51,7 +51,6 @@ public class Shooter extends SubsystemBase {
     REVVING_FORWARD,
     SHOOTING_FORWARD,
 
-
     /* HUB TRACKING */
     REVVING_HUB,
     SHOOTING_HUB,
@@ -78,25 +77,25 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    synchronized (hoodInputs) {
-      synchronized (launcherInputs) {
-        synchronized (turretInputs) {
-          Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
-          Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
-          Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
+    // synchronized (hoodInputs) {
+    //   synchronized (launcherInputs) {
+    //     synchronized (turretInputs) {
+    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+    Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
+    Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
-          currentState = handleStateTransitions();
+    currentState = handleStateTransitions();
 
-          Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
-          Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-          Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
+    Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
+    Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
 
-          applyStates();
+    applyStates();
 
-          previousWantedState = this.wantedState;
-        }
-      }
-    }
+    previousWantedState = this.wantedState;
+    // }
+    //     }
+    //   }
   }
 
   public CurrentState handleStateTransitions() {
@@ -106,9 +105,7 @@ public class Shooter extends SubsystemBase {
       case SHOOT_CORRAL:
         return reachedSetpoint() ? CurrentState.SHOOTING_CORRAL : CurrentState.REVVING_CORRAL;
       case SHOOT_FORWARD:
-        return reachedSetpoint()
-            ? CurrentState.SHOOTING_FORWARD
-            : CurrentState.REVVING_FORWARD;
+        return reachedSetpoint() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
       case SHOOT_HUB:
         return reachedSetpoint() ? CurrentState.SHOOTING_HUB : CurrentState.REVVING_HUB;
       case SHOOT_ZONE:
@@ -156,13 +153,13 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean reachedSetpoint() {
-    synchronized (hoodInputs) {
-      synchronized (launcherInputs) {
-        synchronized (turretInputs) {
-          return false; // replace with logic for at setpoints
-        }
-      }
-    }
+    // synchronized (hoodInputs) {
+    //   synchronized (launcherInputs) {
+    //     synchronized (turretInputs) {
+    return false; // replace with logic for at setpoints
+    //     }
+    //   }
+    // }
   }
 
   public void setWantedState(ShooterWantedState wantedState) {
@@ -175,37 +172,21 @@ public class Shooter extends SubsystemBase {
     // turretIO.setPower(0);
   }
 
-  private void shootCorral() {
+  private void shootCorral() {}
 
-  }
+  private void shootForward() {}
 
-  private void shootForward() {
-    
-  }
+  private void shootHub() {}
 
-  private void shootHub() {
-    
-  }
+  private void shootZone() {}
 
-  private void shootZone() {
-    
-  }
+  private void revCorral() {}
 
-  private void revCorral() {
+  private void revForward() {}
 
-  }
+  private void revHub() {}
 
-  private void revForward() {
-    
-  }
-
-  private void revHub() {
-    
-  }
-
-  private void revZone() {
-    
-  }
+  private void revZone() {}
 
   // testcontroller:
   public void setLauncherPower(double power) {

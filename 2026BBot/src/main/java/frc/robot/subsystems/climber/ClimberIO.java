@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface ClimberIO {
-   default void updateInputs(ClimberIOInputs inputs) {}
+  default void updateInputs(ClimberIOInputs inputs) {}
 
   @AutoLog
   class ClimberIOInputs {
@@ -26,18 +26,22 @@ public interface ClimberIO {
   }
 
   default void setPowerLowRung(double power) {}
+
   default void setPowerMidRung(double power) {}
 
-  default void setPositionLowRung(double position){}
-  default void setPositionMidRung(double position){}
+  default void setPositionLowRung(double position) {}
 
-  default double getPositionLowRung(){
-    return 0.0;
-  }
-  default double getPositionMidRung(){
+  default void setPositionMidRung(double position) {}
+
+  default double getPositionLowRung() {
     return 0.0;
   }
 
-  default void setVoltageLowRung(double volts){}
-  default void setVoltageMidRung(double volts){}
+  default double getPositionMidRung() {
+    return 0.0;
+  }
+
+  default void setVoltageLowRung(double volts) {}
+
+  default void setVoltageMidRung(double volts) {}
 }

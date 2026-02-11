@@ -6,20 +6,12 @@ package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -48,7 +40,7 @@ public class IntakeIOPhoenix implements IntakeIO {
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
 
-  public IntakeIOPhoenix(){
+  public IntakeIOPhoenix() {
     intakeMotorConfig = new TalonFXConfiguration();
     intakeMotor = new TalonFX(IntakeConstants.intakeMotorID);
 
@@ -95,7 +87,6 @@ public class IntakeIOPhoenix implements IntakeIO {
     slot0Configs.kV = IntakeConstants.intakeV;
 
     intakeMotor.getConfigurator().apply(slot0Configs);
-
   }
 
   @Override
@@ -114,5 +105,4 @@ public class IntakeIOPhoenix implements IntakeIO {
   void setPower(double power) {
     intakeMotor.set(power);
   }
-
 }

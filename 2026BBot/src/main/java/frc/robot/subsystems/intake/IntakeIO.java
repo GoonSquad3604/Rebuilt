@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import frc.robot.subsystems.shooter.turret.TurretIO.TurretIOInputs;
-
 public interface IntakeIO {
 
   class IntakeIOInputs {
@@ -16,7 +14,6 @@ public interface IntakeIO {
     public double intakeMotorCurrent;
     public double intakeMotorTemp;
 
-
     // logging
     public boolean intakeMotorConnected;
 
@@ -24,7 +21,6 @@ public interface IntakeIO {
     void setIntakeVoltage(double voltage) {}
 
     void setIntakePower(double power) {}
-    
   }
 
   default void updateInputs(IntakeIOInputs inputs) {}

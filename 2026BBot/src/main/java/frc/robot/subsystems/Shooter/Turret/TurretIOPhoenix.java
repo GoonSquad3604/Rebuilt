@@ -4,14 +4,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
@@ -58,7 +55,8 @@ public class TurretIOPhoenix implements TurretIO {
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
         ShooterConstants.TurretConstants.turretEncoderID;
-    turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource = ExternalFeedbackSensorSourceValue.RemoteCANcoder;
+    turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
+        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
     turretMotorConfig.Slot0 =

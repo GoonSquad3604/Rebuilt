@@ -31,7 +31,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import frc.robot.util.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -197,11 +196,11 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .rightBumper()
-        .whileTrue(
-            AutoDrive.alignToPose(
-                drive, AllianceFlipUtil.apply(new Pose2d(2.6, 5.7, Rotation2d.kZero))));
+    // driverController
+    //     .rightBumper()
+    //     .whileTrue(
+    //         AutoDrive.alignToPose(
+    //             drive, AllianceFlipUtil.apply(new Pose2d(2.6, 5.7, Rotation2d.kZero))));
   }
 
   /**
