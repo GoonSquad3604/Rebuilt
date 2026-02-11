@@ -4,11 +4,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
@@ -22,9 +22,9 @@ import frc.robot.util.PhoenixUtil;
 public class TurretIOPhoenix implements TurretIO {
 
   // motor
-  private final TalonFX turretMotor;
+  private final TalonFXS turretMotor;
   private final PositionVoltage turretRequest;
-  private final TalonFXConfiguration turretMotorConfig;
+  private final TalonFXSConfiguration turretMotorConfig;
 
   // encoder
   private final CANcoder turretEncoder;
@@ -40,7 +40,7 @@ public class TurretIOPhoenix implements TurretIO {
 
   public TurretIOPhoenix() {
 
-    turretMotor = new TalonFX(ShooterConstants.TurretConstants.turretID);
+    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID);
     turretRequest = new PositionVoltage(0);
 
     turretEncoder = new CANcoder(ShooterConstants.TurretConstants.turretEncoderID);
@@ -48,14 +48,15 @@ public class TurretIOPhoenix implements TurretIO {
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
 
-    turretMotorConfig = new TalonFXConfiguration();
+    turretMotorConfig = new TalonFXSConfiguration();
 
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.Feedback.FeedbackRemoteSensorID =
+    turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
         ShooterConstants.TurretConstants.turretEncoderID;
-    turretMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
+        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
     turretMotorConfig.Slot0 =

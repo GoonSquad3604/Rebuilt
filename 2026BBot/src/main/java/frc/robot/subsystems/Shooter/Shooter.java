@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -8,6 +7,7 @@ import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOInputsAutoLogged;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -20,7 +20,11 @@ public class Shooter extends SubsystemBase {
   private final LauncherIOInputsAutoLogged launcherInputs = new LauncherIOInputsAutoLogged();
   private final TurretIOInputsAutoLogged turretInputs = new TurretIOInputsAutoLogged();
 
-  public enum WantedState {
+  @AutoLogOutput private double wantedHoodAngle;
+  @AutoLogOutput private double wantedLauncherRPM;
+  @AutoLogOutput private double wantedTurretAngle;
+
+  public enum ShooterWantedState {
     IDLE,
 
     /* MANUAL SHOOTING */
@@ -44,28 +48,24 @@ public class Shooter extends SubsystemBase {
     IDLING,
 
     /* MANUAL SHOOTING */
-    AIMING_FORWARD,
     REVVING_FORWARD,
-    READY_TO_SHOOT_FORWARD,
+    SHOOTING_FORWARD,
 
     /* HUB TRACKING */
-    AIMING_HUB,
     REVVING_HUB,
-    READY_TO_SHOOT_HUB,
+    SHOOTING_HUB,
 
     /* ALLIANCE ZONE PASSING */
-    AIMING_ZONE,
     REVVING_ZONE,
-    READY_TO_SHOOT_ZONE,
+    SHOOTING_ZONE,
 
     /* CORRAL PASSING */
-    AIMING_CORRAL,
     REVVING_CORRAL,
-    READY_TO_SHOOT_CORRAL
+    SHOOTING_CORRAL
   }
 
-  private WantedState wantedState = WantedState.IDLE;
-  private WantedState previousWantedState = WantedState.IDLE;
+  private ShooterWantedState wantedState = ShooterWantedState.IDLE;
+  private ShooterWantedState previousWantedState = ShooterWantedState.IDLE;
   private CurrentState currentState = CurrentState.IDLING;
 
   /** Creates a new Shooter. */
@@ -77,29 +77,25 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    synchronized (hoodInputs) {
-      synchronized (launcherInputs) {
-        synchronized (turretInputs) {
-          Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
-          Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
-          Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
+    // synchronized (hoodInputs) {
+    //   synchronized (launcherInputs) {
+    //     synchronized (turretInputs) {
+    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+    Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
+    Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
-          currentState = handleStateTransitions();
+    currentState = handleStateTransitions();
 
-          Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
-          Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-          Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
+    Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
+    Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
 
-          Rotation2d wantedHoodAngle;
-          double wantedLauncherRPM;
-          Rotation2d wantedTurretAngle;
+    applyStates();
 
-          applyStates();
-
-          previousWantedState = this.wantedState;
-        }
-      }
-    }
+    previousWantedState = this.wantedState;
+    // }
+    //     }
+    //   }
   }
 
   public CurrentState handleStateTransitions() {
@@ -107,23 +103,13 @@ public class Shooter extends SubsystemBase {
       case IDLE:
         return CurrentState.IDLING;
       case SHOOT_CORRAL:
-        return reachedSetpoint() ? CurrentState.READY_TO_SHOOT_CORRAL : CurrentState.REVVING_CORRAL;
+        return reachedSetpoint() ? CurrentState.SHOOTING_CORRAL : CurrentState.REVVING_CORRAL;
       case SHOOT_FORWARD:
-        return reachedSetpoint()
-            ? CurrentState.READY_TO_SHOOT_FORWARD
-            : CurrentState.REVVING_FORWARD;
+        return reachedSetpoint() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
       case SHOOT_HUB:
-        return reachedSetpoint() ? CurrentState.READY_TO_SHOOT_HUB : CurrentState.REVVING_HUB;
+        return reachedSetpoint() ? CurrentState.SHOOTING_HUB : CurrentState.REVVING_HUB;
       case SHOOT_ZONE:
-        return reachedSetpoint() ? CurrentState.READY_TO_SHOOT_ZONE : CurrentState.REVVING_ZONE;
-      case TARGET_CORRAL:
-        return CurrentState.AIMING_CORRAL;
-      case TARGET_FORWARD:
-        return CurrentState.AIMING_FORWARD;
-      case TARGET_HUB:
-        return CurrentState.AIMING_HUB;
-      case TARGET_ZONE:
-        return CurrentState.AIMING_ZONE;
+        return reachedSetpoint() ? CurrentState.SHOOTING_ZONE : CurrentState.REVVING_ZONE;
     }
     return CurrentState.IDLING;
   }
@@ -131,47 +117,87 @@ public class Shooter extends SubsystemBase {
   public void applyStates() {
     switch (currentState) {
       case IDLING:
+        idling();
         break;
-      case AIMING_CORRAL:
+      case SHOOTING_CORRAL:
+        shootCorral();
         break;
-      case AIMING_FORWARD:
+      case SHOOTING_FORWARD:
+        shootForward();
         break;
-      case AIMING_HUB:
+      case SHOOTING_HUB:
+        shootHub();
         break;
-      case AIMING_ZONE:
-        break;
-      case READY_TO_SHOOT_CORRAL:
-        break;
-      case READY_TO_SHOOT_FORWARD:
-        break;
-      case READY_TO_SHOOT_HUB:
-        break;
-      case READY_TO_SHOOT_ZONE:
+      case SHOOTING_ZONE:
+        shootZone();
         break;
       case REVVING_CORRAL:
+        revCorral();
         break;
       case REVVING_FORWARD:
+        revForward();
         break;
       case REVVING_HUB:
+        revHub();
         break;
       case REVVING_ZONE:
+        revZone();
         break;
       default:
         break;
     }
+
+    hoodIO.setAngle(wantedHoodAngle);
+    launcherIO.setRPM(wantedLauncherRPM);
+    turretIO.setAngle(wantedTurretAngle);
   }
 
   public boolean reachedSetpoint() {
-    synchronized (hoodInputs) {
-      synchronized (launcherInputs) {
-        synchronized (turretInputs) {
-          return false; // replace with logic for at setpoints
-        }
-      }
-    }
+    // synchronized (hoodInputs) {
+    //   synchronized (launcherInputs) {
+    //     synchronized (turretInputs) {
+    return false; // replace with logic for at setpoints
+    //     }
+    //   }
+    // }
   }
 
-  public void setWantedState(WantedState wantedState) {
+  public void setWantedState(ShooterWantedState wantedState) {
     this.wantedState = wantedState;
+  }
+
+  private void idling() {
+    // hoodIO.setPower(0);
+    // launcherIO.setPower(0);
+    // turretIO.setPower(0);
+  }
+
+  private void shootCorral() {}
+
+  private void shootForward() {}
+
+  private void shootHub() {}
+
+  private void shootZone() {}
+
+  private void revCorral() {}
+
+  private void revForward() {}
+
+  private void revHub() {}
+
+  private void revZone() {}
+
+  // testcontroller:
+  public void setLauncherPower(double power) {
+    launcherIO.setPower(power);
+  }
+
+  public void setHoodPower(double power) {
+    hoodIO.setPower(power);
+  }
+
+  public void setTurretPower(double power) {
+    turretIO.setPower(power);
   }
 }

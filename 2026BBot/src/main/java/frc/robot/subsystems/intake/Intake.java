@@ -11,9 +11,9 @@ public class Intake extends SubsystemBase {
   // declare motors
 
   // io declaration
-  IntakeIOPhoenix io = new IntakeIOPhoenix();
+  private final IntakeIOPhoenix io = new IntakeIOPhoenix();
 
-  public enum WantedState {
+  public enum IntakeWantedState {
     IDLE,
     INTAKE,
     VOMIT,
@@ -26,10 +26,10 @@ public class Intake extends SubsystemBase {
   }
 
   private CurrentState currentState = CurrentState.IDLING;
-  private WantedState wantedState = WantedState.IDLE;
+  private IntakeWantedState wantedState = IntakeWantedState.IDLE;
 
   /** Creates a new Intake. */
-  public Intake() {}
+  public Intake(IntakeIOPhoenix io) {}
 
   @Override
   public void periodic() {
@@ -54,28 +54,38 @@ public class Intake extends SubsystemBase {
   }
 
   private void applyStates() {
-    double intakePower = 0;
 
     switch (currentState) {
       case IDLING:
+        stopIntake();
         break;
 
       case INTAKING:
-        intakePower = 0;
+        runIntake();
         break;
 
       case VOMITING:
-        intakePower = 0;
+        vomit();
         break;
 
       default:
         break;
     }
-
-    io.setPower(intakePower);
   }
 
-  public void setWantedState(WantedState wantedState) {
+  public void setWantedState(IntakeWantedState wantedState) {
     this.wantedState = wantedState;
+  }
+
+  public void runIntake() {
+    io.setPower(IntakeConstants.intakeSpeed);
+  }
+
+  public void stopIntake() {
+    io.setPower(0);
+  }
+
+  public void vomit() {
+    io.setPower(IntakeConstants.vomitSpeed);
   }
 }

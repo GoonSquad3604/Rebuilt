@@ -2,6 +2,8 @@ package frc.robot.subsystems.shooter;
 
 public final class ShooterConstants {
 
+  public static final double loopPeriodSecs = 0.02;
+
   public static final class HoodConstants {
 
     public static final int hoodID = 0;

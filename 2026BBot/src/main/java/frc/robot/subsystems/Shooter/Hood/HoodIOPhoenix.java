@@ -4,11 +4,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
@@ -22,9 +22,9 @@ import frc.robot.util.PhoenixUtil;
 public class HoodIOPhoenix implements HoodIO {
 
   // motor
-  private final TalonFX hoodMotor;
+  private final TalonFXS hoodMotor;
   private final PositionVoltage hoodRequest;
-  private final TalonFXConfiguration hoodMotorConfig;
+  private final TalonFXSConfiguration hoodMotorConfig;
 
   // encoder
   private final CANcoder hoodEncoder;
@@ -40,7 +40,7 @@ public class HoodIOPhoenix implements HoodIO {
 
   public HoodIOPhoenix() {
 
-    hoodMotor = new TalonFX(ShooterConstants.HoodConstants.hoodID);
+    hoodMotor = new TalonFXS(ShooterConstants.HoodConstants.hoodID);
     hoodRequest = new PositionVoltage(0);
 
     hoodEncoder = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID);
@@ -48,13 +48,15 @@ public class HoodIOPhoenix implements HoodIO {
 
     hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
 
-    hoodMotorConfig = new TalonFXConfiguration();
+    hoodMotorConfig = new TalonFXSConfiguration();
 
     hoodMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
-    hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    hoodMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
+        ShooterConstants.HoodConstants.hoodEncoderID;
+    hoodMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
+        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     hoodMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     hoodMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
     hoodMotorConfig.Slot0 =

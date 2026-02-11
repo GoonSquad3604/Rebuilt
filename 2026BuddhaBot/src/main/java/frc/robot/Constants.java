@@ -15,6 +15,7 @@ package frc.robot;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = Mode.REAL; // RobotBase.isReal() ? Mode.REAL : simMode;
+  public static final String autoChooserName = "SmartDashboard/Auto/Programs";
 
   public static enum Mode {
     /** Running on a real robot. */

@@ -4,20 +4,29 @@
 
 package frc.robot.subsystems.indexer;
 
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+
 /** Add your docs here. */
-public class IndexerIOPhoenix implements IndexerIO {
-  public IndexerIOPhoenix() {
+public class IndexerIORev implements IndexerIO {
+
+  private final Spark indexMotor;
+
+  public IndexerIORev() {
+    indexMotor = new Spark(IndexerConstants.indexID);
+
     boolean indexMotorIsConnected = false;
-    boolean indexToShootMotorIsConnected = false;
 
-    double indexMotorVoltage;
-    double indexToShootMotorVoltage;
+    double indexVoltage;
 
-    double indexMotorCurrent;
-    double indexToShootMotorCurrent;
+    double indexPower;
 
-    double indexMotorTemperature;
-    double indexToShootMotorTemperature;
+    double indexCurrent;
+
+    double indexTemperature;
+  }
+
+  public void updateInputs(IndexerIOInputs inputs) {
+    inputs.indexVoltage = indexMotor.getVoltage();
   }
 
   @Override
@@ -25,7 +34,4 @@ public class IndexerIOPhoenix implements IndexerIO {
 
   @Override
   public void setIndexMotorVoltage(double volts) {}
-
-  @Override
-  public void setIndexToShootMotorVoltage(double volts) {}
 }
