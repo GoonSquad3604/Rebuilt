@@ -5,13 +5,14 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
-  // declare motors
+  private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
 
   // io declaration
-  private final IntakeIOPhoenix io = new IntakeIOPhoenix();
+  private final IntakeIOPhoenix io;
 
   public enum IntakeWantedState {
     IDLE,
@@ -29,10 +30,13 @@ public class Intake extends SubsystemBase {
   private IntakeWantedState wantedState = IntakeWantedState.IDLE;
 
   /** Creates a new Intake. */
-  public Intake(IntakeIOPhoenix io) {}
+  public Intake(IntakeIOPhoenix io) {
+    this.io = io;
+  }
 
   @Override
   public void periodic() {
+    Logger.processInputs("Subsystems/Intake", intakeInputs);
 
     // use states to do stuff
     currentState = handleStateTransitions();
@@ -77,15 +81,13 @@ public class Intake extends SubsystemBase {
     this.wantedState = wantedState;
   }
 
-  public void runIntake() {
-    io.setPower(IntakeConstants.intakeSpeed);
-  }
+  private void vomit() {}
 
-  public void stopIntake() {
-    io.setPower(0);
-  }
+  private void runIntake() {}
 
-  public void vomit() {
-    io.setPower(IntakeConstants.vomitSpeed);
+  private void stopIntake() {}
+
+  public void setPower(double power) {
+    io.setPower(power);
   }
 }

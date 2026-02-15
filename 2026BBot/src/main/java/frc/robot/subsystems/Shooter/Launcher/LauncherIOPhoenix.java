@@ -5,14 +5,15 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -22,6 +23,7 @@ public class LauncherIOPhoenix implements LauncherIO {
   private final TalonFX launcherMotor;
   private final TalonFXConfiguration launcherMotorConfig;
   private final VelocityVoltage launcherRequest;
+  private final VoltageOut voltageRequest = new VoltageOut(0);
 
   // status signals
   private final StatusSignal<AngularVelocity> velocity;
@@ -31,18 +33,16 @@ public class LauncherIOPhoenix implements LauncherIO {
   private final StatusSignal<Temperature> tempCelsius;
 
   public LauncherIOPhoenix() {
-    launcherMotor = new TalonFX(ShooterConstants.LauncherConstants.launcherID);
+
+    launcherMotor =
+        new TalonFX(ShooterConstants.LauncherConstants.launcherID, Constants.CANBusName);
     launcherMotorConfig = new TalonFXConfiguration();
     launcherRequest = new VelocityVoltage(0).withSlot(0);
 
     launcherMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    launcherMotorConfig.Feedback.FeedbackRemoteSensorID =
-        ShooterConstants.LauncherConstants.launcherEncoderID;
-    launcherMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    launcherMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    launcherMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
+    launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
+    launcherMotorConfig.CurrentLimits.StatorCurrentLimit = 100;
     launcherMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.LauncherConstants.launcherP)
@@ -70,6 +70,7 @@ public class LauncherIOPhoenix implements LauncherIO {
     slot0Configs.kD = ShooterConstants.LauncherConstants.launcherD;
     slot0Configs.kS = ShooterConstants.LauncherConstants.launcherS;
     slot0Configs.kV = ShooterConstants.LauncherConstants.launcherV;
+    slot0Configs.kA = ShooterConstants.LauncherConstants.launcherA;
 
     launcherMotor.getConfigurator().apply(slot0Configs);
   }
@@ -79,8 +80,9 @@ public class LauncherIOPhoenix implements LauncherIO {
     inputs.motorConnected = launcherMotor.isConnected();
     inputs.voltage = launcherMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = launcherMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.RPM = launcherMotor.getVelocity().getValueAsDouble() * 60;
+    inputs.velocity = launcherMotor.getVelocity().getValueAsDouble();
     inputs.temperature = launcherMotor.getDeviceTemp().getValueAsDouble();
+    inputs.position = launcherMotor.getPosition().getValueAsDouble();
   }
 
   @Override
@@ -89,8 +91,13 @@ public class LauncherIOPhoenix implements LauncherIO {
   }
 
   @Override
-  public void setRPM(double RPM) {
-    launcherMotor.setControl(launcherRequest.withVelocity(RPM / 60));
+  public void setLauncherOpenLoop(double output) {
+    launcherMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  @Override
+  public void setVelocity(double velocity) {
+    launcherMotor.setControl(launcherRequest.withVelocity(velocity));
   }
 
   @Override

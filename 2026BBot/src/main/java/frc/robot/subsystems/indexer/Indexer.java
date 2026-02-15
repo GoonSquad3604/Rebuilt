@@ -91,4 +91,12 @@ public class Indexer extends SubsystemBase {
   private void vommiting() {
     io.setIndexPower(-0.5);
   }
+
+  public void setPower(double power) {
+    io.setIndexPower(power);
+  }
+
+  public void setRPM(double RPM) {
+    io.setIndexRPM(RPM);
+  }
 }

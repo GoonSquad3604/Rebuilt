@@ -4,20 +4,23 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface LauncherIO {
 
-  default void updateInputs(LauncherIOInputs inputs) {}
-
   @AutoLog
-  class LauncherIOInputs {
+  public static class LauncherIOInputs {
     public boolean motorConnected = false;
     public double voltage;
     public double current;
-    public double RPM;
+    public double velocity;
     public double temperature;
+    public double position;
   }
+
+  default void updateInputs(LauncherIOInputs inputs) {}
+
+  default void setLauncherOpenLoop(double output) {}
 
   default void setPower(double power) {}
 
-  default void setRPM(double RPM) {}
+  default void setVelocity(double velocity) {}
 
   default void setVoltage(double volts) {}
 }

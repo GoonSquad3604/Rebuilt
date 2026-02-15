@@ -9,7 +9,6 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
@@ -17,6 +16,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 public class IntakeIOPhoenix implements IntakeIO {
@@ -29,8 +29,8 @@ public class IntakeIOPhoenix implements IntakeIO {
   // logging
   public boolean intakeMotorConnected;
 
-  TalonFX intakeMotor;
-  TalonFXConfiguration intakeMotorConfig;
+  private TalonFX intakeMotor;
+  private TalonFXConfiguration intakeMotorConfig;
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -42,14 +42,11 @@ public class IntakeIOPhoenix implements IntakeIO {
 
   public IntakeIOPhoenix() {
     intakeMotorConfig = new TalonFXConfiguration();
-    intakeMotor = new TalonFX(IntakeConstants.intakeMotorID);
+    intakeMotor = new TalonFX(IntakeConstants.intakeMotorID, Constants.CANBusName);
 
     intakeMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     intakeMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     intakeMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    intakeMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    intakeMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    intakeMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
     intakeMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(IntakeConstants.intakeP)
@@ -98,11 +95,11 @@ public class IntakeIOPhoenix implements IntakeIO {
   }
 
   // intaking functions
-  void setVoltage(double voltage) {
+  public void setVoltage(double voltage) {
     intakeMotor.setVoltage(voltage);
   }
 
-  void setPower(double power) {
+  public void setPower(double power) {
     intakeMotor.set(power);
   }
 }

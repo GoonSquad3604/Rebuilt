@@ -2,20 +2,19 @@ package frc.robot.subsystems.shooter.turret;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -27,8 +26,8 @@ public class TurretIOPhoenix implements TurretIO {
   private final TalonFXSConfiguration turretMotorConfig;
 
   // encoder
-  private final CANcoder turretEncoder;
-  private final CANcoderConfiguration turretEncoderConfig;
+  // private final CANcoder turretEncoder;
+  // private final CANcoderConfiguration turretEncoderConfig;
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -40,25 +39,25 @@ public class TurretIOPhoenix implements TurretIO {
 
   public TurretIOPhoenix() {
 
-    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID);
+    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID, Constants.CANBusName);
     turretRequest = new PositionVoltage(0);
 
-    turretEncoder = new CANcoder(ShooterConstants.TurretConstants.turretEncoderID);
-    turretEncoderConfig = new CANcoderConfiguration();
+    // turretEncoder =
+    //     new CANcoder(ShooterConstants.TurretConstants.turretEncoderID, Constants.CANBusName);
+    // turretEncoderConfig = new CANcoderConfiguration();
 
-    turretEncoder.getConfigurator().apply(turretEncoderConfig);
+    // turretEncoder.getConfigurator().apply(turretEncoderConfig);
 
     turretMotorConfig = new TalonFXSConfiguration();
 
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
-        ShooterConstants.TurretConstants.turretEncoderID;
-    turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
-        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
-    turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
+    turretMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+    // turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
+    //     ShooterConstants.TurretConstants.turretEncoderID;
+    // turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
+    //     ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     turretMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.TurretConstants.turretP)
@@ -101,12 +100,12 @@ public class TurretIOPhoenix implements TurretIO {
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     inputs.motorConnected = turretMotor.isConnected();
-    inputs.encoderConnected = turretEncoder.isConnected();
+    // inputs.encoderConnected = turretEncoder.isConnected();
     inputs.voltage = turretMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = turretMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = turretEncoder.getVelocity().getValueAsDouble();
+    // inputs.velocity = turretEncoder.getVelocity().getValueAsDouble();
     inputs.temperature = turretMotor.getDeviceTemp().getValueAsDouble();
-    inputs.position = turretEncoder.getAbsolutePosition().getValueAsDouble();
+    // inputs.position = turretEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override

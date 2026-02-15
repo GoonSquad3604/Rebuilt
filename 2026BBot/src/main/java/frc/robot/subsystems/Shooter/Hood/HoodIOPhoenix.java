@@ -2,20 +2,19 @@ package frc.robot.subsystems.shooter.hood;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -27,8 +26,8 @@ public class HoodIOPhoenix implements HoodIO {
   private final TalonFXSConfiguration hoodMotorConfig;
 
   // encoder
-  private final CANcoder hoodEncoder;
-  private final CANcoderConfiguration hoodEncoderConfig;
+  // private final CANcoder hoodEncoder;
+  // private final CANcoderConfiguration hoodEncoderConfig;
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -40,25 +39,25 @@ public class HoodIOPhoenix implements HoodIO {
 
   public HoodIOPhoenix() {
 
-    hoodMotor = new TalonFXS(ShooterConstants.HoodConstants.hoodID);
+    hoodMotor = new TalonFXS(ShooterConstants.HoodConstants.hoodID, Constants.CANBusName);
     hoodRequest = new PositionVoltage(0);
 
-    hoodEncoder = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID);
-    hoodEncoderConfig = new CANcoderConfiguration();
+    // hoodEncoder = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID,
+    // Constants.CANBusName);
+    // hoodEncoderConfig = new CANcoderConfiguration();
 
-    hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
+    // hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
 
     hoodMotorConfig = new TalonFXSConfiguration();
 
-    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    hoodMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
-        ShooterConstants.HoodConstants.hoodEncoderID;
-    hoodMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
-        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
-    hoodMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    hoodMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
+    hoodMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+    // hoodMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
+    //     ShooterConstants.HoodConstants.hoodEncoderID;
+    // hoodMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
+    //     ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     hoodMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.HoodConstants.hoodP)
@@ -101,12 +100,12 @@ public class HoodIOPhoenix implements HoodIO {
   @Override
   public void updateInputs(HoodIOInputs inputs) {
     inputs.motorConnected = hoodMotor.isConnected();
-    inputs.encoderConnected = hoodEncoder.isConnected();
+    // inputs.encoderConnected = hoodEncoder.isConnected();
     inputs.voltage = hoodMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hoodMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = hoodEncoder.getVelocity().getValueAsDouble();
+    // inputs.velocity = hoodEncoder.getVelocity().getValueAsDouble();
     inputs.temperature = hoodMotor.getDeviceTemp().getValueAsDouble();
-    inputs.position = hoodEncoder.getAbsolutePosition().getValueAsDouble();
+    // inputs.position = hoodEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override

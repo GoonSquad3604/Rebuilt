@@ -1,8 +1,14 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
+import frc.robot.subsystems.shooter.kicker.KickerIO;
+import frc.robot.subsystems.shooter.kicker.KickerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.turret.TurretIO;
@@ -15,32 +21,34 @@ public class Shooter extends SubsystemBase {
   private final HoodIO hoodIO;
   private final LauncherIO launcherIO;
   private final TurretIO turretIO;
+  private final KickerIO kickerIO;
+
+  private final SysIdRoutine launcherSysId;
+  private final SysIdRoutine kickerSysId;
 
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
   private final LauncherIOInputsAutoLogged launcherInputs = new LauncherIOInputsAutoLogged();
   private final TurretIOInputsAutoLogged turretInputs = new TurretIOInputsAutoLogged();
+  private final KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
 
   @AutoLogOutput private double wantedHoodAngle;
-  @AutoLogOutput private double wantedLauncherRPM;
+  @AutoLogOutput private double wantedLauncherVelocity;
   @AutoLogOutput private double wantedTurretAngle;
+  @AutoLogOutput private double wantedKickerVelocity;
 
   public enum ShooterWantedState {
     IDLE,
 
     /* MANUAL SHOOTING */
-    TARGET_FORWARD,
     SHOOT_FORWARD,
 
     /* HUB TRACKING */
-    TARGET_HUB,
     SHOOT_HUB,
 
     /* ALLIANCE ZONE PASSING */
-    TARGET_ZONE,
     SHOOT_ZONE,
 
     /* CORRAL PASSING */
-    TARGET_CORRAL,
     SHOOT_CORRAL,
   }
 
@@ -69,33 +77,64 @@ public class Shooter extends SubsystemBase {
   private CurrentState currentState = CurrentState.IDLING;
 
   /** Creates a new Shooter. */
-  public Shooter(HoodIO hoodIO, LauncherIO launcherIO, TurretIO turretIO) {
+  public Shooter(HoodIO hoodIO, LauncherIO launcherIO, TurretIO turretIO, KickerIO kickerIO) {
     this.hoodIO = hoodIO;
     this.launcherIO = launcherIO;
     this.turretIO = turretIO;
+    this.kickerIO = kickerIO;
+    launcherSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput(
+                        "Subsystems/Shooter/Launcher/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> launcherIO.setLauncherOpenLoop(voltage.in(Volts)), null, this));
+
+    kickerSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> kickerIO.setKickerOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
   public void periodic() {
-    // synchronized (hoodInputs) {
-    //   synchronized (launcherInputs) {
-    //     synchronized (turretInputs) {
-    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
-    Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
-    Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
-    currentState = handleStateTransitions();
+    synchronized (hoodInputs) {
+      synchronized (launcherInputs) {
+        synchronized (turretInputs) {
+          synchronized (kickerInputs) {
+            hoodIO.updateInputs(hoodInputs);
+            launcherIO.updateInputs(launcherInputs);
+            turretIO.updateInputs(turretInputs);
+            kickerIO.updateInputs(kickerInputs);
+            Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+            Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
+            Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
+            Logger.processInputs("Subsystems/Shooter/Kicker", kickerInputs);
 
-    Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
-    Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-    Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
+            currentState = handleStateTransitions();
 
-    applyStates();
+            Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
+            Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
+            Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
 
-    previousWantedState = this.wantedState;
-    // }
-    //     }
-    //   }
+            // applyStates();
+
+            previousWantedState = this.wantedState;
+          }
+        }
+      }
+    }
   }
 
   public CurrentState handleStateTransitions() {
@@ -148,7 +187,7 @@ public class Shooter extends SubsystemBase {
     }
 
     hoodIO.setAngle(wantedHoodAngle);
-    launcherIO.setRPM(wantedLauncherRPM);
+    launcherIO.setVelocity(wantedLauncherVelocity);
     turretIO.setAngle(wantedTurretAngle);
   }
 
@@ -156,7 +195,7 @@ public class Shooter extends SubsystemBase {
     // synchronized (hoodInputs) {
     //   synchronized (launcherInputs) {
     //     synchronized (turretInputs) {
-    return false; // replace with logic for at setpoints
+    return false; // replace with logic for at setpoints to run kicker
     //     }
     //   }
     // }
@@ -189,8 +228,38 @@ public class Shooter extends SubsystemBase {
   private void revZone() {}
 
   // testcontroller:
+  public Command launcherSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> launcherIO.setLauncherOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(launcherSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command launcherSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> launcherIO.setLauncherOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(launcherSysId.dynamic(direction));
+  }
+
+  public Command kickerSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> kickerIO.setKickerOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(kickerSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command kickerSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> kickerIO.setKickerOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(kickerSysId.dynamic(direction));
+  }
+
   public void setLauncherPower(double power) {
     launcherIO.setPower(power);
+  }
+
+  public void setLauncherVelocity(double velocity) {
+    launcherIO.setVelocity(velocity);
   }
 
   public void setHoodPower(double power) {
@@ -199,5 +268,13 @@ public class Shooter extends SubsystemBase {
 
   public void setTurretPower(double power) {
     turretIO.setPower(power);
+  }
+
+  public void setKickerPower(double power) {
+    kickerIO.setPower(power);
+  }
+
+  public void setKickerVelocity(double velocity) {
+    kickerIO.setVelocity(velocity);
   }
 }

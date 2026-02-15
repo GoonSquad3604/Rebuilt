@@ -4,34 +4,56 @@
 
 package frc.robot.subsystems.indexer;
 
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 /** Add your docs here. */
 public class IndexerIORev implements IndexerIO {
 
-  private final Spark indexMotor;
+  private final SparkMax indexMotor;
+  private SparkClosedLoopController PIDController;
+
+  private SparkFlexConfig config;
 
   public IndexerIORev() {
-    indexMotor = new Spark(IndexerConstants.indexID);
+    indexMotor = new SparkMax(IndexerConstants.indexID, MotorType.kBrushless);
 
-    boolean indexMotorIsConnected = false;
+    PIDController = indexMotor.getClosedLoopController();
+    config = new SparkFlexConfig();
+    config
+        .closedLoop
+        .p(IndexerConstants.indexP)
+        .i(IndexerConstants.indexI)
+        .d(IndexerConstants.indexD)
+        .outputRange(-.7, .7);
 
-    double indexVoltage;
-
-    double indexPower;
-
-    double indexCurrent;
-
-    double indexTemperature;
+    // Set PID gains
+    config.closedLoop.feedForward.kS(IndexerConstants.indexS).kV(IndexerConstants.indexV);
   }
 
   public void updateInputs(IndexerIOInputs inputs) {
-    inputs.indexVoltage = indexMotor.getVoltage();
+    inputs.indexVoltage = indexMotor.getBusVoltage();
+    inputs.indexCurrent = indexMotor.getOutputCurrent();
+    inputs.indexTemperature = indexMotor.getMotorTemperature();
+    inputs.indexRPM = indexMotor.getEncoder().getVelocity();
   }
 
   @Override
-  public void setIndexPower(double power) {}
+  public void setIndexPower(double power) {
+    indexMotor.set(power);
+  }
 
   @Override
-  public void setIndexMotorVoltage(double volts) {}
+  public void setIndexRPM(double RPM) {
+    PIDController.setSetpoint(RPM, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+  }
+
+  @Override
+  public void setIndexMotorVoltage(double volts) {
+    indexMotor.setVoltage(volts);
+  }
 }

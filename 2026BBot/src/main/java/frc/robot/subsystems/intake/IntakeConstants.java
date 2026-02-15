@@ -6,9 +6,9 @@ package frc.robot.subsystems.intake;
 
 public class IntakeConstants {
   // intake motor constants
-  public static final double intakeSpeed = 0;
-  public static final double vomitSpeed = 0;
-  public static final int intakeMotorID = 0;
+  public static final double intakeSpeed = .3;
+  public static final double vomitSpeed = .3;
+  public static final int intakeMotorID = 12;
 
   public static final double intakeP = 0;
   public static final double intakeI = 0;
