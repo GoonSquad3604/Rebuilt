@@ -12,7 +12,8 @@ public interface IntakeIO {
     public double intakeMotorVoltage;
     public double intakeMotorCurrent;
     public double intakeMotorTemp;
-
+    public double intakeMotorVelocity;
+    public double intakeMotorPosition;
     // logging
     public boolean intakeMotorConnected;
   }
@@ -23,4 +24,6 @@ public interface IntakeIO {
   default void setPower(double power) {}
 
   default void updateInputs(IntakeIOInputs inputs) {}
+
+  default void setOpenLoop(double output) {}
 }

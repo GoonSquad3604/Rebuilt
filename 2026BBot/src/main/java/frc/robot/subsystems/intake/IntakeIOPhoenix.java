@@ -8,6 +8,8 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -30,6 +32,8 @@ public class IntakeIOPhoenix implements IntakeIO {
   public boolean intakeMotorConnected;
 
   private TalonFX intakeMotor;
+  private VelocityVoltage intakeRequest;
+  private final VoltageOut voltageRequest = new VoltageOut(0);
   private TalonFXConfiguration intakeMotorConfig;
 
   // status signals
@@ -43,6 +47,7 @@ public class IntakeIOPhoenix implements IntakeIO {
   public IntakeIOPhoenix() {
     intakeMotorConfig = new TalonFXConfiguration();
     intakeMotor = new TalonFX(IntakeConstants.intakeMotorID, Constants.CANBusName);
+    intakeRequest = new VelocityVoltage(0).withSlot(0);
 
     intakeMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     intakeMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -92,6 +97,8 @@ public class IntakeIOPhoenix implements IntakeIO {
     inputs.intakeMotorVoltage = intakeMotor.getMotorVoltage().getValueAsDouble();
     inputs.intakeMotorCurrent = intakeMotor.getSupplyCurrent().getValueAsDouble();
     inputs.intakeMotorTemp = intakeMotor.getDeviceTemp().getValueAsDouble();
+    inputs.intakeMotorVelocity = intakeMotor.getVelocity().getValueAsDouble();
+    inputs.intakeMotorPosition = intakeMotor.getPosition().getValueAsDouble();
   }
 
   // intaking functions
@@ -101,5 +108,14 @@ public class IntakeIOPhoenix implements IntakeIO {
 
   public void setPower(double power) {
     intakeMotor.set(power);
+  }
+
+  @Override
+  public void setOpenLoop(double output) {
+    intakeMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  public void setVelocity(double velocity) {
+    intakeMotor.setControl(intakeRequest.withVelocity(velocity));
   }
 }

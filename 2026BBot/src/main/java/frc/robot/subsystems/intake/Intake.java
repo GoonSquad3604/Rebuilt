@@ -4,7 +4,11 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -13,6 +17,7 @@ public class Intake extends SubsystemBase {
 
   // io declaration
   private final IntakeIOPhoenix io;
+  private final SysIdRoutine intakeSysId;
 
   public enum IntakeWantedState {
     IDLE,
@@ -32,6 +37,15 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake(IntakeIOPhoenix io) {
     this.io = io;
+
+    intakeSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Subsystems/Intake/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism((voltage) -> io.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -89,5 +103,20 @@ public class Intake extends SubsystemBase {
 
   public void setPower(double power) {
     io.setPower(power);
+  }
+
+  public void setVelocity(double velocity) {
+    io.setVelocity(velocity);
+  }
+
+  public Command intakeSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(intakeSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command intakeSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setOpenLoop(0.0)).withTimeout(1.0).andThen(intakeSysId.dynamic(direction));
   }
 }

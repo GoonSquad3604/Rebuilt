@@ -108,7 +108,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     synchronized (hoodInputs) {
       synchronized (launcherInputs) {
         synchronized (turretInputs) {
@@ -266,8 +265,16 @@ public class Shooter extends SubsystemBase {
     hoodIO.setPower(power);
   }
 
+  public void setHoodPos(double position) {
+    hoodIO.setPosition(position);
+  }
+
   public void setTurretPower(double power) {
     turretIO.setPower(power);
+  }
+
+  public void setTurretPos(double position) {
+    turretIO.setPosition(position);
   }
 
   public void setKickerPower(double power) {

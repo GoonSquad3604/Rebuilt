@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.indexer;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -33,6 +35,8 @@ public class IndexerIORev implements IndexerIO {
 
     // Set PID gains
     config.closedLoop.feedForward.kS(IndexerConstants.indexS).kV(IndexerConstants.indexV);
+
+    indexMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void updateInputs(IndexerIOInputs inputs) {

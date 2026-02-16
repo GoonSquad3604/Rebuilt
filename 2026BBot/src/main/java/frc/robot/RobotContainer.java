@@ -205,6 +205,18 @@ public class RobotContainer {
     autoChooser.addOption(
         "Kicker SysId (Dynamic Reverse)",
         shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake SysId (Quasistatic Forward)",
+        intake.intakeSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake SysId (Quasistatic Reverse)",
+        intake.intakeSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake SysId (Dynamic Forward)",
+        intake.intakeSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake SysId (Dynamic Reverse)",
+        intake.intakeSysIdDynamic(SysIdRoutine.Direction.kReverse));
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -247,7 +259,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     // test controller
-    testController2.leftBumper().onTrue(Commands.runOnce(() -> intake.setPower(0.5)));
+    testController2.leftBumper().onTrue(Commands.runOnce(() -> intake.setVelocity(60)));
     testController2.leftBumper().onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
 
     testController2.rightBumper().onTrue(Commands.runOnce(() -> intake.setPower(-0.5)));
@@ -259,10 +271,10 @@ public class RobotContainer {
     testController2.y().onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(60)));
     testController2.y().onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
 
-    testController2.rightTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.05)));
+    testController2.rightTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.15)));
     testController2.rightTrigger().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController2.leftTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.05)));
+    testController2.leftTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.15)));
     testController2.leftTrigger().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
     testController2.povUp().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
@@ -270,6 +282,12 @@ public class RobotContainer {
 
     testController2.povDown().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
     testController2.povDown().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    testController2.a().onTrue(Commands.runOnce(() -> shooter.setTurretPos(0.6)));
+    testController2.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    testController2.x().onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.5)));
+    testController2.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
     // // moves LowRung climber out
     // testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerLowRung(.2)));
