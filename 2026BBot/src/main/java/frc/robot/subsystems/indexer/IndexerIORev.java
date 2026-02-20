@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import frc.robot.subsystems.shooter.ShooterConstants;
 
 /** Add your docs here. */
 public class IndexerIORev implements IndexerIO {
@@ -34,7 +35,12 @@ public class IndexerIORev implements IndexerIO {
         .outputRange(-.7, .7);
 
     // Set PID gains
-    config.closedLoop.feedForward.kS(IndexerConstants.indexS).kV(IndexerConstants.indexV);
+    config
+        .closedLoop
+        .feedForward
+        .kS(IndexerConstants.indexS)
+        .kV(IndexerConstants.indexV)
+        .kA(ShooterConstants.KickerConstants.kickerA);
 
     indexMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
@@ -44,6 +50,7 @@ public class IndexerIORev implements IndexerIO {
     inputs.indexCurrent = indexMotor.getOutputCurrent();
     inputs.indexTemperature = indexMotor.getMotorTemperature();
     inputs.indexRPM = indexMotor.getEncoder().getVelocity();
+    inputs.indexPosition = indexMotor.getEncoder().getPosition();
   }
 
   @Override

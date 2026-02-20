@@ -54,7 +54,7 @@ public class Intake extends SubsystemBase {
 
     // use states to do stuff
     currentState = handleStateTransitions();
-    applyStates();
+    // applyStates();
   }
 
   private CurrentState handleStateTransitions() {

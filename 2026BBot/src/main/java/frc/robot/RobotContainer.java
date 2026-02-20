@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -26,12 +27,18 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIORev;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
 import frc.robot.subsystems.shooter.kicker.KickerIORev;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -43,17 +50,18 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  //   private final Vision vision;
+  private final Vision vision;
   //   private final Climber climber;
-  //   private final Indexer indexer;
+  private final Indexer indexer;
   private final Intake intake;
   private final Shooter shooter;
   //   private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
-  private final CommandXboxController testController = new CommandXboxController(2);
-  private final CommandXboxController testController2 = new CommandXboxController(3);
+  //   private final CommandXboxController testController = new CommandXboxController(2);
+  //   private final CommandXboxController testController2 = new CommandXboxController(3);
+  private final CommandJoystick pitBox = new CommandJoystick(2);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -73,13 +81,15 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
 
-        // vision =
-        //     new Vision(
-        //         drive::addVisionMeasurement,
-        //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
-        //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1),
+                new VisionIOPhotonVision(camera2Name, robotToCamera2),
+                new VisionIOPhotonVision(camera3Name, robotToCamera3));
         // climber = new Climber(new ClimberIOPhoenix());
-        // indexer = new Indexer(new IndexerIORev());
+        indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
         shooter =
             new Shooter(
@@ -118,13 +128,15 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
-        // vision =
-        //     new Vision(
-        //         drive::addVisionMeasurement,
-        //         new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-        //         new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
         // climber = new Climber(new ClimberIOPhoenix());
-        // indexer = new Indexer(new IndexerIORev());
+        indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
         shooter =
             new Shooter(
@@ -147,9 +159,9 @@ public class RobotContainer {
 
         // Replayed robot, disable IO implementations
         // (Use same number of dummy implementations as the real robot)
-        // vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         // climber = new Climber(new ClimberIOPhoenix());
-        // indexer = new Indexer(new IndexerIORev());
+        indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
         shooter =
             new Shooter(
@@ -193,18 +205,18 @@ public class RobotContainer {
     //     "Launcher SysId (Dynamic Reverse)",
     //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    autoChooser.addOption(
-        "Kicker SysId (Quasistatic Forward)",
-        shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Kicker SysId (Quasistatic Reverse)",
-        shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Kicker SysId (Dynamic Forward)",
-        shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Kicker SysId (Dynamic Reverse)",
-        shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Forward)",
+    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Reverse)",
+    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Forward)",
+    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Reverse)",
+    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
         "Intake SysId (Quasistatic Forward)",
         intake.intakeSysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -244,6 +256,13 @@ public class RobotContainer {
             DriveCommands.joystickDriveAtClosest45(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
+    // rotate to nearest 180° when right bumper is held
+    driverController
+        .rightBumper()
+        .whileTrue(
+            DriveCommands.joystickDriveAtClosest180(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -258,36 +277,60 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // test controller
-    testController2.leftBumper().onTrue(Commands.runOnce(() -> intake.setVelocity(60)));
-    testController2.leftBumper().onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+    // test box
+    pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
+    pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController2.rightBumper().onTrue(Commands.runOnce(() -> intake.setPower(-0.5)));
-    testController2.rightBumper().onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+    pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.8)));
+    pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController2.b().onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(2500)));
-    testController2.b().onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
+    pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
+    pitBox.button(3).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController2.y().onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(60)));
-    testController2.y().onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+    pitBox.button(4).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
+    pitBox.button(4).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController2.rightTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.15)));
-    testController2.rightTrigger().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    pitBox.button(5).onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
+    pitBox.button(5).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController2.leftTrigger().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.15)));
-    testController2.leftTrigger().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    pitBox.button(6).onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
+    pitBox.button(6).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController2.povUp().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
-    testController2.povUp().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    pitBox.button(7).onTrue(Commands.run(() -> shooter.setTurretPos(0.0)));
+    pitBox.button(7).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController2.povDown().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
-    testController2.povDown().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // pitBox.button(8).onTrue(Commands.runOnce(() -> shooter.trackHub()));
+    pitBox
+        .button(8)
+        .onTrue(
+            Commands.run(() -> shooter.trackPoint())
+                .until(pitBox.button(8).negate())
+                .andThen(Commands.runOnce(() -> shooter.setTurretPower(0.0))));
+    // pitBox.button(8).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController2.a().onTrue(Commands.runOnce(() -> shooter.setTurretPos(0.6)));
-    testController2.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    pitBox.button(9).onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(60)));
 
-    testController2.x().onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.5)));
-    testController2.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    pitBox.button(10).onTrue(Commands.runOnce(() -> intake.setPower(0.4)));
+    pitBox.button(10).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+
+    pitBox
+        .button(11)
+        .onTrue(
+            Commands.runOnce(() -> indexer.setPower(0.8))
+                .alongWith(Commands.runOnce(() -> intake.setPower(-.5))));
+
+    pitBox.button(11).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
+    pitBox.button(11).onFalse(Commands.runOnce(() -> intake.setPower(0)));
+
+    pitBox.button(12).onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(5427.2)));
+    pitBox.button(12).onTrue(Commands.runOnce(() -> indexer.setPower(-0.8)));
+
+    pitBox.button(12).onTrue(Commands.runOnce(() -> intake.setPower(0.6)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+
+    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
 
     // // moves LowRung climber out
     // testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerLowRung(.2)));

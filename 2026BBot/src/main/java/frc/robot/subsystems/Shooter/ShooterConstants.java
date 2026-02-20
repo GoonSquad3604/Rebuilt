@@ -1,8 +1,19 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.util.Units;
+
 public final class ShooterConstants {
 
   public static final double loopPeriodSecs = 0.02;
+
+  public static Transform2d robotToTurret =
+      new Transform2d(
+          Units.inchesToMeters(7.5),
+          Units.inchesToMeters(0.0),
+          // Units.inchesToMeters(36),
+          Rotation2d.kZero);
 
   public static final class HoodConstants {
 
@@ -34,11 +45,16 @@ public final class ShooterConstants {
     public static final int turretID = 11;
     public static final int turretEncoderID = 26;
 
-    public static final double turretP = 10;
+    public static final double turretP = 10.5;
     public static final double turretI = 0;
     public static final double turretD = 0;
-    public static final double turretS = 0;
+    public static final double turretS = 0.01;
     public static final double turretV = 0;
+
+    public static final double maxEncoderPos = 0.5;
+    public static final double minEncoderPos = 0.0;
+    public static final double maxAnglePos = 180;
+    public static final double minAnglePos = 0;
   }
 
   public static final class KickerConstants {

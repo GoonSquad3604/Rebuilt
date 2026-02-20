@@ -221,63 +221,60 @@ public class DriveCommands {
    * Angle the drive train to the closest 180 angle to go under the bump with our intake not facing
    * a wall
    */
-  // public static Command joystickDriveAtClosest180(
-  //     Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  public static Command joystickDriveAtClosest180(
+      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
-  //   // Create PID controller
-  //   ProfiledPIDController angleController =
-  //       new ProfiledPIDController(
-  //           ANGLE_KP,
-  //           0.0,
-  //           ANGLE_KD,
-  //           new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-  //   angleController.enableContinuousInput(-Math.PI, Math.PI);
+    //   // Create PID controller
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-  //   // Construct command
-  //   return Commands.run(
-  //           () -> {
-  //             // Get linear velocity
-  //             Translation2d linearVelocity =
-  //                 getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
-  // ySupplier.getAsDouble());
+    //   // Construct command
+    return Commands.run(
+            () -> {
+              // Get linear velocity
+              Translation2d linearVelocity =
+                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-  //             // calculate desired angle
-  //             Supplier<Rotation2d> rotationSupplier;
+              //             // calculate desired angle
+              Supplier<Rotation2d> rotationSupplier;
 
-  //             Rotation2d currentRotation = drive.getPose().getRotation();
+              Rotation2d currentRotation = drive.getPose().getRotation();
 
-  //             if (currentRotation.getDegrees() > -90) {
-  //               rotationSupplier = () -> Rotation2d.fromDegrees(0);
-  //             } else (currentRotation.getDegrees() > 0) {
-  //               rotationSupplier = () -> Rotation2d.fromDegrees(180);
-  //             }
+              if (currentRotation.getDegrees() > -90 && currentRotation.getDegrees() < 90) {
+                rotationSupplier = () -> Rotation2d.fromDegrees(0);
+              } else {
+                rotationSupplier = () -> Rotation2d.fromDegrees(180);
+              }
 
-  //             // Calculate angular speed
-  //             double omega =
-  //                 angleController.calculate(
-  //                     drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+              //             // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
 
-  //             // Convert to field relative speeds & send command
-  //             ChassisSpeeds speeds =
-  //                 new ChassisSpeeds(
-  //                     linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-  //                     linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-  //                     omega);
-  //             boolean isFlipped =
-  //                 DriverStation.getAlliance().isPresent()
-  //                     && DriverStation.getAlliance().get() == Alliance.Red;
-  //             drive.runVelocity(
-  //                 ChassisSpeeds.fromFieldRelativeSpeeds(
-  //                     speeds,
-  //                     isFlipped
-  //                         ? drive.getRotation().plus(new Rotation2d(Math.PI))
-  //                         : drive.getRotation()));
-  //           },
-  //           drive)
-
-  //       // Reset PID controller when command starts
-  //       .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
-  // }
+              //             // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega);
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            },
+            drive)
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
 
   /**
    * Measures the velocity feedforward constants for the drive motors.

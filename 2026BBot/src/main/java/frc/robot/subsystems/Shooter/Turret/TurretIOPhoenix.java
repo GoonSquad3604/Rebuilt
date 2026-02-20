@@ -53,7 +53,7 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = -.062;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = -.936;
     turretEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);

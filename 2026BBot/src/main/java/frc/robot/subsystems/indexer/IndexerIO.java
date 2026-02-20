@@ -18,6 +18,8 @@ public interface IndexerIO {
     public double indexCurrent;
 
     public double indexTemperature;
+
+    public double indexPosition;
   }
 
   public void setIndexPower(double power);
