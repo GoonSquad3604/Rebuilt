@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -10,12 +12,15 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -40,25 +45,30 @@ public class TurretIOPhoenix implements TurretIO {
 
   public TurretIOPhoenix() {
 
-    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID);
+    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID, Constants.CANBusName);
     turretRequest = new PositionVoltage(0);
 
-    turretEncoder = new CANcoder(ShooterConstants.TurretConstants.turretEncoderID);
+    turretEncoder =
+        new CANcoder(ShooterConstants.TurretConstants.turretEncoderID, Constants.CANBusName);
     turretEncoderConfig = new CANcoderConfiguration();
+
+    turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = -.936;
+    turretEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
 
     turretMotorConfig = new TalonFXSConfiguration();
 
+    turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    turretMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
     turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
         ShooterConstants.TurretConstants.turretEncoderID;
     turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
         ExternalFeedbackSensorSourceValue.RemoteCANcoder;
-    turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -0.5;
     turretMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.TurretConstants.turretP)
@@ -107,6 +117,8 @@ public class TurretIOPhoenix implements TurretIO {
     inputs.velocity = turretEncoder.getVelocity().getValueAsDouble();
     inputs.temperature = turretMotor.getDeviceTemp().getValueAsDouble();
     inputs.position = turretEncoder.getAbsolutePosition().getValueAsDouble();
+    inputs.angle = turretEncoder.getAbsolutePosition().getValue().in(Degrees);
+    inputs.motorPosition = turretMotor.getPosition().getValueAsDouble();
   }
 
   @Override

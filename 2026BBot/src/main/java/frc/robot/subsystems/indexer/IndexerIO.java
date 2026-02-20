@@ -9,18 +9,22 @@ public interface IndexerIO {
 
   @AutoLog
   class IndexerIOInputs {
-    public boolean indexMotorIsConnected = false;
+    // public boolean indexMotorIsConnected = false;
 
     public double indexVoltage;
 
-    public double indexPower;
+    public double indexRPM;
 
     public double indexCurrent;
 
     public double indexTemperature;
+
+    public double indexPosition;
   }
 
   public void setIndexPower(double power);
 
   public void setIndexMotorVoltage(double volts);
+
+  public void setIndexRPM(double RPM);
 }

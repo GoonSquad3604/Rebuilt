@@ -10,11 +10,23 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import frc.robot.util.AllianceFlipUtil;
 import java.util.*;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
   // Constants
+  public enum ShotTarget {
+    HUB,
+    LEFT_PASSING_POINT,
+    RIGHT_PASSING_POINT
+  }
+
+  @AutoLogOutput private ShotTarget target = ShotTarget.HUB;
+  // private static final double poseBufferSizeSec = 2.0;
+  private boolean override = false;
+
   private static final double poseBufferSizeSec = 2.0;
   private static final double turretAngleBufferSizeSec = 2.0;
   private static final Matrix<N3, N1> odometryStateStdDevs =
@@ -44,9 +56,9 @@ public class RobotState {
 
   private ChassisSpeeds robotVelocity = new ChassisSpeeds();
 
-  // MARK: - Initialization
-
   private static RobotState instance;
+
+  // MARK: - Initialization
 
   public static RobotState getInstance() {
     if (instance == null) instance = new RobotState();
@@ -92,6 +104,32 @@ public class RobotState {
   @AutoLogOutput
   public Optional<Rotation2d> getTurretAngle(double timestamp) {
     return turretAngleBuffer.getSample(timestamp);
+  }
+
+  public ShotTarget setTarget() {
+    // checks override
+    if (!override) {
+      // Target is the hub
+      if (FieldConstants.LeftBump.farRightCorner.getX()
+          > AllianceFlipUtil.apply(getPose()).getX()) {
+        target = ShotTarget.HUB;
+      }
+      // Target is left pass
+      else if (AllianceFlipUtil.apply(getPose()).getY() > FieldConstants.Hub.topCenterPoint.getY()
+          && FieldConstants.LeftBump.farRightCorner.getX()
+              < AllianceFlipUtil.apply(getPose()).getX()) {
+        target = ShotTarget.LEFT_PASSING_POINT;
+      } else {
+        target = ShotTarget.RIGHT_PASSING_POINT;
+      }
+    }
+
+    Logger.recordOutput("ShotTarget", target);
+    return target;
+  }
+
+  public ShotTarget getTarget() {
+    return target;
   }
 
   /** Adds a new odometry sample from the drive subsystem. */

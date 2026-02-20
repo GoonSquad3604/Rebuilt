@@ -16,13 +16,11 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -30,13 +28,11 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
 import frc.robot.subsystems.indexer.IndexerIORev;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeWantedState;
-import frc.robot.subsystems.intake.IntakeIOPhoenix;
-import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
+import frc.robot.subsystems.shooter.kicker.KickerIORev;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
@@ -55,15 +51,17 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
-  private final Climber climber;
+  //   private final Climber climber;
   private final Indexer indexer;
   private final Intake intake;
   private final Shooter shooter;
-  private final Superstructure superstructure;
+  //   private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
-  private final CommandXboxController testController = new CommandXboxController(2);
+  //   private final CommandXboxController testController = new CommandXboxController(2);
+  //   private final CommandXboxController testController2 = new CommandXboxController(3);
+  private final CommandJoystick pitBox = new CommandJoystick(2);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -87,12 +85,19 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        climber = new Climber(new ClimberIOPhoenix());
+                new VisionIOPhotonVision(camera1Name, robotToCamera1),
+                new VisionIOPhotonVision(camera2Name, robotToCamera2),
+                new VisionIOPhotonVision(camera3Name, robotToCamera3));
+        // climber = new Climber(new ClimberIOPhoenix());
         indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        shooter =
+            new Shooter(
+                new HoodIOPhoenix(),
+                new LauncherIOPhoenix(),
+                new TurretIOPhoenix(),
+                new KickerIORev());
+        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -127,12 +132,19 @@ public class RobotContainer {
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
-        climber = new Climber(new ClimberIOPhoenix());
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
+        // climber = new Climber(new ClimberIOPhoenix());
         indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        shooter =
+            new Shooter(
+                new HoodIOPhoenix(),
+                new LauncherIOPhoenix(),
+                new TurretIOPhoenix(),
+                new KickerIORev());
+        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
 
       default:
@@ -148,11 +160,16 @@ public class RobotContainer {
         // Replayed robot, disable IO implementations
         // (Use same number of dummy implementations as the real robot)
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
-        climber = new Climber(new ClimberIOPhoenix());
+        // climber = new Climber(new ClimberIOPhoenix());
         indexer = new Indexer(new IndexerIORev());
         intake = new Intake(new IntakeIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        shooter =
+            new Shooter(
+                new HoodIOPhoenix(),
+                new LauncherIOPhoenix(),
+                new TurretIOPhoenix(),
+                new KickerIORev());
+        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
     }
 
@@ -175,6 +192,43 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    // autoChooser.addOption(
+    //     "Launcher SysId (Quasistatic Forward)",
+    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Quasistatic Reverse)",
+    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Dynamic Forward)",
+    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Dynamic Reverse)",
+    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Forward)",
+    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Reverse)",
+    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Forward)",
+    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Reverse)",
+    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake SysId (Quasistatic Forward)",
+        intake.intakeSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake SysId (Quasistatic Reverse)",
+        intake.intakeSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Intake SysId (Dynamic Forward)",
+        intake.intakeSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Intake SysId (Dynamic Reverse)",
+        intake.intakeSysIdDynamic(SysIdRoutine.Direction.kReverse));
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -192,17 +246,22 @@ public class RobotContainer {
             drive,
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX()));
+            () -> -driverController.getRightX(),
+            () -> driverController.getLeftTriggerAxis() > 0.05));
 
-    // Lock to 0° when B button is held
+    // Lock to 45° when B button is held
     driverController
         .b()
         .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.kZero));
+            DriveCommands.joystickDriveAtClosest45(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+
+    // rotate to nearest 180° when right bumper is held
+    driverController
+        .rightBumper()
+        .whileTrue(
+            DriveCommands.joystickDriveAtClosest180(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -218,47 +277,76 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // test controller
-    testController
-        .leftBumper()
-        .onTrue(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.INDEX)));
-    testController
-        .leftBumper()
-        .onFalse(Commands.runOnce(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+    // test box
+    pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
+    pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController
-        .rightTrigger()
-        .onTrue(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.INTAKE)));
-    testController
-        .rightTrigger()
-        .onFalse(Commands.runOnce(() -> intake.setWantedState(IntakeWantedState.IDLE)));
+    pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.8)));
+    pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setLauncherPower(0.6)));
-    testController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+    pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
+    pitBox.button(3).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController.b().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.3)));
-    testController.b().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    pitBox.button(4).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
+    pitBox.button(4).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController.a().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.3)));
-    testController.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    pitBox.button(5).onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
+    pitBox.button(5).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.3)));
-    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    pitBox.button(6).onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
+    pitBox.button(6).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.3)));
-    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    pitBox.button(7).onTrue(Commands.run(() -> shooter.setTurretPos(0.0)));
+    pitBox.button(7).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController.povUp().onTrue(Commands.runOnce(() -> climber.moveLowRung()));
-    testController.povUp().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
+    // pitBox.button(8).onTrue(Commands.runOnce(() -> shooter.trackHub()));
+    pitBox
+        .button(8)
+        .onTrue(
+            Commands.run(() -> shooter.trackPoint())
+                .until(pitBox.button(8).negate())
+                .andThen(Commands.runOnce(() -> shooter.setTurretPower(0.0))));
+    // pitBox.button(8).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    testController.povDown().onTrue(Commands.runOnce(() -> climber.moveLowRungBack()));
-    testController.povDown().onFalse(Commands.runOnce(() -> climber.stopLowRung()));
+    pitBox.button(9).onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(60)));
 
-    testController.povRight().onTrue(Commands.runOnce(() -> climber.moveMidRung()));
-    testController.povRight().onFalse(Commands.runOnce(() -> climber.stopMidRung()));
+    pitBox.button(10).onTrue(Commands.runOnce(() -> intake.setPower(0.4)));
+    pitBox.button(10).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
 
-    testController.povLeft().onTrue(Commands.runOnce(() -> climber.moveMidRungBack()));
-    testController.povLeft().onFalse(Commands.runOnce(() -> climber.stopMidRung()));
+    pitBox
+        .button(11)
+        .onTrue(
+            Commands.runOnce(() -> indexer.setPower(0.8))
+                .alongWith(Commands.runOnce(() -> intake.setPower(-.5))));
+
+    pitBox.button(11).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
+    pitBox.button(11).onFalse(Commands.runOnce(() -> intake.setPower(0)));
+
+    pitBox.button(12).onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(5427.2)));
+    pitBox.button(12).onTrue(Commands.runOnce(() -> indexer.setPower(-0.8)));
+
+    pitBox.button(12).onTrue(Commands.runOnce(() -> intake.setPower(0.6)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+
+    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
+    pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
+
+    // // moves LowRung climber out
+    // testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerLowRung(.2)));
+    // testController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerLowRung(0)));
+
+    // // moves LowRung climber back
+    // testController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerLowRung(-.2)));
+    // testController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerLowRung(0)));
+
+    // // moves midRung climber out
+    // testController.povRight().onTrue(Commands.runOnce(() -> climber.setPowerMidRung(.2)));
+    // testController.povRight().onFalse(Commands.runOnce(() -> climber.setPowerMidRung(0)));
+
+    // // moves midRung climber back
+    // testController.povLeft().onTrue(Commands.runOnce(() -> climber.setPowerMidRung(-.2)));
+    // testController.povLeft().onFalse(Commands.runOnce(() -> climber.setPowerMidRung(0)));
   }
 
   /**

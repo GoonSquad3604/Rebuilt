@@ -4,14 +4,20 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
-  // declare motors
+  private final IntakeIOInputsAutoLogged intakeInputs = new IntakeIOInputsAutoLogged();
 
   // io declaration
-  private final IntakeIOPhoenix io = new IntakeIOPhoenix();
+  private final IntakeIOPhoenix io;
+  private final SysIdRoutine intakeSysId;
 
   public enum IntakeWantedState {
     IDLE,
@@ -29,14 +35,26 @@ public class Intake extends SubsystemBase {
   private IntakeWantedState wantedState = IntakeWantedState.IDLE;
 
   /** Creates a new Intake. */
-  public Intake(IntakeIOPhoenix io) {}
+  public Intake(IntakeIOPhoenix io) {
+    this.io = io;
+
+    intakeSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Subsystems/Intake/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism((voltage) -> io.setOpenLoop(voltage.in(Volts)), null, this));
+  }
 
   @Override
   public void periodic() {
+    Logger.processInputs("Subsystems/Intake", intakeInputs);
 
     // use states to do stuff
     currentState = handleStateTransitions();
-    applyStates();
+    // applyStates();
   }
 
   private CurrentState handleStateTransitions() {
@@ -77,15 +95,28 @@ public class Intake extends SubsystemBase {
     this.wantedState = wantedState;
   }
 
-  public void runIntake() {
-    io.setPower(IntakeConstants.intakeSpeed);
+  private void vomit() {}
+
+  private void runIntake() {}
+
+  private void stopIntake() {}
+
+  public void setPower(double power) {
+    io.setPower(power);
   }
 
-  public void stopIntake() {
-    io.setPower(0);
+  public void setVelocity(double velocity) {
+    io.setVelocity(velocity);
   }
 
-  public void vomit() {
-    io.setPower(IntakeConstants.vomitSpeed);
+  public Command intakeSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(intakeSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command intakeSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setOpenLoop(0.0)).withTimeout(1.0).andThen(intakeSysId.dynamic(direction));
   }
 }

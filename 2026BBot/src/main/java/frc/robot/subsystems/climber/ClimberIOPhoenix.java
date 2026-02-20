@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
@@ -22,10 +23,10 @@ public class ClimberIOPhoenix implements ClimberIO {
 
   public ClimberIOPhoenix() {
     // declared motor & configs
-    lowRungMotor = new TalonFX(ClimberConstants.lowRungMotorID);
-    midRungMotor = new TalonFX(ClimberConstants.midRungMotorID);
-    lowRungEncoder = new CANcoder(ClimberConstants.lowRungEncoderID);
-    midRungEncoder = new CANcoder(ClimberConstants.midRungEncoderID);
+    lowRungMotor = new TalonFX(ClimberConstants.lowRungMotorID, Constants.CANBusName);
+    midRungMotor = new TalonFX(ClimberConstants.midRungMotorID, Constants.CANBusName);
+    lowRungEncoder = new CANcoder(ClimberConstants.lowRungEncoderID, Constants.CANBusName);
+    midRungEncoder = new CANcoder(ClimberConstants.midRungEncoderID, Constants.CANBusName);
 
     lowRungConfig = new TalonFXConfiguration();
     midRungConfig = new TalonFXConfiguration();

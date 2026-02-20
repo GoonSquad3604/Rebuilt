@@ -15,6 +15,8 @@ public interface TurretIO {
     public double velocity;
     public double temperature;
     public double position;
+    public double angle;
+    public double motorPosition;
   }
 
   default void setPower(double power) {}

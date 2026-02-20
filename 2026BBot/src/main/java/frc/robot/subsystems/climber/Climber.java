@@ -25,14 +25,18 @@ public class Climber extends SubsystemBase {
 
   public enum CurrentState {
     IDLING,
+
     DEPLOYED,
     DEPLOYING,
+
     STOWING,
     STOWED,
+
     ON_GROUND,
     ON_LOW_RUNG,
     ON_MID_RUNG,
-    ON_HIGH_RUNG,
+    // ON_HIGH_RUNG,
+
     LOWERING_TO_GROUND,
     CLIMBING_TO_LOW_RUNG,
     CLIMBING_TO_MID_RUNG
@@ -67,12 +71,16 @@ public class Climber extends SubsystemBase {
 
       case DEPLOY:
         yield CurrentState.DEPLOYING;
+
       case STOWED:
         yield CurrentState.STOWING;
+
       case LOWER_TO_GROUND:
         yield CurrentState.LOWERING_TO_GROUND;
+
       case GO_TO_LOW_RUNG_FROM_GROUND:
         yield CurrentState.CLIMBING_TO_LOW_RUNG;
+
       case GO_TO_MID_RUNG_FROM_LOW_RUNG:
         yield CurrentState.CLIMBING_TO_MID_RUNG;
     };
@@ -104,6 +112,7 @@ public class Climber extends SubsystemBase {
       case CLIMBING_TO_MID_RUNG:
         climbMidRung();
         break;
+
       default:
         break;
     }
@@ -124,27 +133,11 @@ public class Climber extends SubsystemBase {
 
   private void climbMidRung() {}
 
-  public void moveLowRung() {
-    io.setPowerLowRung(0.3);
+  public void setPowerLowRung(double power) {
+    io.setPowerLowRung(power);
   }
 
-  public void moveLowRungBack() {
-    io.setPowerLowRung(-0.3);
-  }
-
-  public void moveMidRung() {
-    io.setPowerMidRung(0.3);
-  }
-
-  public void moveMidRungBack() {
-    io.setPowerLowRung(-0.3);
-  }
-
-  public void stopLowRung() {
-    io.setPowerLowRung(0);
-  }
-
-  public void stopMidRung() {
-    io.setPowerLowRung(0);
+  public void setPowerMidRung(double power) {
+    io.setPowerMidRung(power);
   }
 }

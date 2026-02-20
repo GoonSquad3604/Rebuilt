@@ -1,8 +1,26 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.shooter.kicker;
 
-/** Add your docs here. */
-public class KickerIO {}
+import org.littletonrobotics.junction.AutoLog;
+
+public interface KickerIO {
+
+  @AutoLog
+  public static class KickerIOInputs {
+    public boolean motorConnected = false;
+    public double voltage;
+    public double velocity;
+    public double current;
+    public double temperature;
+    public double position;
+  }
+
+  default void updateInputs(KickerIOInputs inputs) {}
+
+  default void setKickerOpenLoop(double output) {}
+
+  public void setPower(double power);
+
+  public void setVelocity(double velocity);
+
+  public void setVoltage(double volts);
+}

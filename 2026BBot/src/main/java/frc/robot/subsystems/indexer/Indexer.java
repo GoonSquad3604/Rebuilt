@@ -37,7 +37,7 @@ public class Indexer extends SubsystemBase {
     // Logger.processInputs("Subsystems/Indexer", inputs);
 
     currentState = handleStateTransition();
-    applyState();
+    // applyState();
     Logger.recordOutput("Subsystems/Indexer/SystemState", currentState);
     Logger.recordOutput("Subsystems/Indexer/WantedState", wantedState);
     // }
@@ -90,5 +90,13 @@ public class Indexer extends SubsystemBase {
 
   private void vommiting() {
     io.setIndexPower(-0.5);
+  }
+
+  public void setPower(double power) {
+    io.setIndexPower(power);
+  }
+
+  public void setRPM(double RPM) {
+    io.setIndexRPM(RPM);
   }
 }
