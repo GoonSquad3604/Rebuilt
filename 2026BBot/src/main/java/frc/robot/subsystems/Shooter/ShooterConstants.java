@@ -30,7 +30,6 @@ public final class ShooterConstants {
   public static final class LauncherConstants {
 
     public static final int launcherID = 9;
-    // public static final int launcherEncoderID = 0;
 
     public static final double launcherP = 0.061342;
     public static final double launcherI = 0;

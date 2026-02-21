@@ -18,7 +18,7 @@ import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
-import frc.robot.RobotState.ShotTarget;
+import frc.robot.RobotState.ShooterTarget;
 
 public class ShotCalculator {
   private static ShotCalculator instance;
@@ -28,7 +28,7 @@ public class ShotCalculator {
   private final LinearFilter hoodAngleFilter =
       LinearFilter.movingAverage((int) (0.1 / ShooterConstants.loopPeriodSecs));
 
-  private Rotation2d lastTurretAngle;
+  private double lastTurretAngle;
   private double lastHoodAngle;
   private double hoodAngle = Double.NaN;
   private double turretVelocity;
@@ -40,7 +40,8 @@ public class ShotCalculator {
     return instance;
   }
 
-  public record ShootingParameters(double turretAngle, double idealVelocity, double hoodPos) {}
+  public record ShootingParameters(
+      double turretAngle, double idealVelocity, double hoodPos, double turretVelocity) {}
 
   // Cache parameters
   private static ShootingParameters latestParameters = null;
@@ -90,14 +91,11 @@ public class ShotCalculator {
   }
 
   public ShootingParameters getParameters() {
-    // if (latestParameters != null) {
-    //   return latestParameters;
-    // }
     Translation2d pos;
-    if (RobotState.getInstance().getTarget() == ShotTarget.HUB) {
+    if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
       pos = FieldConstants.Hub.topCenterPoint.toTranslation2d();
-      hoodPos = 0.1;
-    } else if (RobotState.getInstance().getTarget() == ShotTarget.LEFT_PASSING_POINT) {
+      hoodPos = 0.0;
+    } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
       pos = new Translation2d(2.203, 6.125);
       hoodPos = 0.7;
     } else {
@@ -125,7 +123,6 @@ public class ShotCalculator {
     double distance = targetPosition.getNorm();
     // double idealSpeed = getShooterSpeedForDistance(distance);
     double idealVelocity = .5; // 60;
-
     Translation2d targetVector = targetPosition.div(distance).times(idealVelocity);
 
     Translation2d shotVector =
@@ -142,7 +139,12 @@ public class ShotCalculator {
       turretAngle += 360;
     }
 
-    latestParameters = new ShootingParameters(turretAngle, idealVelocity, hoodPos);
+    if (Double.isNaN(lastTurretAngle)) lastTurretAngle = turretAngle;
+    double turretVelocity =
+        turretAngleFilter.calculate(
+            (turretAngle - lastTurretAngle) / ShooterConstants.loopPeriodSecs);
+    lastTurretAngle = turretAngle;
+    latestParameters = new ShootingParameters(turretAngle, idealVelocity, hoodPos, turretVelocity);
 
     return latestParameters;
   }

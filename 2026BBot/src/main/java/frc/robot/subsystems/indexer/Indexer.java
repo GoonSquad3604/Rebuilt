@@ -33,14 +33,12 @@ public class Indexer extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // synchronized (inputs) {
     Logger.processInputs("Subsystems/Indexer", inputs);
 
     currentState = handleStateTransition();
     applyState();
-    Logger.recordOutput("Subsystems/Indexer/SystemState", currentState);
-    Logger.recordOutput("Subsystems/Indexer/WantedState", wantedState);
-    // }
+    Logger.recordOutput("Subsystems/Indexer/CurrentIndexerState", currentState);
+    Logger.recordOutput("Subsystems/Indexer/WantedIndexerState", wantedState);
   }
 
   private CurrentState handleStateTransition() {

@@ -6,8 +6,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.RobotState;
-import frc.robot.RobotState.ShotTarget;
 import frc.robot.subsystems.shooter.ShotCalculator.ShootingParameters;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -35,7 +33,6 @@ public class Shooter extends SubsystemBase {
   private final KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
 
   private ShootingParameters shootingParameters;
-  private ShotTarget target;
 
   private double wantedHoodAngle;
   private double wantedLauncherVelocity;
@@ -63,7 +60,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private ShooterWantedState wantedState = ShooterWantedState.IDLE;
-  private ShooterWantedState previousWantedState = ShooterWantedState.IDLE;
+  private CurrentState previousState = CurrentState.IDLING;
   private CurrentState currentState = CurrentState.IDLING;
 
   /** Creates a new Shooter. */
@@ -102,10 +99,12 @@ public class Shooter extends SubsystemBase {
       synchronized (launcherInputs) {
         synchronized (turretInputs) {
           synchronized (kickerInputs) {
+
             hoodIO.updateInputs(hoodInputs);
             launcherIO.updateInputs(launcherInputs);
             turretIO.updateInputs(turretInputs);
             kickerIO.updateInputs(kickerInputs);
+
             Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
             Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
             Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
@@ -115,20 +114,18 @@ public class Shooter extends SubsystemBase {
 
             Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
             Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
+            Logger.recordOutput("Subsystems/Shooter/PreviousWantedState", previousState);
+
             Logger.recordOutput("Subsystems/Shooter/TurretAtSetpoint", turretAtSetpoint);
             Logger.recordOutput("Subsystems/Shooter/HoodAtSetpoint", hoodAtSetpoint);
             Logger.recordOutput("Subsystems/Shooter/LauncherAtSetpoint", launcherAtSetpoint);
             Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
 
-            RobotState.getInstance().setTarget();
             shootingParameters = ShotCalculator.getInstance().getParameters();
             Logger.recordOutput(
                 "Subsystems/Shooter/WantedTurretAngle", shootingParameters.turretAngle());
-            Logger.recordOutput("Subsystems/Shooter/Target", RobotState.getInstance().getTarget());
-
+            Logger.recordOutput("Subsystems/Shooter/WantedTurretVelocity", shootingParameters.turretVelocity());
             applyStates();
-
-            previousWantedState = this.wantedState;
           }
         }
       }
@@ -136,6 +133,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public CurrentState handleStateTransitions() {
+    previousState = currentState;
+
     switch (wantedState) {
       case IDLE:
         return CurrentState.IDLING;

@@ -52,23 +52,19 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     Logger.processInputs("Subsystems/Intake", intakeInputs);
 
-    Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
-    Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
-
-    // use states to do stuff
     currentState = handleStateTransitions();
     applyStates();
+
+    Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
+    Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
   }
 
   private CurrentState handleStateTransitions() {
-
     return switch (wantedState) {
       case IDLE:
         yield CurrentState.IDLING;
-
       case INTAKE:
         yield CurrentState.INTAKING;
-
       case VOMIT:
         yield CurrentState.VOMITING;
     };
@@ -84,8 +80,6 @@ public class Intake extends SubsystemBase {
         break;
       case VOMITING:
         vomit();
-        break;
-      default:
         break;
     }
   }

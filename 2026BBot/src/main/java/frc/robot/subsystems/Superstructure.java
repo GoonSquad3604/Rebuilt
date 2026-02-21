@@ -23,14 +23,6 @@ public class Superstructure extends SubsystemBase {
   private final Indexer indexer;
   private final Shooter shooter;
   // private final Climber climber;
-  // private final LED led;
-
-  private enum TurretTarget {
-    HUB,
-    FORWARD,
-    ZONE,
-    CORRAL
-  }
 
   public enum WantedSuperState {
     STOPPED,
