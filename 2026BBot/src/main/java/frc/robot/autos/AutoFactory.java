@@ -29,7 +29,8 @@ public class AutoFactory {
     var initialPose = RobotState.getInstance().getPose();
     boolean isLeft = RobotState.getInstance().isLeftSide(initialPose);
     return Pair.of(initialPose, Commands.sequence(
-      // intake
+
+      // set intake
       robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
 
       // drive to neutral zone
@@ -65,22 +66,25 @@ public class AutoFactory {
         )
       ),
 
-      //wait for feed at corral
+      // wait for feed at corral
       Commands.waitSeconds(.5),
 
       // go to climb position
       runPath("CorralToClimb"),
       
+      // climb
       robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED) // replace with climb
     ));
   }
 
   public Pair<Pose2d, Command> createMiddleAuto() {
     var initialPose = RobotState.getInstance().getPose();
-    return Pair.of(initialPose, Commands.sequence());
+    return Pair.of(initialPose, Commands.sequence(
+      robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)
+    ));
   }
 
-  public Command runPath(String pathName) {
+  private Command runPath(String pathName) {
     try {
       PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
       return AutoBuilder.followPath(path);
