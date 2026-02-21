@@ -8,11 +8,14 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.RobotState.ShotTarget;
@@ -55,7 +58,7 @@ public class ShotCalculator {
   static {
     minDistance = 1.34;
     maxDistance = 5.60;
-    phaseDelay = 0.03;
+    phaseDelay = 0.02;
 
     shotHoodAngleMap.put(1.34, Rotation2d.fromDegrees(19.0));
     shotHoodAngleMap.put(1.78, Rotation2d.fromDegrees(19.0));
@@ -103,8 +106,17 @@ public class ShotCalculator {
     }
 
     Translation2d hubPos = FieldConstants.Hub.topCenterPoint.toTranslation2d();
-    Translation2d robotPos = RobotState.getInstance().getPose().getTranslation();
-    Translation2d turretPos = robotPos.plus(ShooterConstants.robotToTurret.getTranslation());
+    Pose2d robotPos = RobotState.getInstance().getPose();
+    Pose2d turretPos = robotPos.plus(ShooterConstants.robotToTurret);
+
+    ChassisSpeeds robotVelocity = RobotState.getInstance().getFieldVelocity();
+
+    robotPos =
+        robotPos.exp(
+            new Twist2d(
+                robotVelocity.vxMetersPerSecond * phaseDelay,
+                robotVelocity.vyMetersPerSecond * phaseDelay,
+                robotVelocity.omegaRadiansPerSecond * phaseDelay));
 
     double targetX = pos.getX() - turretPos.getX();
     double targetY = pos.getY() - turretPos.getY();
@@ -116,12 +128,9 @@ public class ShotCalculator {
 
     Translation2d targetVector = targetPosition.div(distance).times(idealVelocity);
 
-    Translation2d robotVelocity =
-        new Translation2d(
-            RobotState.getInstance().getFieldVelocity().vxMetersPerSecond,
-            RobotState.getInstance().getFieldVelocity().vyMetersPerSecond);
-
-    Translation2d shotVector = targetVector.minus(robotVelocity);
+    Translation2d shotVector =
+        targetVector.minus(
+            new Translation2d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond));
 
     double turretAngle =
         shotVector.getAngle().getDegrees()

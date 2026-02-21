@@ -21,6 +21,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.CurrentSuperState;
+import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -55,12 +58,13 @@ public class RobotContainer {
   private final Indexer indexer;
   private final Intake intake;
   private final Shooter shooter;
-  //   private final Superstructure superstructure;
+  private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   //   private final CommandXboxController testController = new CommandXboxController(2);
   //   private final CommandXboxController testController2 = new CommandXboxController(3);
+  private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
   private final CommandJoystick pitBox = new CommandJoystick(2);
 
   // Dashboard inputs
@@ -97,7 +101,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        superstructure = new Superstructure(drive, intake, indexer, shooter);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -144,7 +148,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        superstructure = new Superstructure(drive, intake, indexer, shooter);
         break;
 
       default:
@@ -169,7 +173,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        // superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
+        superstructure = new Superstructure(drive, intake, indexer, shooter);
         break;
     }
 
@@ -277,60 +281,75 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
+    // operator
+
+    driverController
+        .rightTrigger()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.INTAKE),
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.INTAKING));
+
+    operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    operatorButtonBox.button(11).onTrue(superstructure.setWantedState(WantedSuperState.VOMIT));
+    operatorButtonBox.button(12).onTrue(superstructure.setWantedState(WantedSuperState.SHOOT));
+
     // test box
-    pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
-    pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
+    // pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.8)));
-    pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.8)));
+    // pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
-    pitBox.button(3).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    // pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
+    // pitBox.button(3).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    pitBox.button(4).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
-    pitBox.button(4).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    // pitBox.button(4).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
+    // pitBox.button(4).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    pitBox.button(5).onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
-    pitBox.button(5).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // pitBox.button(5).onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
+    // pitBox.button(5).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    pitBox.button(6).onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
-    pitBox.button(6).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // pitBox.button(6).onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
+    // pitBox.button(6).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    pitBox.button(7).onTrue(Commands.run(() -> shooter.setTurretPos(0.0)));
-    pitBox.button(7).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    // pitBox.button(7).onTrue(Commands.run(() -> shooter.setTurretPos(0.0)));
+    // pitBox.button(7).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    // pitBox.button(8).onTrue(Commands.runOnce(() -> shooter.trackHub()));
-    pitBox
-        .button(8)
-        .onTrue(
-            Commands.run(() -> shooter.trackPoint())
-                .until(pitBox.button(8).negate())
-                .andThen(Commands.runOnce(() -> shooter.setTurretPower(0.0))));
-    // pitBox.button(8).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+    // // pitBox.button(8).onTrue(Commands.runOnce(() -> shooter.trackHub()));
+    // pitBox
+    //     .button(8)
+    //     .onTrue(
+    //         Commands.run(() -> shooter.trackPoint())
+    //             .until(pitBox.button(8).negate())
+    //             .andThen(Commands.runOnce(() -> shooter.setTurretPower(0.0))));
+    // // pitBox.button(8).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
 
-    pitBox.button(9).onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(60)));
+    // pitBox.button(9).onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(50)));
 
-    pitBox.button(10).onTrue(Commands.runOnce(() -> intake.setPower(0.4)));
-    pitBox.button(10).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+    // pitBox.button(10).onTrue(Commands.runOnce(() -> intake.setPower(0.4)));
+    // pitBox.button(10).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
 
-    pitBox
-        .button(11)
-        .onTrue(
-            Commands.runOnce(() -> indexer.setPower(0.8))
-                .alongWith(Commands.runOnce(() -> intake.setPower(-.5))));
+    // pitBox
+    //     .button(11)
+    //     .onTrue(
+    //         Commands.runOnce(() -> indexer.setPower(-0.8))
+    //             .alongWith(Commands.runOnce(() -> intake.setPower(-.5))));
 
-    pitBox.button(11).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
-    pitBox.button(11).onFalse(Commands.runOnce(() -> intake.setPower(0)));
+    // pitBox.button(11).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
+    // pitBox.button(11).onFalse(Commands.runOnce(() -> intake.setPower(0)));
 
-    pitBox.button(12).onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(5427.2)));
-    pitBox.button(12).onTrue(Commands.runOnce(() -> indexer.setPower(-0.8)));
+    // pitBox.button(12).onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(5427.2)));
+    // pitBox.button(12).onTrue(Commands.runOnce(() -> indexer.setPower(0.8)));
 
-    pitBox.button(12).onTrue(Commands.runOnce(() -> intake.setPower(0.6)));
-    pitBox.button(12).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
+    // pitBox.button(12).onTrue(Commands.runOnce(() -> intake.setPower(0.6)));
+    // pitBox.button(12).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
 
-    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
-    pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
-    pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
+    // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
+    // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
+    // pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
 
     // // moves LowRung climber out
     // testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerLowRung(.2)));

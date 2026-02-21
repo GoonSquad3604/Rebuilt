@@ -24,7 +24,6 @@ public class IndexerIORev implements IndexerIO {
 
   public IndexerIORev() {
     indexMotor = new SparkMax(IndexerConstants.indexID, MotorType.kBrushless);
-
     PIDController = indexMotor.getClosedLoopController();
     config = new SparkFlexConfig();
     config
@@ -33,6 +32,8 @@ public class IndexerIORev implements IndexerIO {
         .i(IndexerConstants.indexI)
         .d(IndexerConstants.indexD)
         .outputRange(-.7, .7);
+
+    config.inverted(true);
 
     // Set PID gains
     config

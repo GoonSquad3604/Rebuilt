@@ -23,4 +23,8 @@ public interface LauncherIO {
   default void setVelocity(double velocity) {}
 
   default void setVoltage(double volts) {}
+
+  default double getVelocity() {
+    return 0;
+  }
 }
