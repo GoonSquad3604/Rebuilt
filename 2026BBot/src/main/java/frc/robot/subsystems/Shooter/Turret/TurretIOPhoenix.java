@@ -140,7 +140,7 @@ public class TurretIOPhoenix implements TurretIO {
   public double getPosition() {
     return turretMotor.getPosition().getValueAsDouble();
   }
-
+  //my favorite angle is 210 -lucas
   @Override
   public double getAngle() {
     return turretEncoder.getAbsolutePosition().getValue().in(Degrees);
