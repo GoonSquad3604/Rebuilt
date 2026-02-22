@@ -30,7 +30,6 @@ public final class ShooterConstants {
   public static final class LauncherConstants {
 
     public static final int launcherID = 9;
-    // public static final int launcherEncoderID = 0;
 
     public static final double launcherP = 0.061342;
     public static final double launcherI = 0;
@@ -45,10 +44,10 @@ public final class ShooterConstants {
     public static final int turretID = 11;
     public static final int turretEncoderID = 26;
 
-    public static final double turretP = 10.5;
+    public static final double turretP = 12;
     public static final double turretI = 0;
     public static final double turretD = 0;
-    public static final double turretS = 0.01;
+    public static final double turretS = 0;
     public static final double turretV = 0;
 
     public static final double maxEncoderPos = 0.5;

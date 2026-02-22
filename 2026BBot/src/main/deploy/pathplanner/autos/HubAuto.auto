@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "HubStartToDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ThroughDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ThroughDepotToCorral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CorralToClimb"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

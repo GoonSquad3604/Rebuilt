@@ -23,8 +23,8 @@ public class ClimberIOPhoenix implements ClimberIO {
 
   public ClimberIOPhoenix() {
     // declared motor & configs
-    lowRungMotor = new TalonFX(ClimberConstants.lowRungMotorID, Constants.CANBusName);
-    midRungMotor = new TalonFX(ClimberConstants.midRungMotorID, Constants.CANBusName);
+    lowRungMotor = new TalonFX(ClimberConstants.climberHook1MotorID, Constants.CANBusName);
+    midRungMotor = new TalonFX(ClimberConstants.climberHook2MotorID, Constants.CANBusName);
     lowRungEncoder = new CANcoder(ClimberConstants.lowRungEncoderID, Constants.CANBusName);
     midRungEncoder = new CANcoder(ClimberConstants.midRungEncoderID, Constants.CANBusName);
 

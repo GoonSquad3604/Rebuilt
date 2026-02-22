@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightStartToNeutralZone"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightNeutralZoneToCorral"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightCorralToNeutralZone"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RightNeutralZoneToClimb"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

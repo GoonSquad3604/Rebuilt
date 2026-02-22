@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.indexer;
 
 import com.revrobotics.PersistMode;
@@ -24,7 +20,6 @@ public class IndexerIORev implements IndexerIO {
 
   public IndexerIORev() {
     indexMotor = new SparkMax(IndexerConstants.indexID, MotorType.kBrushless);
-
     PIDController = indexMotor.getClosedLoopController();
     config = new SparkFlexConfig();
     config
@@ -33,6 +28,8 @@ public class IndexerIORev implements IndexerIO {
         .i(IndexerConstants.indexI)
         .d(IndexerConstants.indexD)
         .outputRange(-.7, .7);
+
+    config.inverted(true);
 
     // Set PID gains
     config

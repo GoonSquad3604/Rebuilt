@@ -106,6 +106,7 @@ public class IntakeIOPhoenix implements IntakeIO {
     intakeMotor.setVoltage(voltage);
   }
 
+  @Override
   public void setPower(double power) {
     intakeMotor.set(power);
   }

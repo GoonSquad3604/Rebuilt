@@ -91,6 +91,11 @@ public class LauncherIOPhoenix implements LauncherIO {
   }
 
   @Override
+  public double getVelocity() {
+    return launcherMotor.getVelocity().getValueAsDouble();
+  }
+
+  @Override
   public void setLauncherOpenLoop(double output) {
     launcherMotor.setControl(voltageRequest.withOutput(output));
   }

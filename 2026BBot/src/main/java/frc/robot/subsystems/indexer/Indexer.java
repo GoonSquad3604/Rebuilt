@@ -33,14 +33,12 @@ public class Indexer extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // synchronized (inputs) {
-    // Logger.processInputs("Subsystems/Indexer", inputs);
+    Logger.processInputs("Subsystems/Indexer", inputs);
 
     currentState = handleStateTransition();
-    // applyState();
-    Logger.recordOutput("Subsystems/Indexer/SystemState", currentState);
-    Logger.recordOutput("Subsystems/Indexer/WantedState", wantedState);
-    // }
+    applyState();
+    Logger.recordOutput("Subsystems/Indexer/CurrentIndexerState", currentState);
+    Logger.recordOutput("Subsystems/Indexer/WantedIndexerState", wantedState);
   }
 
   private CurrentState handleStateTransition() {
@@ -61,7 +59,6 @@ public class Indexer extends SubsystemBase {
   }
 
   private void applyState() {
-    double indexMotorVoltage = 0.0;
     switch (currentState) {
       case IDLING:
         stopped();
@@ -70,10 +67,9 @@ public class Indexer extends SubsystemBase {
         indexing();
         break;
       case VOMITING:
-        vommiting();
+        vomiting();
         break;
     }
-    io.setIndexMotorVoltage(indexMotorVoltage);
   }
 
   public void setWantedState(IndexerWantedState wantedState) {
@@ -85,10 +81,10 @@ public class Indexer extends SubsystemBase {
   }
 
   private void indexing() {
-    io.setIndexPower(0.5);
+    io.setIndexPower(0.7);
   }
 
-  private void vommiting() {
+  private void vomiting() {
     io.setIndexPower(-0.5);
   }
 

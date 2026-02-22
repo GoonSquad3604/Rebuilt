@@ -140,10 +140,10 @@ public class TurretIOPhoenix implements TurretIO {
   public double getPosition() {
     return turretMotor.getPosition().getValueAsDouble();
   }
-
+  // my favorite angle is 210 -lucas
   @Override
   public double getAngle() {
-    return convertRotationsToAngle(turretMotor.getPosition().getValueAsDouble());
+    return turretEncoder.getAbsolutePosition().getValue().in(Degrees);
   }
 
   @Override
@@ -152,10 +152,12 @@ public class TurretIOPhoenix implements TurretIO {
   }
 
   private double convertAngleToRotations(double angle) {
-    return 0.0;
-  }
-
-  private double convertRotationsToAngle(double rotations) {
-    return 0.0;
+    double newValue = angle / 360;
+    if (newValue > ShooterConstants.TurretConstants.maxEncoderPos) {
+      newValue = ShooterConstants.TurretConstants.maxEncoderPos;
+    } else if (newValue < ShooterConstants.TurretConstants.minEncoderPos) {
+      newValue = ShooterConstants.TurretConstants.minEncoderPos;
+    }
+    return newValue;
   }
 }
