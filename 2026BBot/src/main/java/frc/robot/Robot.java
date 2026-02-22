@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.autos.AutoChooser;
-
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -46,6 +45,7 @@ public class Robot extends LoggedRobot {
           default -> "Unknown";
         });
 
+
     // Set up data receivers & replay source
     switch (Constants.currentMode) {
       case REAL:
@@ -75,7 +75,7 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
 
-        autoChooser = AutoChooser.create(robotContainer);
+    autoChooser = AutoChooser.create(robotContainer);
     Shuffleboard.getTab("Autonomous")
         .add("Auto Program", autoChooser)
         .withSize(6, 3)

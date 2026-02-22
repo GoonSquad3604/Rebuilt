@@ -58,7 +58,7 @@ public class Climber extends SubsystemBase {
     Logger.recordOutput("Subsystems/Climber/CurrentClimberState", wantedState);
 
     currentState = handleStateTransitions();
-    applyStates();
+    // applyStates();
   }
 
   public void setWantedState(ClimberWantedState wantedState) {

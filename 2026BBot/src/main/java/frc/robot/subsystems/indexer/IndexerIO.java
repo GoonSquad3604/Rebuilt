@@ -9,7 +9,7 @@ public interface IndexerIO {
 
   @AutoLog
   class IndexerIOInputs {
-    
+
     public double indexVoltage;
 
     public double indexRPM;

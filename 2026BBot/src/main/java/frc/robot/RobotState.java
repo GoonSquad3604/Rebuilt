@@ -34,7 +34,6 @@ public class RobotState {
   private static final Matrix<N3, N1> odometryStateStdDevs =
       new Matrix<>(VecBuilder.fill(0.003, 0.003, 0.002));
 
-
   // Pose estimation fields
   private Pose2d odometryPose = Pose2d.kZero;
   private Pose2d estimatedPose = Pose2d.kZero;
@@ -76,9 +75,21 @@ public class RobotState {
   }
 
   public boolean isLeftSide(Pose2d pose) {
-    return AllianceFlipUtil.apply(pose).getY() > FieldConstants.Hub.topCenterPoint.getY()
-      ? true
-      : false;
+    if (AllianceFlipUtil.shouldFlip()) {
+      return pose.getY() < FieldConstants.Hub.topCenterPoint.getY();
+    } else {
+      return pose.getY() > FieldConstants.Hub.topCenterPoint.getY();
+    }
+  }
+
+  public boolean isInMiddle(Pose2d pose) {
+    if (AllianceFlipUtil.shouldFlip()) {
+      return pose.getY() < FieldConstants.Hub.leftFace.getY()
+          && pose.getY() > FieldConstants.Hub.rightFace.getY();
+    } else {
+      return pose.getY() > FieldConstants.Hub.leftFace.getY()
+          && pose.getY() < FieldConstants.Hub.rightFace.getY();
+    }
   }
 
   /** Get the rotation of the estimated pose. */
@@ -108,13 +119,13 @@ public class RobotState {
     if (!override) {
       // Target is the hub
       if (FieldConstants.LeftBump.farRightCorner.getX()
-            > AllianceFlipUtil.apply(getPose()).getX()) {
+          > AllianceFlipUtil.apply(getPose()).getX()) {
 
         target = ShooterTarget.HUB;
 
       } else if (AllianceFlipUtil.apply(getPose()).getY() > FieldConstants.Hub.topCenterPoint.getY()
-            && FieldConstants.LeftBump.farRightCorner.getX()
-            < AllianceFlipUtil.apply(getPose()).getX()) {
+          && FieldConstants.LeftBump.farRightCorner.getX()
+              < AllianceFlipUtil.apply(getPose()).getX()) {
 
         // Target is left pass
         target = ShooterTarget.LEFT_PASS;
@@ -141,8 +152,6 @@ public class RobotState {
   public Command toggleManualShooting() {
     return Commands.runOnce(() -> override = !override);
   }
-
-
 
   /** Adds a new odometry sample from the drive subsystem. */
   // public void addOdometryObservation(OdometryObservation observation) {
@@ -177,7 +186,8 @@ public class RobotState {
   // public void addVisionObservation(VisionObservation observation) {
   //   // If measurement is old enough to be outside the pose buffer's timespan, skip.
   //   try {
-  //     if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > observation.timestamp()) {
+  //     if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > observation.timestamp())
+  // {
   //       return;
   //     }
   //   } catch (NoSuchElementException ex) {

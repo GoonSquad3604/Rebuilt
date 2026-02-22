@@ -67,7 +67,7 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   //   private final CommandXboxController testController = new CommandXboxController(2);
   private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
-//   private final CommandJoystick pitBox = new CommandJoystick(2);
+  //   private final CommandJoystick pitBox = new CommandJoystick(2);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -286,17 +286,17 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // driverController.povRight().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.2)));
-    // driverController.povRight().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    driverController.povRight().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.2)));
+    driverController.povRight().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
 
-    // driverController.povLeft().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.2)));
-    // driverController.povLeft().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    driverController.povLeft().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.2)));
+    driverController.povLeft().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
 
-    // driverController.povUp().onTrue(Commands.runOnce(() -> climber.setHook2Power(0.2)));
-    // driverController.povUp().onFalse(Commands.runOnce(() -> climber.setHook2Power(0.0)));
+    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setHook2Power(0.2)));
+    driverController.povUp().onFalse(Commands.runOnce(() -> climber.setHook2Power(0.0)));
 
-    // driverController.povDown().onTrue(Commands.runOnce(() -> climber.setHook2Power(-0.2)));
-    // driverController.povDown().onFalse(Commands.runOnce(() -> climber.setHook2Power(0.0)));
+    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setHook2Power(-0.2)));
+    driverController.povDown().onFalse(Commands.runOnce(() -> climber.setHook2Power(0.0)));
 
     driverController
         .rightTrigger()
@@ -310,11 +310,16 @@ public class RobotContainer {
 
     // manual target
     operatorButtonBox.button(2).onTrue(RobotState.getInstance().toggleManualShooting());
-    operatorButtonBox.button(3).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
-    operatorButtonBox.button(4).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
+    operatorButtonBox
+        .button(3)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
+    operatorButtonBox
+        .button(4)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
     operatorButtonBox.button(5).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
-    operatorButtonBox.button(6).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
-
+    operatorButtonBox
+        .button(6)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
 
     operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
 
