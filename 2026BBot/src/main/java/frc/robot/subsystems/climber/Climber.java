@@ -13,6 +13,16 @@ public class Climber extends SubsystemBase {
 
   private Pose2d wantedClimbPose;
 
+  private double wantedClimb1Power;
+  private double previousClimb1Power = 0;
+  private double wantedClimb2Power;
+  private double previousClimb2Power = 0;
+
+  private double wantedClimb1Pos;
+  private double previousClimb1Pos = 0;
+  private double wantedClimb2Pos;
+  private double previousClimb2Pos = 0;
+
   public enum ClimberWantedState {
     IDLE,
     STOWED,
@@ -47,6 +57,7 @@ public class Climber extends SubsystemBase {
 
   public Climber(ClimberIOPhoenix io) {
     this.io = io;
+    updatePreviousPositions();
   }
 
   @Override
@@ -125,8 +136,17 @@ public class Climber extends SubsystemBase {
   }
 
   private void stopped() {
-    io.setPowerLowRung(0);
-    io.setPowerMidRung(0);
+    wantedClimb1Power = 0;
+    wantedClimb2Power = 0;
+    if (wantedClimb1Power != previousClimb1Power) {
+      io.setPowerLowRung(wantedClimb1Power);
+      previousClimb1Power = wantedClimb1Power;
+    }
+
+    if (wantedClimb2Power != previousClimb2Power) {
+      io.setPowerMidRung(wantedClimb2Power);
+      previousClimb2Power = wantedClimb2Power;
+    }
   }
 
   private void deploy() {}
@@ -157,5 +177,10 @@ public class Climber extends SubsystemBase {
 
   public void setHook2Power(double power) {
     io.setPowerMidRung(power);
+  }
+
+  private void updatePreviousPositions() {
+    previousClimb1Pos = io.getPositionLowRung();
+    previousClimb2Pos = io.getPositionMidRung();
   }
 }

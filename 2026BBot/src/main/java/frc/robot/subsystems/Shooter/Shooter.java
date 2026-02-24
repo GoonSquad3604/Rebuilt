@@ -41,6 +41,8 @@ public class Shooter extends SubsystemBase {
 
   private double previousLauncherVelocity = 0;
   private double previousKickerVelocity = 0;
+  private double previousTurretAngle = 0;
+  private double previousHoodAngle = 0;
 
   private boolean turretAtSetpoint = false;
   private boolean hoodAtSetpoint = false;
@@ -99,10 +101,6 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // synchronized (hoodInputs) {
-    //   synchronized (launcherInputs) {
-    //     synchronized (turretInputs) {
-    //       synchronized (kickerInputs) {
     hoodIO.updateInputs(hoodInputs);
     launcherIO.updateInputs(launcherInputs);
     turretIO.updateInputs(turretInputs);
@@ -130,10 +128,6 @@ public class Shooter extends SubsystemBase {
     //     "Subsystems/Shooter/WantedTurretVelocity", shootingParameters.turretVelocity());
     applyStates();
   }
-  //       }
-  //     }
-  //   }
-  // }
 
   public CurrentState handleStateTransitions() {
     previousState = currentState;
@@ -199,50 +193,97 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shootForward() {
-    wantedTurretAngle = 0;
-    turretIO.setPosition(wantedTurretAngle);
-    wantedHoodAngle = 0.0;
-    hoodIO.setPosition(wantedHoodAngle);
     wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
+    wantedKickerVelocity = 5427.2;
+    wantedTurretAngle = 0;
+    wantedHoodAngle = 0.0;
+
+    if (wantedTurretAngle != previousTurretAngle) {
+      turretIO.setAngle(wantedTurretAngle);
+      previousTurretAngle = wantedTurretAngle;
+    }
+
+    if (wantedHoodAngle != previousHoodAngle) {
+      hoodIO.setPosition(shootingParameters.hoodPos());
+      previousHoodAngle = wantedHoodAngle;
+    }
+
+    if (wantedLauncherVelocity != previousLauncherVelocity) {
       launcherIO.setVelocity(wantedLauncherVelocity);
       previousLauncherVelocity = wantedLauncherVelocity;
     }
-    kickerIO.setVelocity(5427.2);
+
+    if (wantedKickerVelocity != previousKickerVelocity) {
+      kickerIO.setVelocity(5427.2);
+      previousKickerVelocity = wantedKickerVelocity;
+    }
   }
 
   private void shoot() {
-    turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPos());
     wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
+    wantedKickerVelocity = 5427.2;
+    wantedTurretAngle = shootingParameters.turretAngle();
+    wantedHoodAngle = shootingParameters.hoodPos();
+
+    if (wantedTurretAngle != previousTurretAngle) {
+      turretIO.setAngle(wantedTurretAngle);
+      previousTurretAngle = wantedTurretAngle;
+    }
+
+    if (wantedHoodAngle != previousHoodAngle) {
+      hoodIO.setPosition(shootingParameters.hoodPos());
+      previousHoodAngle = wantedHoodAngle;
+    }
+
+    if (wantedLauncherVelocity != previousLauncherVelocity) {
       launcherIO.setVelocity(wantedLauncherVelocity);
       previousLauncherVelocity = wantedLauncherVelocity;
     }
-    wantedKickerVelocity = 5427.2;
-    if(wantedKickerVelocity != previousKickerVelocity){
+
+    if (wantedKickerVelocity != previousKickerVelocity) {
       kickerIO.setVelocity(5427.2);
       previousKickerVelocity = wantedKickerVelocity;
     }
   }
 
   private void rev() {
-    turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPos());
     wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
+    wantedTurretAngle = shootingParameters.turretAngle();
+    wantedHoodAngle = shootingParameters.hoodPos();
+
+    if (wantedTurretAngle != previousTurretAngle) {
+      turretIO.setAngle(wantedTurretAngle);
+      previousTurretAngle = wantedTurretAngle;
+    }
+
+    if (wantedHoodAngle != previousHoodAngle) {
+      hoodIO.setPosition(shootingParameters.hoodPos());
+      previousHoodAngle = wantedHoodAngle;
+    }
+
+    if (wantedLauncherVelocity != previousLauncherVelocity) {
       launcherIO.setVelocity(wantedLauncherVelocity);
       previousLauncherVelocity = wantedLauncherVelocity;
     }
   }
 
   private void revForward() {
-    turretIO.setAngle(0);
-    hoodIO.setPosition(shootingParameters.hoodPos());
     wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
+    wantedHoodAngle = 0;
+    wantedTurretAngle = 0;
+    if (wantedLauncherVelocity != previousLauncherVelocity) {
       launcherIO.setVelocity(wantedLauncherVelocity);
       previousLauncherVelocity = wantedLauncherVelocity;
+    }
+
+    if (wantedHoodAngle != previousHoodAngle) {
+      hoodIO.setPosition(wantedHoodAngle);
+      previousHoodAngle = wantedHoodAngle;
+    }
+
+    if (wantedTurretAngle != previousTurretAngle) {
+      turretIO.setAngle(wantedTurretAngle);
+      previousTurretAngle = wantedTurretAngle;
     }
   }
 

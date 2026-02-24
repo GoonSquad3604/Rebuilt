@@ -39,7 +39,7 @@ public class ClimberIOPhoenix implements ClimberIO {
 
     // configs for both motors
     lowRungConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
-    lowRungConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // placeholder
+    lowRungConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // placeholder
     lowRungConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
     lowRungConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
     lowRungConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder

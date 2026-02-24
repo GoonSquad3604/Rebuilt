@@ -19,6 +19,9 @@ public class Intake extends SubsystemBase {
   private final IntakeIOPhoenix io;
   private final SysIdRoutine intakeSysId;
 
+  private double wantedPower;
+  private double previousPower = 0;
+
   public enum IntakeWantedState {
     IDLE,
     INTAKE,
@@ -89,15 +92,27 @@ public class Intake extends SubsystemBase {
   }
 
   private void vomit() {
-    io.setPower(-.5);
+    wantedPower = -0.5;
+    if (wantedPower != previousPower) {
+      io.setPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   private void runIntake() {
-    io.setPower(.5);
+    wantedPower = 0.5;
+    if (wantedPower != previousPower) {
+      io.setPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   private void stopIntake() {
-    io.setPower(0);
+    wantedPower = 0;
+    if (wantedPower != previousPower) {
+      io.setPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   public void setPower(double power) {
