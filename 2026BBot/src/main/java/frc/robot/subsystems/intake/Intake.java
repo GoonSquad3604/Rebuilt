@@ -53,13 +53,17 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    io.updateInputs(intakeInputs);
     Logger.processInputs("Subsystems/Intake", intakeInputs);
 
-    currentState = handleStateTransitions();
-    applyStates();
+    CurrentState newState = handleStateTransitions();
+    if (newState != currentState) {
+      currentState = newState;
+      Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
+      applyStates();
+    }
 
     Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
-    Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
   }
 
   private CurrentState handleStateTransitions() {
@@ -92,27 +96,15 @@ public class Intake extends SubsystemBase {
   }
 
   private void vomit() {
-    wantedPower = -0.5;
-    if (wantedPower != previousPower) {
-      io.setPower(wantedPower);
-      previousPower = wantedPower;
-    }
+    io.setPower(-0.4);
   }
 
   private void runIntake() {
-    wantedPower = 0.5;
-    if (wantedPower != previousPower) {
-      io.setPower(wantedPower);
-      previousPower = wantedPower;
-    }
+    io.setPower(0.4);
   }
 
   private void stopIntake() {
-    wantedPower = 0;
-    if (wantedPower != previousPower) {
-      io.setPower(wantedPower);
-      previousPower = wantedPower;
-    }
+    io.setPower(0);
   }
 
   public void setPower(double power) {

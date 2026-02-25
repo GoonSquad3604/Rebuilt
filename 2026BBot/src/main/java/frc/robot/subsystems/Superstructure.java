@@ -30,9 +30,9 @@ public class Superstructure extends SubsystemBase {
     VOMIT,
     INTAKE_AND_SHOOT,
     SHOOT,
-    CLIMB,
-    CLIMB_AND_SHOOT,
-    DECLIMB
+    // CLIMB,
+    // CLIMB_AND_SHOOT,
+    // DECLIMB
   }
 
   public enum CurrentSuperState {
@@ -41,9 +41,9 @@ public class Superstructure extends SubsystemBase {
     VOMITING,
     INTAKING_AND_SHOOTING,
     SHOOTING,
-    CLIMBING,
-    CLIMBING_AND_SHOOTING,
-    DECLIMBING
+    // CLIMBING,
+    // CLIMBING_AND_SHOOTING,
+    // DECLIMBING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -81,38 +81,30 @@ public class Superstructure extends SubsystemBase {
   private CurrentSuperState handleStateTransitions() {
     previousSuperState = currentSuperState;
     switch (wantedSuperState) {
-      case CLIMB:
-        currentSuperState = CurrentSuperState.CLIMBING;
-        break;
+        // case CLIMB:
+        //   currentSuperState = CurrentSuperState.CLIMBING;
+        //   break;
       case STOPPED:
         currentSuperState = CurrentSuperState.STOPPED;
         break;
       case INTAKE:
-        if (previousSuperState == CurrentSuperState.SHOOTING) {
-          currentSuperState = CurrentSuperState.INTAKING_AND_SHOOTING;
-        } else {
-          currentSuperState = CurrentSuperState.INTAKING;
-        }
+        currentSuperState = CurrentSuperState.INTAKING;
         break;
       case INTAKE_AND_SHOOT:
         currentSuperState = CurrentSuperState.INTAKING_AND_SHOOTING;
         break;
       case SHOOT:
-        if (previousSuperState == CurrentSuperState.INTAKING) {
-          currentSuperState = CurrentSuperState.INTAKING_AND_SHOOTING;
-        } else {
-          currentSuperState = CurrentSuperState.SHOOTING;
-        }
+        currentSuperState = CurrentSuperState.SHOOTING;
         break;
       case VOMIT:
         currentSuperState = CurrentSuperState.VOMITING;
         break;
-      case CLIMB_AND_SHOOT:
-        currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
-        break;
-      case DECLIMB:
-        currentSuperState = CurrentSuperState.DECLIMBING;
-        break;
+        // case CLIMB_AND_SHOOT:
+        //   currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
+        //   break;
+        // case DECLIMB:
+        //   currentSuperState = CurrentSuperState.DECLIMBING;
+        //   break;
       default:
         break;
     }
@@ -121,9 +113,9 @@ public class Superstructure extends SubsystemBase {
 
   private void applyStates() {
     switch (currentSuperState) {
-      case CLIMBING:
-        climb();
-        break;
+        // case CLIMBING:
+        //   climb();
+        //   break;
       case STOPPED:
         stopped();
         break;
@@ -139,12 +131,12 @@ public class Superstructure extends SubsystemBase {
       case VOMITING:
         vomit();
         break;
-      case CLIMBING_AND_SHOOTING:
-        climbAndShoot();
-        break;
-      case DECLIMBING:
-        declimb();
-        break;
+        // case CLIMBING_AND_SHOOTING:
+        //   climbAndShoot();
+        //   break;
+        // case DECLIMBING:
+        //   declimb();
+        //   break;
     }
   }
 
@@ -152,21 +144,18 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
     indexer.setWantedState(IndexerWantedState.IDLE);
-    // climber.setWantedState(ClimberWantedState.IDLE);
   }
 
   private void intake() {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.INTAKE);
     indexer.setWantedState(IndexerWantedState.IDLE);
-    // climber.setWantedState(ClimberWantedState.IDLE);
   }
 
   private void vomit() {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.VOMIT);
     indexer.setWantedState(IndexerWantedState.VOMIT);
-    // climber.setWantedState(ClimberWantedState.IDLE);
   }
 
   private void shoot() {
@@ -174,8 +163,10 @@ public class Superstructure extends SubsystemBase {
     if (shooter.reachedSetpoint()) {
       intake.setWantedState(IntakeWantedState.INTAKE);
       indexer.setWantedState(IndexerWantedState.INDEX);
+    } else {
+      intake.setWantedState(IntakeWantedState.IDLE);
+      indexer.setWantedState(IndexerWantedState.IDLE);
     }
-    // climber.setWantedState(ClimberWantedState.IDLE);
   }
 
   private void intakeAndShoot() {
@@ -183,28 +174,29 @@ public class Superstructure extends SubsystemBase {
     if (shooter.reachedSetpoint()) {
       intake.setWantedState(IntakeWantedState.INTAKE);
       indexer.setWantedState(IndexerWantedState.INDEX);
+    } else {
+      indexer.setWantedState(IndexerWantedState.IDLE);
     }
-    // climber.setWantedState(ClimberWantedState.IDLE);
   }
 
-  private void climb() {
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    indexer.setWantedState(IndexerWantedState.IDLE);
-    // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
-  }
+  // private void climb() {
+  //   shooter.setWantedState(ShooterWantedState.IDLE);
+  //   intake.setWantedState(IntakeWantedState.IDLE);
+  //   indexer.setWantedState(IndexerWantedState.IDLE);
+  //   // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
+  // }
 
-  private void declimb() {
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    indexer.setWantedState(IndexerWantedState.IDLE);
-    // climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
-  }
+  // private void declimb() {
+  //   shooter.setWantedState(ShooterWantedState.IDLE);
+  //   intake.setWantedState(IntakeWantedState.IDLE);
+  //   indexer.setWantedState(IndexerWantedState.IDLE);
+  //   // climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
+  // }
 
-  private void climbAndShoot() {
-    shooter.setWantedState(ShooterWantedState.SHOOT);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    indexer.setWantedState(IndexerWantedState.INDEX);
-    // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
-  }
+  // private void climbAndShoot() {
+  //   shooter.setWantedState(ShooterWantedState.SHOOT);
+  //   intake.setWantedState(IntakeWantedState.IDLE);
+  //   indexer.setWantedState(IndexerWantedState.INDEX);
+  //   // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
+  // }
 }

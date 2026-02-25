@@ -1,13 +1,20 @@
 package frc.robot.subsystems.climber;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
 
   private final ClimberIOPhoenix io;
+
+  private final SysIdRoutine climber1SysId;
+  private final SysIdRoutine climber2SysId;
 
   private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
@@ -58,6 +65,29 @@ public class Climber extends SubsystemBase {
   public Climber(ClimberIOPhoenix io) {
     this.io = io;
     updatePreviousPositions();
+
+    climber1SysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput(
+                        "Subsystems/Climber/Climber1/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setClimber1OpenLoop(voltage.in(Volts)), null, this));
+
+    climber2SysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> io.setClimber2OpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -182,5 +212,31 @@ public class Climber extends SubsystemBase {
   private void updatePreviousPositions() {
     previousClimb1Pos = io.getPositionLowRung();
     previousClimb2Pos = io.getPositionMidRung();
+  }
+
+  public Command climber1SysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setClimber1OpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(climber1SysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command climber1SysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setClimber1OpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(climber1SysId.dynamic(direction));
+  }
+
+  public Command climber2SysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setClimber2OpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(climber2SysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command climber2SysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> io.setClimber2OpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(climber2SysId.dynamic(direction));
   }
 }

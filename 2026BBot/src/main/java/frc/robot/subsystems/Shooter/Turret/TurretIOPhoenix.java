@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
@@ -34,6 +35,8 @@ public class TurretIOPhoenix implements TurretIO {
   // encoder
   private final CANcoder turretEncoder;
   private final CANcoderConfiguration turretEncoderConfig;
+
+  private final VoltageOut voltageRequest = new VoltageOut(0);
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -159,5 +162,10 @@ public class TurretIOPhoenix implements TurretIO {
       newValue = ShooterConstants.TurretConstants.minEncoderPos;
     }
     return newValue;
+  }
+
+  @Override
+  public void setTurretOpenLoop(double output) {
+    turretMotor.setControl(voltageRequest.withOutput(output));
   }
 }

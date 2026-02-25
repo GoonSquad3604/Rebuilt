@@ -29,6 +29,10 @@ public interface ClimberIO {
 
   default void setPowerMidRung(double power) {}
 
+  default void setClimber1OpenLoop(double output) {}
+
+  default void setClimber2OpenLoop(double output) {}
+
   default void setPositionLowRung(double position) {}
 
   default void setPositionMidRung(double position) {}

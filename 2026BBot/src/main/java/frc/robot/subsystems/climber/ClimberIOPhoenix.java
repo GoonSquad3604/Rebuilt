@@ -7,6 +7,7 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -16,6 +17,7 @@ import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
 public class ClimberIOPhoenix implements ClimberIO {
+  private final VoltageOut voltageRequest = new VoltageOut(0);
   private TalonFX lowRungMotor, midRungMotor;
   private CANcoder lowRungEncoder, midRungEncoder;
   private TalonFXConfiguration lowRungConfig, midRungConfig;
@@ -121,5 +123,15 @@ public class ClimberIOPhoenix implements ClimberIO {
   @Override
   public void setVoltageMidRung(double voltage) {
     midRungMotor.setVoltage(voltage);
+  }
+
+  @Override
+  public void setClimber1OpenLoop(double output) {
+    lowRungMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  @Override
+  public void setClimber2OpenLoop(double output) {
+    midRungMotor.setControl(voltageRequest.withOutput(output));
   }
 }

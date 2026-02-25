@@ -25,6 +25,8 @@ public interface TurretIO {
 
   default void setAngle(double position) {}
 
+  default void setTurretOpenLoop(double output) {}
+
   default double getPosition() {
     return 0.0;
   }
