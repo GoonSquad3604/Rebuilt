@@ -19,6 +19,9 @@ public class Intake extends SubsystemBase {
   private final IntakeIOPhoenix io;
   private final SysIdRoutine intakeSysId;
 
+  private double wantedPower;
+  private double previousPower = 0;
+
   public enum IntakeWantedState {
     IDLE,
     INTAKE,
@@ -50,13 +53,17 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    io.updateInputs(intakeInputs);
     Logger.processInputs("Subsystems/Intake", intakeInputs);
 
-    currentState = handleStateTransitions();
-    applyStates();
+    CurrentState newState = handleStateTransitions();
+    if (newState != currentState) {
+      currentState = newState;
+      Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
+      applyStates();
+    }
 
     Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
-    Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
   }
 
   private CurrentState handleStateTransitions() {
@@ -89,11 +96,11 @@ public class Intake extends SubsystemBase {
   }
 
   private void vomit() {
-    io.setPower(-.5);
+    io.setPower(-0.4);
   }
 
   private void runIntake() {
-    io.setPower(.5);
+    io.setPower(0.4);
   }
 
   private void stopIntake() {

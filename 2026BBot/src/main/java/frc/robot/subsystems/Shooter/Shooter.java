@@ -26,6 +26,7 @@ public class Shooter extends SubsystemBase {
 
   private final SysIdRoutine launcherSysId;
   private final SysIdRoutine kickerSysId;
+  private final SysIdRoutine turretSysId;
 
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
   private final LauncherIOInputsAutoLogged launcherInputs = new LauncherIOInputsAutoLogged();
@@ -33,14 +34,17 @@ public class Shooter extends SubsystemBase {
   private final KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
 
   private ShootingParameters shootingParameters;
+  private ShootingParameters lastParameters;
 
-  private double wantedHoodAngle;
-  private double wantedLauncherVelocity;
-  private double wantedTurretAngle;
-  private double wantedKickerVelocity;
+  // private double wantedHoodAngle;
+  // private double wantedLauncherVelocity;
+  // private double wantedTurretAngle;
+  // private double wantedKickerVelocity;
 
-  private double previousLauncherVelocity = 0;
-  private double previousKickerVelocity = 0;
+  // private double previousLauncherVelocity = 0;
+  // private double previousKickerVelocity = 0;
+  // private double previousTurretAngle = 0;
+  // private double previousHoodAngle = 0;
 
   private boolean turretAtSetpoint = false;
   private boolean hoodAtSetpoint = false;
@@ -64,7 +68,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private ShooterWantedState wantedState = ShooterWantedState.IDLE;
-  private CurrentState previousState = CurrentState.IDLING;
+  // private CurrentState previousState = CurrentState.IDLING;
   private CurrentState currentState = CurrentState.IDLING;
 
   /** Creates a new Shooter. */
@@ -95,14 +99,20 @@ public class Shooter extends SubsystemBase {
                     Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> kickerIO.setKickerOpenLoop(voltage.in(Volts)), null, this));
+    turretSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> turretIO.setTurretOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
   public void periodic() {
-    // synchronized (hoodInputs) {
-    //   synchronized (launcherInputs) {
-    //     synchronized (turretInputs) {
-    //       synchronized (kickerInputs) {
     hoodIO.updateInputs(hoodInputs);
     launcherIO.updateInputs(launcherInputs);
     turretIO.updateInputs(turretInputs);
@@ -113,30 +123,34 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
     Logger.processInputs("Subsystems/Shooter/Kicker", kickerInputs);
 
-    currentState = handleStateTransitions();
-
-    Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
     Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-    Logger.recordOutput("Subsystems/Shooter/PreviousWantedState", previousState);
 
     Logger.recordOutput("Subsystems/Shooter/TurretAtSetpoint", turretAtSetpoint);
     Logger.recordOutput("Subsystems/Shooter/HoodAtSetpoint", hoodAtSetpoint);
     Logger.recordOutput("Subsystems/Shooter/LauncherAtSetpoint", launcherAtSetpoint);
     Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoint());
 
-    shootingParameters = ShotCalculator.getInstance().getParameters();
-    Logger.recordOutput("Subsystems/Shooter/WantedTurretAngle", shootingParameters.turretAngle());
-    // Logger.recordOutput(
-    //     "Subsystems/Shooter/WantedTurretVelocity", shootingParameters.turretVelocity());
-    applyStates();
+    if (ShotCalculator.getInstance().getParameters() != null) {
+      if (lastParameters == null) {
+        lastParameters = ShotCalculator.getInstance().getParameters();
+      }
+      shootingParameters = ShotCalculator.getInstance().getParameters();
+      Logger.recordOutput("Subsystems/Shooter/WantedTurretAngle", shootingParameters.turretAngle());
+    }
+
+    CurrentState newState = handleStateTransitions();
+    if (newState != currentState
+        || lastParameters.turretAngle() != shootingParameters.turretAngle()
+        || lastParameters.hoodPos() != shootingParameters.hoodPos()) {
+      currentState = newState;
+      lastParameters = shootingParameters;
+      Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
+      applyStates();
+    }
   }
-  //       }
-  //     }
-  //   }
-  // }
 
   public CurrentState handleStateTransitions() {
-    previousState = currentState;
+    // previousState = currentState;
 
     switch (wantedState) {
       case IDLE:
@@ -165,6 +179,7 @@ public class Shooter extends SubsystemBase {
         break;
       case REVVING:
         rev();
+        break;
       default:
         break;
     }
@@ -172,14 +187,12 @@ public class Shooter extends SubsystemBase {
 
   public boolean reachedSetpoint() {
     if (shootingParameters != null) {
-      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 1);
-      launcherAtSetpoint = MathUtil.isNear(50, launcherIO.getVelocity(), 3);
+      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 7);
       hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPos(), hoodIO.getPosition(), 0.05);
       if (wantedState == ShooterWantedState.SHOOT) {
-        return turretAtSetpoint && launcherAtSetpoint && hoodAtSetpoint;
+        return turretAtSetpoint && hoodAtSetpoint;
       } else {
-        return MathUtil.isNear(50, launcherIO.getVelocity(), 3)
-            && MathUtil.isNear(0, turretIO.getAngle(), 1)
+        return MathUtil.isNear(0, turretIO.getAngle(), 7)
             && MathUtil.isNear(0, hoodIO.getPosition(), 0.05);
       }
     } else {
@@ -199,51 +212,31 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shootForward() {
-    wantedTurretAngle = 0;
-    turretIO.setPosition(wantedTurretAngle);
-    wantedHoodAngle = 0.0;
-    hoodIO.setPosition(wantedHoodAngle);
-    wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
-      launcherIO.setVelocity(wantedLauncherVelocity);
-      previousLauncherVelocity = wantedLauncherVelocity;
-    }
+    turretIO.setAngle(0);
+    hoodIO.setPosition(0);
+    launcherIO.setVelocity(45);
     kickerIO.setVelocity(5427.2);
   }
 
   private void shoot() {
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPos());
-    wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
-      launcherIO.setVelocity(wantedLauncherVelocity);
-      previousLauncherVelocity = wantedLauncherVelocity;
-    }
-    wantedKickerVelocity = 5427.2;
-    if(wantedKickerVelocity != previousKickerVelocity){
-      kickerIO.setVelocity(5427.2);
-      previousKickerVelocity = wantedKickerVelocity;
-    }
+    launcherIO.setVelocity(45);
+    kickerIO.setVelocity(5427.2);
   }
 
   private void rev() {
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPos());
-    wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
-      launcherIO.setVelocity(wantedLauncherVelocity);
-      previousLauncherVelocity = wantedLauncherVelocity;
-    }
+    launcherIO.setVelocity(45);
+    kickerIO.setPower(0);
   }
 
   private void revForward() {
+    launcherIO.setVelocity(45);
+    hoodIO.setPosition(0);
     turretIO.setAngle(0);
-    hoodIO.setPosition(shootingParameters.hoodPos());
-    wantedLauncherVelocity = 50;
-    if(wantedLauncherVelocity != previousLauncherVelocity){
-      launcherIO.setVelocity(wantedLauncherVelocity);
-      previousLauncherVelocity = wantedLauncherVelocity;
-    }
+    kickerIO.setPower(0);
   }
 
   // testcontroller:
@@ -271,5 +264,18 @@ public class Shooter extends SubsystemBase {
     return run(() -> kickerIO.setKickerOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(kickerSysId.dynamic(direction));
+  }
+
+  public Command turretSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> turretIO.setTurretOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(turretSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command turretSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> turretIO.setTurretOpenLoop(0.0))
+        .withTimeout(1.0)
+        .andThen(turretSysId.dynamic(direction));
   }
 }

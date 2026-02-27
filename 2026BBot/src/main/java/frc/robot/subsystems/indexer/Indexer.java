@@ -10,6 +10,9 @@ public class Indexer extends SubsystemBase {
 
   private IndexerIOInputsAutoLogged inputs = new IndexerIOInputsAutoLogged();
 
+  private double wantedPower;
+  private double previousPower = 0;
+
   public Indexer(IndexerIO io) {
     this.io = io;
   }
@@ -77,15 +80,27 @@ public class Indexer extends SubsystemBase {
   }
 
   private void stopped() {
-    io.setIndexPower(0);
+    wantedPower = 0;
+    if (wantedPower != previousPower) {
+      io.setIndexPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   private void indexing() {
-    io.setIndexPower(0.7);
+    wantedPower = 0.7;
+    if (wantedPower != previousPower) {
+      io.setIndexPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   private void vomiting() {
-    io.setIndexPower(-0.5);
+    wantedPower = -0.5;
+    if (wantedPower != previousPower) {
+      io.setIndexPower(wantedPower);
+      previousPower = wantedPower;
+    }
   }
 
   public void setPower(double power) {
