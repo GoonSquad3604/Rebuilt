@@ -6,6 +6,7 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -18,120 +19,136 @@ import frc.robot.util.PhoenixUtil;
 /** Add your docs here. */
 public class ClimberIOPhoenix implements ClimberIO {
   private final VoltageOut voltageRequest = new VoltageOut(0);
-  private TalonFX lowRungMotor, midRungMotor;
-  private CANcoder lowRungEncoder, midRungEncoder;
-  private TalonFXConfiguration lowRungConfig, midRungConfig;
-  private CANcoderConfiguration lowRungEncoderConfig, midRungEncoderConfig;
+  private TalonFX outerMotor, innerMotor;
+  private CANcoder outerEncoder, innerEncoder;
+  private TalonFXConfiguration outerConfig, innerConfig;
+  private CANcoderConfiguration outerEncoderConfig, innerEncoderConfig;
 
   public ClimberIOPhoenix() {
     // declared motor & configs
-    lowRungMotor = new TalonFX(ClimberConstants.climberHook1MotorID, Constants.CANBusName);
-    midRungMotor = new TalonFX(ClimberConstants.climberHook2MotorID, Constants.CANBusName);
-    lowRungEncoder = new CANcoder(ClimberConstants.lowRungEncoderID, Constants.CANBusName);
-    midRungEncoder = new CANcoder(ClimberConstants.midRungEncoderID, Constants.CANBusName);
+    outerMotor = new TalonFX(ClimberConstants.climberHook1MotorID, Constants.CANBusName);
+    innerMotor = new TalonFX(ClimberConstants.climberHook2MotorID, Constants.CANBusName);
+    outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
+    innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
 
-    lowRungConfig = new TalonFXConfiguration();
-    midRungConfig = new TalonFXConfiguration();
-    lowRungEncoderConfig = new CANcoderConfiguration();
-    midRungEncoderConfig = new CANcoderConfiguration();
+    outerConfig = new TalonFXConfiguration();
+    innerConfig = new TalonFXConfiguration();
+    outerEncoderConfig = new CANcoderConfiguration();
+    innerEncoderConfig = new CANcoderConfiguration();
 
     // configs for Encoders
-    lowRungEncoder.getConfigurator().apply(lowRungEncoderConfig);
-    midRungEncoder.getConfigurator().apply(midRungEncoderConfig);
+    outerEncoder.getConfigurator().apply(outerEncoderConfig);
+    innerEncoder.getConfigurator().apply(innerEncoderConfig);
 
     // configs for both motors
-    lowRungConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
-    lowRungConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // placeholder
-    lowRungConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
-    lowRungConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
-    lowRungConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
-    lowRungConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
-    lowRungConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
-    lowRungConfig.Voltage.PeakReverseVoltage = -12.0; // placeholder
-    lowRungConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
-    lowRungConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
+    outerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
+    outerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // placeholder
+    outerConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
+    outerConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
+    outerConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
+    outerConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
+    outerConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
+    outerConfig.Voltage.PeakReverseVoltage = -12.0; // placeholder
+    outerConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(ClimberConstants.innerP)
+            .withKI(ClimberConstants.innerI)
+            .withKD(ClimberConstants.innerD)
+            .withKS(ClimberConstants.innerS)
+            .withKV(ClimberConstants.innerV)
+            .withKA(ClimberConstants.innerA);
+    outerConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
+    outerConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
 
-    midRungConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
-    midRungConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // placeholder
-    midRungConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
-    midRungConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
-    midRungConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
-    midRungConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
-    midRungConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
-    midRungConfig.Voltage.PeakReverseVoltage = -12.0; // placeholder
-    midRungConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
-    midRungConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
+    innerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
+    innerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // placeholder
+    innerConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
+    innerConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
+    innerConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
+    innerConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
+    innerConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
+    innerConfig.Voltage.PeakReverseVoltage = -12.0; // placeholde
+    innerConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(ClimberConstants.innerP)
+            .withKI(ClimberConstants.innerI)
+            .withKD(ClimberConstants.innerD)
+            .withKS(ClimberConstants.innerS)
+            .withKV(ClimberConstants.innerV)
+            .withKA(ClimberConstants.innerA);
+    innerConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
+    innerConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
 
     // apply configs
-    PhoenixUtil.tryUntilOk(5, () -> lowRungMotor.getConfigurator().apply(lowRungConfig));
-    PhoenixUtil.tryUntilOk(5, () -> midRungMotor.getConfigurator().apply(midRungConfig));
+    PhoenixUtil.tryUntilOk(5, () -> outerMotor.getConfigurator().apply(outerConfig));
+    PhoenixUtil.tryUntilOk(5, () -> innerMotor.getConfigurator().apply(innerConfig));
   }
 
   @Override
   public void updateInputs(ClimberIOInputs inputs) {
-    inputs.lowRungMotorConnected =
+    inputs.outerMotorConnected =
         BaseStatusSignal.refreshAll(
-                lowRungMotor.getMotorVoltage(),
-                lowRungMotor.getSupplyCurrent(),
-                lowRungMotor.getDeviceTemp(),
-                lowRungMotor.getVelocity())
+                outerMotor.getMotorVoltage(),
+                outerMotor.getSupplyCurrent(),
+                outerMotor.getDeviceTemp(),
+                outerMotor.getVelocity())
             .isOK();
-    inputs.lowRungMotorVoltage = lowRungMotor.getMotorVoltage().getValueAsDouble();
-    inputs.lowRungMotorCurrent = lowRungMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.outerMotorVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.outerMotorCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
 
-    inputs.midRungMotorConnected =
+    inputs.innerMotorConnected =
         BaseStatusSignal.refreshAll(
-                midRungMotor.getMotorVoltage(),
-                midRungMotor.getSupplyCurrent(),
-                midRungMotor.getDeviceTemp(),
-                midRungMotor.getVelocity())
+                innerMotor.getMotorVoltage(),
+                innerMotor.getSupplyCurrent(),
+                innerMotor.getDeviceTemp(),
+                innerMotor.getVelocity())
             .isOK();
-    inputs.midRungMotorVoltage = midRungMotor.getMotorVoltage().getValueAsDouble();
-    inputs.midRungMotorCurrent = midRungMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.innerMotorVoltage = innerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.innerMotorCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
 
-    inputs.lowRungEncoderConnected = lowRungEncoder.isConnected();
-    inputs.lowRungPosition = lowRungEncoder.getAbsolutePosition().getValueAsDouble();
-    inputs.midRungEncoderConnected = midRungEncoder.isConnected();
-    inputs.midRungPostion = midRungEncoder.getAbsolutePosition().getValueAsDouble();
+    inputs.outerEncoderConnected = outerEncoder.isConnected();
+    inputs.outerPosition = outerEncoder.getAbsolutePosition().getValueAsDouble();
+    inputs.innerEncoderConnected = innerEncoder.isConnected();
+    inputs.innerPostion = innerEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
-  public void setPowerLowRung(double power) {
-    lowRungMotor.set(power);
+  public void setPowerOuter(double power) {
+    outerMotor.set(power);
   }
 
   @Override
-  public void setPowerMidRung(double power) {
-    midRungMotor.set(power);
+  public void setPowerInner(double power) {
+    innerMotor.set(power);
   }
 
   @Override
-  public double getPositionLowRung() {
-    return lowRungEncoder.getAbsolutePosition().getValueAsDouble();
+  public double getPositionOuter() {
+    return outerEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
-  public double getPositionMidRung() {
-    return midRungEncoder.getAbsolutePosition().getValueAsDouble();
+  public double getPositionInner() {
+    return innerEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
-  public void setVoltageLowRung(double voltage) {
-    lowRungMotor.setVoltage(voltage);
+  public void setVoltageOuter(double voltage) {
+    outerMotor.setVoltage(voltage);
   }
 
   @Override
-  public void setVoltageMidRung(double voltage) {
-    midRungMotor.setVoltage(voltage);
+  public void setVoltageInner(double voltage) {
+    innerMotor.setVoltage(voltage);
   }
 
   @Override
   public void setClimber1OpenLoop(double output) {
-    lowRungMotor.setControl(voltageRequest.withOutput(output));
+    outerMotor.setControl(voltageRequest.withOutput(output));
   }
 
   @Override
   public void setClimber2OpenLoop(double output) {
-    midRungMotor.setControl(voltageRequest.withOutput(output));
+    innerMotor.setControl(voltageRequest.withOutput(output));
   }
 }

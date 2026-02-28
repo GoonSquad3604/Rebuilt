@@ -230,7 +230,6 @@ public class Shooter extends SubsystemBase {
         .andThen(launcherSysId.dynamic(direction));
   }
 
-
   public Command turretSysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> turretIO.setTurretOpenLoop(0.0))
         .withTimeout(1.0)

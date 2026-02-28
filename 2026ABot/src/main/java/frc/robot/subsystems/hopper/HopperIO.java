@@ -34,5 +34,4 @@ public interface HopperIO {
   default void setPower(double power) {}
 
   default void setOpenLoop(double output) {}
-
 }

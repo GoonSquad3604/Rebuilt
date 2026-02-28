@@ -47,7 +47,9 @@ public class LauncherIOPhoenix implements LauncherIO {
         new Slot0Configs()
             .withKP(ShooterConstants.LauncherConstants.launcherP)
             .withKI(ShooterConstants.LauncherConstants.launcherI)
-            .withKD(ShooterConstants.LauncherConstants.launcherD);
+            .withKD(ShooterConstants.LauncherConstants.launcherD)
+            .withKS(ShooterConstants.LauncherConstants.launcherS)
+            .withKV(ShooterConstants.LauncherConstants.launcherV);
     launcherMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> launcherMotor.getConfigurator().apply(launcherMotorConfig));
 

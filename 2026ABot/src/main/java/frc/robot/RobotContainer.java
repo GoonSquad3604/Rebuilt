@@ -33,12 +33,12 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.IndexerIORev;
 import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.intake.hinge.HingeIOPhoenix;
+import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
+import frc.robot.subsystems.kicker.KickerIOPhoenix;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
-import frc.robot.subsystems.shooter.kicker.KickerIORev;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
@@ -58,7 +58,6 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Climber climber;
-  private final Indexer indexer;
   private final Intake intake;
   private final Shooter shooter;
   private final Superstructure superstructure;
@@ -95,15 +94,13 @@ public class RobotContainer {
                 new VisionIOPhotonVision(camera2Name, robotToCamera2),
                 new VisionIOPhotonVision(camera3Name, robotToCamera3));
         climber = new Climber(new ClimberIOPhoenix());
-        indexer = new Indexer(new IndexerIORev());
-        intake = new Intake(new IntakeIOPhoenix());
         shooter =
             new Shooter(
                 new HoodIOPhoenix(),
                 new LauncherIOPhoenix(),
-                new TurretIOPhoenix(),
-                new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
+                new TurretIOPhoenix());
+        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
+        superstructure = new Superstructure(drive, intake, shooter, climber);
 
         // The ModuleIOTalonFXS implementation provides an example implementation for
         // TalonFXS controller connected to a CANdi with a PWM encoder. The
@@ -142,15 +139,13 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
                 new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
         climber = new Climber(new ClimberIOPhoenix());
-        indexer = new Indexer(new IndexerIORev());
-        intake = new Intake(new IntakeIOPhoenix());
+        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
         shooter =
             new Shooter(
                 new HoodIOPhoenix(),
                 new LauncherIOPhoenix(),
-                new TurretIOPhoenix(),
-                new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
+                new TurretIOPhoenix());
+        superstructure = new Superstructure(drive, intake, shooter, climber);
         break;
 
       default:
@@ -167,15 +162,13 @@ public class RobotContainer {
         // (Use same number of dummy implementations as the real robot)
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         climber = new Climber(new ClimberIOPhoenix());
-        indexer = new Indexer(new IndexerIORev());
-        intake = new Intake(new IntakeIOPhoenix());
+        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
         shooter =
             new Shooter(
                 new HoodIOPhoenix(),
                 new LauncherIOPhoenix(),
-                new TurretIOPhoenix(),
-                new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
+                new TurretIOPhoenix());
+        superstructure = new Superstructure(drive, intake, shooter, climber);
         break;
     }
 
@@ -263,27 +256,27 @@ public class RobotContainer {
     /* driver */
 
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX(),
-            () -> driverController.getLeftTriggerAxis() > 0.05));
+    // drive.setDefaultCommand(
+    //     DriveCommands.joystickDrive(
+    //         drive,
+    //         () -> -driverController.getLeftY(),
+    //         () -> -driverController.getLeftX(),
+    //         () -> -driverController.getRightX(),
+    //         () -> driverController.getLeftTriggerAxis() > 0.05));
 
-    // Lock to 45° when B button is held
-    driverController
-        .b()
-        .whileTrue(
-            DriveCommands.joystickDriveAtClosest45(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+    // // Lock to 45° when B button is held
+    // driverController
+    //     .b()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtClosest45(
+    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
-    // rotate to nearest 180° when right bumper is held
-    driverController
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtClosest180(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+    // // rotate to nearest 180° when right bumper is held
+    // driverController
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtClosest180(
+    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));

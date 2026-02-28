@@ -6,8 +6,6 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,6 +15,7 @@ import frc.robot.subsystems.intake.hinge.HingeIOInputsAutoLogged;
 import frc.robot.subsystems.intake.hinge.HingeIOPhoenix;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOInputsAutoLogged;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
@@ -30,10 +29,8 @@ public class Intake extends SubsystemBase {
   private SysIdRoutine hingeSysID;
   private SysIdRoutine rollerSysID;
 
-
   private double lastTimestamp = 0.0;
   private boolean kickDirectionUp = true;
-
 
   public enum IntakeWantedState {
     IDLE,
@@ -62,28 +59,26 @@ public class Intake extends SubsystemBase {
     this.hingeIO = hingeIO;
 
     hingeSysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Intake/Hinge/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> hingeIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Intake/Hinge/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> hingeIO.setOpenLoop(voltage.in(Volts)), null, this));
 
     rollerSysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Intake/Roller/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> rollerSystemIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Intake/Roller/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> rollerSystemIO.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -100,13 +95,15 @@ public class Intake extends SubsystemBase {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake", currentState);
       applyStates();
-    }else {
-      if(currentState == IntakeCurrentState.KICKING
-            && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
+    } else {
+      if (currentState == IntakeCurrentState.KICKING
+          && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
         applyStates();
       }
     }
-    
+  }
+  public void setWantedState(IntakeWantedState state){
+    wantedState = state;
   }
 
   private IntakeCurrentState handleStateTransitions() {
@@ -163,11 +160,14 @@ public class Intake extends SubsystemBase {
   }
 
   private void kick() {
-    if(MathUtil.isNear(IntakeConstants.HingeConstants.kickPosition, hingeIO.getPosition(), IntakeConstants.HingeConstants.nearPositionTolerance)) {
-      //kick down
+    if (MathUtil.isNear(
+        IntakeConstants.HingeConstants.kickPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance)) {
+      // kick down
       hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
-    }else {
-      //kick up
+    } else {
+      // kick up
       hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
     }
   }
@@ -177,7 +177,7 @@ public class Intake extends SubsystemBase {
     hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
-  //testing only:
+  // testing only:
   public void setRollerPower(double power) {
     rollerSystemIO.setPower(power);
   }
@@ -199,7 +199,7 @@ public class Intake extends SubsystemBase {
         .andThen(hingeSysID.dynamic(direction));
   }
 
-    public Command rollerSysIdQuasistatic(SysIdRoutine.Direction direction) {
+  public Command rollerSysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> rollerSystemIO.setOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(rollerSysID.quasistatic(direction));

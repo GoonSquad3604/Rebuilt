@@ -2,11 +2,13 @@ package frc.robot.subsystems.climber;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
@@ -20,20 +22,11 @@ public class Climber extends SubsystemBase {
 
   private Pose2d wantedClimbPose;
 
-  private double wantedClimb1Power;
-  private double previousClimb1Power = 0;
-  private double wantedClimb2Power;
-  private double previousClimb2Power = 0;
-
-  private double wantedClimb1Pos;
-  private double previousClimb1Pos = 0;
-  private double wantedClimb2Pos;
-  private double previousClimb2Pos = 0;
-
   public enum ClimberWantedState {
     IDLE,
     STOWED,
-    UNCLIMB_L1,
+    DEPLOY,
+    LOWER_TO_GROUND,
     CLIMB_L1,
     CLIMB_L2,
     CLIMB_L3,
@@ -49,14 +42,14 @@ public class Climber extends SubsystemBase {
     STOWING,
     STOWED,
 
-    ON_LOW_RUNG,
-    ON_MID_RUNG,
-    ON_HIGH_RUNG,
+    ON_L1,
+    ON_L2,
+    ON_L3,
 
     LOWERING_TO_GROUND,
-    CLIMBING_TO_LOW_RUNG,
-    CLIMBING_TO_MID_RUNG,
-    CLIMBING_TO_HIGH_RUNG
+    CLIMBING_TO_L1,
+    CLIMBING_TO_L2,
+    CLIMBING_TO_L3
   }
 
   private ClimberWantedState wantedState = ClimberWantedState.STOWED;
@@ -64,7 +57,6 @@ public class Climber extends SubsystemBase {
 
   public Climber(ClimberIOPhoenix io) {
     this.io = io;
-    updatePreviousPositions();
 
     climber1SysId =
         new SysIdRoutine(
@@ -111,28 +103,33 @@ public class Climber extends SubsystemBase {
     return switch (wantedState) {
       case IDLE:
         yield CurrentState.IDLING;
+      case DEPLOY:
+        yield (MathUtil.isNear(ClimberConstants.outerHookDeployedPos, io.getPositionOuter(), 1) 
+          && MathUtil.isNear(ClimberConstants.innerHookDeployedPos, io.getPositionInner(), 1)) 
+          ? CurrentState.DEPLOYED 
+          : CurrentState.DEPLOYING;
       case STOWED:
         yield CurrentState.STOWING;
-      case UNCLIMB_L1:
+      case LOWER_TO_GROUND:
         yield CurrentState.LOWERING_TO_GROUND;
       case CLIMB_L1:
-        yield CurrentState.CLIMBING_TO_LOW_RUNG;
+        yield CurrentState.CLIMBING_TO_L1;
       case CLIMB_L2:
-        yield CurrentState.CLIMBING_TO_MID_RUNG;
+        yield CurrentState.CLIMBING_TO_L2;
       case CLIMB_L3:
-        yield CurrentState.CLIMBING_TO_HIGH_RUNG;
+        yield CurrentState.CLIMBING_TO_L3;
       case AUTO_CLIMB:
         if (currentState == CurrentState.STOWED) {
           yield CurrentState.DEPLOYING;
         } else if (currentState == CurrentState.DEPLOYED
             && RobotState.getInstance().getPose() == wantedClimbPose) {
-          yield CurrentState.CLIMBING_TO_LOW_RUNG;
-        } else if (currentState == CurrentState.ON_LOW_RUNG) {
-          yield CurrentState.CLIMBING_TO_MID_RUNG;
-        } else if (currentState == CurrentState.ON_MID_RUNG) {
-          yield CurrentState.CLIMBING_TO_HIGH_RUNG;
-        } else if (currentState == CurrentState.ON_HIGH_RUNG) {
-          yield CurrentState.ON_HIGH_RUNG;
+          yield CurrentState.CLIMBING_TO_L1;
+        } else if (currentState == CurrentState.ON_L1) {
+          yield CurrentState.CLIMBING_TO_L2;
+        } else if (currentState == CurrentState.ON_L2) {
+          yield CurrentState.CLIMBING_TO_L3;
+        } else if (currentState == CurrentState.ON_L3) {
+          yield CurrentState.ON_L3;
         } else {
           yield CurrentState.IDLING;
         }
@@ -143,7 +140,7 @@ public class Climber extends SubsystemBase {
 
     switch (currentState) {
       case IDLING:
-        stopped();
+        stop();
         break;
       case DEPLOYING:
         deploy();
@@ -154,47 +151,47 @@ public class Climber extends SubsystemBase {
       case LOWERING_TO_GROUND:
         decesend();
         break;
-      case CLIMBING_TO_LOW_RUNG:
-        climbLowRung();
+      case CLIMBING_TO_L1:
+        climbOuter();
         break;
-      case CLIMBING_TO_MID_RUNG:
-        climbMidRung();
+      case CLIMBING_TO_L3:
+        climbInner();
         break;
       default:
         break;
     }
   }
-
-  private void stopped() {
-    wantedClimb1Power = 0;
-    wantedClimb2Power = 0;
-    if (wantedClimb1Power != previousClimb1Power) {
-      io.setPowerLowRung(wantedClimb1Power);
-      previousClimb1Power = wantedClimb1Power;
-    }
-
-    if (wantedClimb2Power != previousClimb2Power) {
-      io.setPowerMidRung(wantedClimb2Power);
-      previousClimb2Power = wantedClimb2Power;
-    }
+  
+  private void stop(){
+    io.setPowerOuter(0);
+    io.setPowerInner(0);
   }
 
-  private void deploy() {}
-
-  private void stow() {}
-
-  private void decesend() {}
-
-  private void climbLowRung() {}
-
-  private void climbMidRung() {}
-
-  public void setPowerLowRung(double power) {
-    io.setPowerLowRung(power);
+  private void deploy() {
+    io.setPositionInner(ClimberConstants.innerHookDeployedPos);
+    io.setPositionOuter(ClimberConstants.innerHookDeployedPos);
   }
 
-  public void setPowerMidRung(double power) {
-    io.setPowerMidRung(power);
+  private void stow() {
+    io.setPositionOuter(ClimberConstants.innerHookStowedPos);
+    io.setPositionInner(ClimberConstants.outerHookStowedPos);
+  }
+
+  private void decesend() {
+    io.setPositionInner(ClimberConstants.innerHookDeployedPos);
+    io.setPositionOuter(ClimberConstants.innerHookDeployedPos);
+  }
+
+  private void climbOuter() {}
+
+  private void climbInner() {}
+
+  public void setPowerOuter(double power) {
+    io.setPowerOuter(power);
+  }
+
+  public void setPowerInner(double power) {
+    io.setPowerInner(power);
   }
 
   public void setWantedClimberPose(Pose2d wantedClimbPose) {
@@ -202,16 +199,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void setHook1Power(double power) {
-    io.setPowerLowRung(power);
+    io.setPowerOuter(power);
   }
 
   public void setHook2Power(double power) {
-    io.setPowerMidRung(power);
-  }
-
-  private void updatePreviousPositions() {
-    previousClimb1Pos = io.getPositionLowRung();
-    previousClimb2Pos = io.getPositionMidRung();
+    io.setPowerInner(power);
   }
 
   public Command climber1SysIdQuasistatic(SysIdRoutine.Direction direction) {
