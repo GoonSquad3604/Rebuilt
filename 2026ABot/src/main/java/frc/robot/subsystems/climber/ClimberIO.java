@@ -12,40 +12,40 @@ public interface ClimberIO {
 
   @AutoLog
   class ClimberIOInputs {
-    public boolean lowRungMotorConnected = false;
-    public double lowRungMotorVoltage;
-    public double lowRungMotorCurrent;
-    public boolean midRungMotorConnected = false;
-    public double midRungMotorVoltage;
-    public double midRungMotorCurrent;
+    public boolean outerMotorConnected = false;
+    public double outerMotorVoltage;
+    public double outerMotorCurrent;
+    public boolean innerMotorConnected = false;
+    public double innerMotorVoltage;
+    public double innerMotorCurrent;
 
-    public boolean lowRungEncoderConnected = false;
-    public double lowRungPosition;
-    public boolean midRungEncoderConnected = false;
-    public double midRungPostion;
+    public boolean outerEncoderConnected = false;
+    public double outerPosition;
+    public boolean innerEncoderConnected = false;
+    public double innerPostion;
   }
 
-  default void setPowerLowRung(double power) {}
+  default void setPowerOuter(double power) {}
 
-  default void setPowerMidRung(double power) {}
+  default void setPowerInner(double power) {}
 
   default void setClimber1OpenLoop(double output) {}
 
   default void setClimber2OpenLoop(double output) {}
 
-  default void setPositionLowRung(double position) {}
+  default void setPositionOuter(double position) {}
 
-  default void setPositionMidRung(double position) {}
+  default void setPositionInner(double position) {}
 
-  default double getPositionLowRung() {
+  default double getPositionOuter() {
     return 0.0;
   }
 
-  default double getPositionMidRung() {
+  default double getPositionInner() {
     return 0.0;
   }
 
-  default void setVoltageLowRung(double volts) {}
+  default void setVoltageOuter(double volts) {}
 
-  default void setVoltageMidRung(double volts) {}
+  default void setVoltageInner(double volts) {}
 }

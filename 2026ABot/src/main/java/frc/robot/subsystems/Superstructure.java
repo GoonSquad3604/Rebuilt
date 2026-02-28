@@ -8,21 +8,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeWantedState;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {
 
   private final Drive drive;
   private final Intake intake;
-  private final Indexer indexer;
   private final Shooter shooter;
-  // private final Climber climber;
+  private final Climber climber;
 
   public enum WantedSuperState {
     STOPPED,
@@ -51,12 +50,11 @@ public class Superstructure extends SubsystemBase {
   private CurrentSuperState previousSuperState;
 
   /** Creates a new Superstructure. */
-  public Superstructure(Drive drive, Intake intake, Indexer indexer, Shooter shooter) {
+  public Superstructure(Drive drive, Intake intake, Shooter shooter, Climber climber) {
     this.drive = drive;
     this.intake = intake;
-    this.indexer = indexer;
     this.shooter = shooter;
-    // this.climber = climber;
+    this.climber = climber;
   }
 
   @Override
@@ -143,29 +141,24 @@ public class Superstructure extends SubsystemBase {
   private void stopped() {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
-    indexer.setWantedState(IndexerWantedState.IDLE);
   }
 
   private void intake() {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.INTAKE);
-    indexer.setWantedState(IndexerWantedState.IDLE);
   }
 
   private void vomit() {
     shooter.setWantedState(ShooterWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.VOMIT);
-    indexer.setWantedState(IndexerWantedState.VOMIT);
   }
 
   private void shoot() {
     shooter.setWantedState(ShooterWantedState.SHOOT);
     if (shooter.reachedSetpoint()) {
       intake.setWantedState(IntakeWantedState.INTAKE);
-      indexer.setWantedState(IndexerWantedState.INDEX);
     } else {
       intake.setWantedState(IntakeWantedState.IDLE);
-      indexer.setWantedState(IndexerWantedState.IDLE);
     }
   }
 
@@ -173,25 +166,20 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.SHOOT);
     if (shooter.reachedSetpoint()) {
       intake.setWantedState(IntakeWantedState.INTAKE);
-      indexer.setWantedState(IndexerWantedState.INDEX);
-    } else {
-      indexer.setWantedState(IndexerWantedState.IDLE);
     }
   }
 
-  // private void climb() {
-  //   shooter.setWantedState(ShooterWantedState.IDLE);
-  //   intake.setWantedState(IntakeWantedState.IDLE);
-  //   indexer.setWantedState(IndexerWantedState.IDLE);
-  //   // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
-  // }
+  private void climb() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
+  }
 
-  // private void declimb() {
-  //   shooter.setWantedState(ShooterWantedState.IDLE);
-  //   intake.setWantedState(IntakeWantedState.IDLE);
-  //   indexer.setWantedState(IndexerWantedState.IDLE);
-  //   // climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
-  // }
+  private void declimb() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
+  }
 
   // private void climbAndShoot() {
   //   shooter.setWantedState(ShooterWantedState.SHOOT);

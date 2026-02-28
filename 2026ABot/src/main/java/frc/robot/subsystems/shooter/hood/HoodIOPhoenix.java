@@ -67,7 +67,9 @@ public class HoodIOPhoenix implements HoodIO {
         new Slot0Configs()
             .withKP(ShooterConstants.HoodConstants.hoodP)
             .withKI(ShooterConstants.HoodConstants.hoodI)
-            .withKD(ShooterConstants.HoodConstants.hoodD);
+            .withKD(ShooterConstants.HoodConstants.hoodD)
+            .withKS(ShooterConstants.HoodConstants.hoodS)
+            .withKV(ShooterConstants.HoodConstants.hoodV);
     hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.getConfigurator().apply(hoodMotorConfig));
 

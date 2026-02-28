@@ -1,11 +1,10 @@
 package frc.robot.subsystems.kicker;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
@@ -34,16 +33,14 @@ public class Kicker extends SubsystemBase {
     this.kickerIO = io;
 
     sysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Kicker/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> kickerIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Subsystems/Kicker/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> kickerIO.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -106,8 +103,6 @@ public class Kicker extends SubsystemBase {
 
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> kickerIO.setOpenLoop(0.0))
-        .withTimeout(1.0)
-        .andThen(sysID.dynamic(direction));
+    return run(() -> kickerIO.setOpenLoop(0.0)).withTimeout(1.0).andThen(sysID.dynamic(direction));
   }
 }
