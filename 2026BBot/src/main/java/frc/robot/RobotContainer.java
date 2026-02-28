@@ -301,23 +301,19 @@ public class RobotContainer {
 
     driverController
         .rightTrigger()
-        .and(() -> superstructure.getCurrentSuperState() != CurrentSuperState.SHOOTING)
-        .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE));
-
-    driverController
-        .rightTrigger()
-        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING)
-        .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT));
-
-    driverController
-        .rightTrigger()
-        .and(() -> superstructure.getCurrentSuperState() != CurrentSuperState.SHOOTING)
-        .onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
-
-    driverController
-        .rightTrigger()
-        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING)
-        .onFalse(superstructure.setWantedState(WantedSuperState.SHOOT));
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.INTAKE),
+                Commands.either(
+                    superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+                    Commands.either(
+                        superstructure.setWantedState(WantedSuperState.SHOOT),
+                        superstructure.setWantedState(WantedSuperState.STOPPED),
+                        () ->
+                            superstructure.getCurrentSuperState()
+                                == CurrentSuperState.INTAKING_AND_SHOOTING),
+                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
     /* operator */
 
@@ -341,28 +337,56 @@ public class RobotContainer {
 
     operatorButtonBox
         .button(12)
-        .and(driverController.rightTrigger())
         .onTrue(
             Commands.either(
-                superstructure.setWantedState(WantedSuperState.INTAKE),
-                superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-                () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING));
-
-    operatorButtonBox
-        .button(12)
-        .and(driverController.rightTrigger().negate())
-        .onTrue(
-            Commands.either(
-                superstructure.setWantedState(WantedSuperState.STOPPED),
                 superstructure.setWantedState(WantedSuperState.SHOOT),
-                () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING));
+                Commands.either(
+                    superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+                    Commands.either(
+                        superstructure.setWantedState(WantedSuperState.INTAKE),
+                        superstructure.setWantedState(WantedSuperState.STOPPED),
+                        () ->
+                            superstructure.getCurrentSuperState()
+                                == CurrentSuperState.INTAKING_AND_SHOOTING),
+                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
+
+    // operatorButtonBox
+    //     .button(12)
+    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT));
+
+    // operatorButtonBox
+    //     .button(12)
+    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.SHOOT));
+
+    // operatorButtonBox
+    //     .button(12)
+    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    // operatorButtonBox
+    //     .button(12)
+    //     .and(() -> superstructure.getCurrentSuperState() ==
+    // CurrentSuperState.INTAKING_AND_SHOOTING)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE));
 
     // test controller
-    testController.povUp().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.5)));
-    testController.povUp().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    // testController.povUp().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.5)));
+    // testController.povUp().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
 
-    testController.povDown().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.5)));
-    testController.povDown().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    // testController.povDown().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.5)));
+    // testController.povDown().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+
+    // testController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.3)));
+    // testController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    // testController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.3)));
+    // testController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    // testController.a().onTrue(Commands.runOnce(() -> shooter.setTurretPos(0)));
+    // testController.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0)));
 
     // test box
     // pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));

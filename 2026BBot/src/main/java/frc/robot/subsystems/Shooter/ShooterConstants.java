@@ -44,11 +44,12 @@ public final class ShooterConstants {
     public static final int turretID = 11;
     public static final int turretEncoderID = 26;
 
-    public static final double turretP = 12;
+    public static final double turretP = 12; // 1.1679; // 12
     public static final double turretI = 0;
     public static final double turretD = 0;
-    public static final double turretS = 0;
-    public static final double turretV = 0;
+    public static final double turretS = 0; // 0.28434;
+    public static final double turretV = 0; // 1.3261;
+    public static final double turretA = 0; // 0.19269;
 
     public static final double maxEncoderPos = 0.5;
     public static final double minEncoderPos = 0.0;
