@@ -3,9 +3,11 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator.ShootingParameters;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -106,7 +108,7 @@ public class Shooter extends SubsystemBase {
                 null,
                 null,
                 (state) ->
-                    Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
+                    Logger.recordOutput("Subsystems/Shooter/Turret/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> turretIO.setTurretOpenLoop(voltage.in(Volts)), null, this));
   }
@@ -141,12 +143,13 @@ public class Shooter extends SubsystemBase {
     CurrentState newState = handleStateTransitions();
     if (newState != currentState
         || lastParameters.turretAngle() != shootingParameters.turretAngle()
-        || lastParameters.hoodPos() != shootingParameters.hoodPos()) {
+        || lastParameters.hoodPose() != shootingParameters.hoodPose()) {
       currentState = newState;
       lastParameters = shootingParameters;
       Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
       applyStates();
     }
+    RobotState.getInstance().setTurretAngle(Rotation2d.fromDegrees(turretIO.getAngle()));
   }
 
   public CurrentState handleStateTransitions() {
@@ -188,7 +191,7 @@ public class Shooter extends SubsystemBase {
   public boolean reachedSetpoint() {
     if (shootingParameters != null) {
       turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 7);
-      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPos(), hoodIO.getPosition(), 0.05);
+      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.05);
       if (wantedState == ShooterWantedState.SHOOT) {
         return turretAtSetpoint && hoodAtSetpoint;
       } else {
@@ -220,15 +223,15 @@ public class Shooter extends SubsystemBase {
 
   private void shoot() {
     turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPos());
-    launcherIO.setVelocity(45);
+    hoodIO.setPosition(shootingParameters.hoodPose());
+    launcherIO.setVelocity(shootingParameters.flywheelSpeed());
     kickerIO.setVelocity(5427.2);
   }
 
   private void rev() {
     turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPos());
-    launcherIO.setVelocity(45);
+    hoodIO.setPosition(shootingParameters.hoodPose());
+    launcherIO.setVelocity(shootingParameters.flywheelSpeed());
     kickerIO.setPower(0);
   }
 
@@ -240,6 +243,14 @@ public class Shooter extends SubsystemBase {
   }
 
   // testcontroller:
+  public void setTurretPower(double power) {
+    turretIO.setPower(power);
+  }
+
+  public void setTurretPos(double position) {
+    turretIO.setAngle(position);
+  }
+
   public Command launcherSysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> launcherIO.setLauncherOpenLoop(0.0))
         .withTimeout(1.0)

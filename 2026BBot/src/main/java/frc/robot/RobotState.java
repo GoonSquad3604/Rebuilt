@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.util.AllianceFlipUtil;
 import java.util.*;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
@@ -23,6 +22,8 @@ public class RobotState {
     RIGHT_PASS,
     FORWARD
   }
+
+  private Rotation2d turretAngle;
 
   private ShooterTarget target = ShooterTarget.HUB;
   private ShooterTarget manualTarget = ShooterTarget.HUB;
@@ -109,10 +110,10 @@ public class RobotState {
     return estimatedPose;
   }
 
-  @AutoLogOutput
-  public Optional<Rotation2d> getTurretAngle(double timestamp) {
-    return turretAngleBuffer.getSample(timestamp);
-  }
+  // @AutoLogOutput
+  // public Optional<Rotation2d> getTurretAngle(double timestamp) {
+  //   return turretAngleBuffer.getSample(timestamp);
+  // }
 
   public ShooterTarget getTarget() {
     // checks override
@@ -151,6 +152,14 @@ public class RobotState {
 
   public Command toggleManualShooting() {
     return Commands.runOnce(() -> override = !override);
+  }
+
+  public void setTurretAngle(Rotation2d newAngle) {
+    turretAngle = newAngle;
+  }
+
+  public Rotation2d getTurretAngle() {
+    return turretAngle;
   }
 
   /** Adds a new odometry sample from the drive subsystem. */
