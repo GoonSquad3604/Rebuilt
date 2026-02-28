@@ -190,8 +190,8 @@ public class Shooter extends SubsystemBase {
 
   public boolean reachedSetpoint() {
     if (shootingParameters != null) {
-      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 7);
-      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.05);
+      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 10);
+      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.1);
       if (wantedState == ShooterWantedState.SHOOT) {
         return turretAtSetpoint && hoodAtSetpoint;
       } else {
@@ -218,14 +218,14 @@ public class Shooter extends SubsystemBase {
     turretIO.setAngle(0);
     hoodIO.setPosition(0);
     launcherIO.setVelocity(45);
-    kickerIO.setVelocity(5427.2);
+    kickerIO.setVelocity(4427.2);
   }
 
   private void shoot() {
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPose());
     launcherIO.setVelocity(shootingParameters.flywheelSpeed());
-    kickerIO.setVelocity(5427.2);
+    kickerIO.setVelocity(4427.2);
   }
 
   private void rev() {

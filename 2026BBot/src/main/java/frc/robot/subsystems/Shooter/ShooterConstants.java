@@ -1,19 +1,19 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
-public final class ShooterConstants {
+public class ShooterConstants {
 
   public static final double loopPeriodSecs = 0.02;
 
-  public static Transform2d robotToTurret =
-      new Transform2d(
+  public static Transform3d robotToTurret =
+      new Transform3d(
           Units.inchesToMeters(7.5),
           Units.inchesToMeters(0.0),
-          // Units.inchesToMeters(36),
-          Rotation2d.kZero);
+          Units.inchesToMeters(36),
+          Rotation3d.kZero);
 
   public static final class HoodConstants {
 
