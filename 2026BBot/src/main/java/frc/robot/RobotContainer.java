@@ -28,6 +28,7 @@ import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -45,6 +46,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -236,18 +238,18 @@ public class RobotContainer {
     //     "Climber1 SysId (Dynamic Reverse)",
     //     climber.climber1SysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Forward)",
-        shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Quasistatic Reverse)",
-        shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Forward)",
-        shooter.turretSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turret SysId (Dynamic Reverse)",
-        shooter.turretSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Turret SysId (Quasistatic Forward)",
+    //     shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Turret SysId (Quasistatic Reverse)",
+    //     shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Turret SysId (Dynamic Forward)",
+    //     shooter.turretSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Turret SysId (Dynamic Reverse)",
+    //     shooter.turretSysIdDynamic(SysIdRoutine.Direction.kReverse));
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -271,18 +273,29 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftTriggerAxis() > 0.05));
 
+    // align to trench when right bumper is held
+    driverController
+        .rightBumper()
+        .whileTrue(
+            DriveCommands.alignToTrench(
+                drive,
+                () -> -driverController.getLeftY(), // xsupplier
+                () -> -driverController.getLeftX(), // ysupplier
+                () -> -driverController.getRightX(),
+                () -> driverController.getLeftTriggerAxis() > 0.05));
+
+    // test drive to pose
+    // driverController
+    //     .povUp()
+    //     .whileTrue(
+    //         DriveCommands.alignToPose(
+    //             drive, AllianceFlipUtil.apply(new Pose2d(2.9, 6.7, new Rotation2d()))));
+
     // Lock to 45° when B button is held
     driverController
         .b()
         .whileTrue(
             DriveCommands.joystickDriveAtClosest45(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
-
-    // rotate to nearest 180° when right bumper is held
-    driverController
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtClosest180(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
@@ -299,6 +312,19 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
+    // climb
+    driverController
+        .povLeft()
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
+    driverController
+        .povRight()
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos)));
+
+    // toggle intake mode
     driverController
         .rightTrigger()
         .onTrue(
@@ -337,6 +363,7 @@ public class RobotContainer {
 
     operatorButtonBox
         .button(12)
+        .or(driverController.back())
         .onTrue(
             Commands.either(
                 superstructure.setWantedState(WantedSuperState.SHOOT),
@@ -350,98 +377,6 @@ public class RobotContainer {
                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
                     () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
-
-    // operatorButtonBox
-    //     .button(12)
-    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING)
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT));
-
-    // operatorButtonBox
-    //     .button(12)
-    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.SHOOT));
-
-    // operatorButtonBox
-    //     .button(12)
-    //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING)
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
-
-    // operatorButtonBox
-    //     .button(12)
-    //     .and(() -> superstructure.getCurrentSuperState() ==
-    // CurrentSuperState.INTAKING_AND_SHOOTING)
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.INTAKE));
-
-    // test controller
-    // testController.povUp().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.5)));
-    // testController.povUp().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
-
-    // testController.povDown().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.5)));
-    // testController.povDown().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
-
-    // testController.rightBumper().onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.3)));
-    // testController.rightBumper().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // testController.leftBumper().onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.3)));
-    // testController.leftBumper().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // testController.a().onTrue(Commands.runOnce(() -> shooter.setTurretPos(0)));
-    // testController.a().onFalse(Commands.runOnce(() -> shooter.setTurretPower(0)));
-
-    // test box
-    // pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
-    // pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.8)));
-    // pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
-    // pitBox.button(3).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // pitBox.button(4).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
-    // pitBox.button(4).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // pitBox.button(5).onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
-    // pitBox.button(5).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // pitBox.button(6).onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
-    // pitBox.button(6).onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // pitBox.button(7).onTrue(Commands.run(() -> shooter.setTurretPos(0.0)));
-    // pitBox.button(7).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // // pitBox.button(8).onTrue(Commands.runOnce(() -> shooter.trackHub()));
-    // pitBox
-    //     .button(8)
-    //     .onTrue(
-    //         Commands.run(() -> shooter.trackPoint())
-    //             .until(pitBox.button(8).negate())
-    //             .andThen(Commands.runOnce(() -> shooter.setTurretPower(0.0))));
-    // // pitBox.button(8).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
-
-    // pitBox.button(9).onTrue(Commands.runOnce(() -> shooter.setLauncherVelocity(50)));
-
-    // pitBox.button(10).onTrue(Commands.runOnce(() -> intake.setPower(0.4)));
-    // pitBox.button(10).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
-
-    // pitBox
-    //     .button(11)
-    //     .onTrue(
-    //         Commands.runOnce(() -> indexer.setPower(-0.8))
-    //             .alongWith(Commands.runOnce(() -> intake.setPower(-.5))));
-
-    // pitBox.button(11).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
-    // pitBox.button(11).onFalse(Commands.runOnce(() -> intake.setPower(0)));
-
-    // pitBox.button(12).onTrue(Commands.runOnce(() -> shooter.setKickerVelocity(5427.2)));
-    // pitBox.button(12).onTrue(Commands.runOnce(() -> indexer.setPower(0.8)));
-
-    // pitBox.button(12).onTrue(Commands.runOnce(() -> intake.setPower(0.6)));
-    // pitBox.button(12).onFalse(Commands.runOnce(() -> intake.setPower(0.0)));
-
-    // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
-    // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
-    // pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
   }
 
   /**
