@@ -153,6 +153,10 @@ public class RobotState {
     return Commands.runOnce(() -> override = !override);
   }
 
+  public boolean isOverride() {
+    return override;
+  }
+
   public void setTurretAngle(Rotation2d newAngle) {
     turretAngle = newAngle;
   }

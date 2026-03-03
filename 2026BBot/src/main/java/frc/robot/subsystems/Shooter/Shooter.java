@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
+import frc.robot.RobotState.ShooterTarget;
 import frc.robot.subsystems.shooter.ShotCalculator.ShootingParameters;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -55,7 +56,7 @@ public class Shooter extends SubsystemBase {
   public enum ShooterWantedState {
     IDLE,
     SHOOT,
-    SHOOT_FORWARD
+    // SHOOT_FORWARD
   }
 
   private enum CurrentState {
@@ -153,15 +154,17 @@ public class Shooter extends SubsystemBase {
   }
 
   public CurrentState handleStateTransitions() {
-    // previousState = currentState;
 
     switch (wantedState) {
       case IDLE:
         return CurrentState.IDLING;
       case SHOOT:
-        return reachedSetpoint() ? CurrentState.SHOOTING : CurrentState.REVVING;
-      case SHOOT_FORWARD:
-        return reachedSetpoint() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
+        if (RobotState.getInstance().isOverride()
+            && RobotState.getInstance().getTarget() != ShooterTarget.FORWARD) {
+          return reachedSetpoint() ? CurrentState.SHOOTING : CurrentState.REVVING;
+        } else {
+          return reachedSetpoint() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
+        }
     }
     return CurrentState.IDLING;
   }
@@ -192,10 +195,13 @@ public class Shooter extends SubsystemBase {
     if (shootingParameters != null) {
       turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 10);
       hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.1);
-      if (wantedState == ShooterWantedState.SHOOT) {
+      if (RobotState.getInstance().getTarget() == ShooterTarget.FORWARD) {
+        return MathUtil.isNear(45, launcherIO.getVelocity(), 2);
+      } else if (wantedState == ShooterWantedState.SHOOT) {
         return turretAtSetpoint && hoodAtSetpoint;
       } else {
-        return MathUtil.isNear(0, turretIO.getAngle(), 7)
+        // forward
+        return MathUtil.isNear(0, turretIO.getAngle(), 10)
             && MathUtil.isNear(0, hoodIO.getPosition(), 0.05);
       }
     } else {

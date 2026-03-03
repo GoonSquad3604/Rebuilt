@@ -28,6 +28,7 @@ import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -283,18 +284,18 @@ public class RobotContainer {
                 () -> -driverController.getRightX(),
                 () -> driverController.getLeftTriggerAxis() > 0.05));
 
+    // test drive to pose
+    // driverController
+    //     .povUp()
+    //     .whileTrue(
+    //         DriveCommands.alignToPose(
+    //             drive, AllianceFlipUtil.apply(new Pose2d(2.9, 6.7, new Rotation2d()))));
+
     // Lock to 45° when B button is held
     driverController
         .b()
         .whileTrue(
             DriveCommands.joystickDriveAtClosest45(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
-
-    // rotate to nearest 180° when a is held
-    driverController
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtClosest180(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
@@ -314,10 +315,14 @@ public class RobotContainer {
     // climb
     driverController
         .povLeft()
-        .whileTrue(Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive)));
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
     driverController
         .povRight()
-        .whileTrue(Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive)));
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos)));
 
     // toggle intake mode
     driverController
