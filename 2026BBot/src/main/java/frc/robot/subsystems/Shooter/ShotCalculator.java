@@ -58,12 +58,12 @@ public class ShotCalculator {
     maxDistance = 5.60;
     phaseDelay = 0.02;
 
-    shotHoodAngleMap.put(1.34, 0.0);
-    shotHoodAngleMap.put(1.78, 0.1);
-    shotHoodAngleMap.put(2.17, 0.2);
-    shotHoodAngleMap.put(2.81, 0.3);
-    shotHoodAngleMap.put(3.82, 0.4);
-    shotHoodAngleMap.put(4.09, 0.425);
+    shotHoodAngleMap.put(1.34, 0.1);
+    shotHoodAngleMap.put(1.78, 0.2);
+    shotHoodAngleMap.put(2.17, 0.3);
+    shotHoodAngleMap.put(2.81, 0.4);
+    shotHoodAngleMap.put(3.82, 0.425);
+    shotHoodAngleMap.put(4.09, 0.45);
     shotHoodAngleMap.put(4.40, 0.475);
     shotHoodAngleMap.put(4.77, 0.5);
     shotHoodAngleMap.put(5.57, 0.6);
@@ -159,6 +159,11 @@ public class ShotCalculator {
       turretAngle -= 360;
     } else if (turretAngle < 0) {
       turretAngle += 360;
+    }
+    if (hoodPose < 0.1) {
+      hoodPose = 0.1;
+    } else if (hoodPose > 0.7) {
+      hoodPose = 0.7;
     }
     latestParameters =
         new ShootingParameters(

@@ -222,7 +222,7 @@ public class Shooter extends SubsystemBase {
 
   private void shootForward() {
     turretIO.setAngle(0);
-    hoodIO.setPosition(0);
+    hoodIO.setPosition(0.1);
     launcherIO.setVelocity(45);
     kickerIO.setVelocity(4427.2);
   }
@@ -243,7 +243,7 @@ public class Shooter extends SubsystemBase {
 
   private void revForward() {
     launcherIO.setVelocity(45);
-    hoodIO.setPosition(0);
+    hoodIO.setPosition(0.1);
     turretIO.setAngle(0);
     kickerIO.setPower(0);
   }
