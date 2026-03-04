@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.RobotContainer;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +23,9 @@ public class AutoChooser extends SendableChooser<Autos> {
 
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
-          new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
-          new AutoProgram(Autos.MIDDLE, "MIDDLE", AutoFactory::createMiddleAuto));
+          // new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
+          new AutoProgram(Autos.MIDDLE, "MIDDLE", AutoFactory::createMiddleAuto),
+          new AutoProgram(Autos.LEFT_TEST, "Left Test", AutoFactory::createLeftTestAuto));
 
   private final Map<Autos, AutoProgram> programs;
   private final Map<DriverStation.Alliance, Map<Autos, Pair<Pose2d, Command>>> commandCache;
@@ -71,7 +73,9 @@ public class AutoChooser extends SendableChooser<Autos> {
     autoChooser.reset(null);
 
     Shuffleboard.getTab("Autonomous")
-        .addString("Selected Auto", () -> autoChooser.getSelected().name())
+        .addString(
+            "Selected Auto",
+            () -> autoChooser.getSelected() != null ? autoChooser.getSelected().name() : "None")
         .withPosition(12, 3)
         .withSize(6, 2)
         .withWidget(BuiltInWidgets.kTextView);
@@ -89,6 +93,7 @@ public class AutoChooser extends SendableChooser<Autos> {
    */
   public void update() {
     var selected = getSelected();
+    // System.out.println(selected);
 
     Stream.of(DriverStation.Alliance.values())
         .forEach(
@@ -162,7 +167,7 @@ public class AutoChooser extends SendableChooser<Autos> {
 
     System.out.printf("Loading command %s/%s\n", alliance, auto);
 
-    return program.getCommand(autoFactories.get(alliance));
+    return program != null ? program.getCommand(autoFactories.get(alliance)) : Commands.none();
   }
 
   private Pose2d loadStartingPose(final DriverStation.Alliance alliance, final Autos auto) {
@@ -170,6 +175,6 @@ public class AutoChooser extends SendableChooser<Autos> {
 
     System.out.printf("Loading command %s/%s\n", alliance, auto);
 
-    return program.getStartingPose(autoFactories.get(alliance));
+    return program != null ? program.getStartingPose(autoFactories.get(alliance)) : new Pose2d();
   }
 }
