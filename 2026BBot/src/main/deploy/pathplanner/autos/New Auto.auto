@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GoToCenterOfField"
+            "pathName": "LeftStartNeutralZoneThenDepot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "GoBackToAllianceSide"
+            "pathName": "PickUpDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotToClimb"
           }
         }
       ]

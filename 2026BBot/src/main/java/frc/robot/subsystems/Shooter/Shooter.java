@@ -161,8 +161,7 @@ public class Shooter extends SubsystemBase {
       case SHOOT:
         if (!(RobotState.getInstance().isOverride())) {
           return reachedSetpoint() ? CurrentState.SHOOTING : CurrentState.REVVING;
-        } else if (RobotState.getInstance().isOverride()
-            && RobotState.getInstance().getTarget() != ShooterTarget.FORWARD) {
+        } else if (RobotState.getInstance().getTarget() != ShooterTarget.FORWARD) {
           return reachedSetpoint() ? CurrentState.SHOOTING : CurrentState.REVVING;
         } else {
           return reachedSetpoint() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
@@ -195,12 +194,15 @@ public class Shooter extends SubsystemBase {
 
   public boolean reachedSetpoint() {
     if (shootingParameters != null) {
-      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 10);
-      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.1);
-      // if (RobotState.getInstance().getTarget() == ShooterTarget.FORWARD) {
-      //   return MathUtil.isNear(45, launcherIO.getVelocity(), 2);}
+      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 20);
+      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.2);
+      launcherAtSetpoint =
+          MathUtil.isNear(shootingParameters.flywheelSpeed(), launcherIO.getVelocity(), 20);
+      if (RobotState.getInstance().getTarget() == ShooterTarget.FORWARD) {
+        return MathUtil.isNear(45, launcherIO.getVelocity(), 2);
+      }
       if (wantedState == ShooterWantedState.SHOOT) {
-        return turretAtSetpoint && hoodAtSetpoint;
+        return turretAtSetpoint && hoodAtSetpoint && launcherAtSetpoint;
       } else {
         // forward
         return MathUtil.isNear(0, turretIO.getAngle(), 10)
