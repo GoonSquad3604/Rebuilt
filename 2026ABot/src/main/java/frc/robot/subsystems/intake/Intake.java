@@ -1,12 +1,6 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Volts;
-
-import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
@@ -17,6 +11,7 @@ import frc.robot.subsystems.intake.hinge.HingeIOInputsAutoLogged;
 import frc.robot.subsystems.intake.hinge.HingeIOPhoenix;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOInputsAutoLogged;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
@@ -30,16 +25,12 @@ public class Intake extends SubsystemBase {
   private SysIdRoutine hingeSysID;
   private SysIdRoutine rollerSysID;
 
-
   private double lastTimestamp = 0.0;
-  private boolean kickDirectionUp = true;
-
 
   public enum IntakeWantedState {
     IDLE,
-    DEPLOY,
-    STOW,
     INTAKE,
+    STOW,
     KICK,
     VOMIT
   }
@@ -48,7 +39,9 @@ public class Intake extends SubsystemBase {
     IDLING,
     DEPLOYING,
     STOWING,
-    INTAKING,
+    STOWED,
+    INTAKING_DEPLOYED,
+    IDLE_DEPLOYED,
     KICKING,
     VOMITING,
   }
@@ -62,28 +55,27 @@ public class Intake extends SubsystemBase {
     this.hingeIO = hingeIO;
 
     hingeSysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Intake/Hinge/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> hingeIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput("Subsystems/Intake/Hinge/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> hingeIO.setOpenLoop(voltage.in(Volts)), null, this));
 
     rollerSysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Intake/Roller/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> rollerSystemIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) ->
+                    Logger.recordOutput(
+                        "Subsystems/Intake/RollerSystem/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> rollerSystemIO.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -91,7 +83,7 @@ public class Intake extends SubsystemBase {
     // This method will be called once per scheduler run
     rollerSystemIO.updateInputs(rollerSystemInputs);
     hingeIO.updateInputs(hingeInputs);
-    Logger.processInputs("Subsystems/Intake/Rollers", rollerSystemInputs);
+    Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
     Logger.processInputs("Subsystems/Intake/Hinge", hingeInputs);
 
     IntakeCurrentState newState = handleStateTransitions();
@@ -100,21 +92,25 @@ public class Intake extends SubsystemBase {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake", currentState);
       applyStates();
-    }else {
-      if(currentState == IntakeCurrentState.KICKING
-            && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
+    } else {
+      if (currentState == IntakeCurrentState.KICKING
+          && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
         applyStates();
       }
     }
-    
+  }
+
+  public void setWantedState(IntakeWantedState wantedState) {
+    this.wantedState = wantedState;
   }
 
   private IntakeCurrentState handleStateTransitions() {
     return switch (wantedState) {
-      case IDLE -> IntakeCurrentState.IDLING;
-      case DEPLOY -> IntakeCurrentState.DEPLOYING;
-      case STOW -> IntakeCurrentState.STOWING;
-      case INTAKE -> IntakeCurrentState.INTAKING;
+      case IDLE -> isDeployed() ? IntakeCurrentState.IDLE_DEPLOYED : IntakeCurrentState.IDLING;
+      case STOW -> isStowed() ? IntakeCurrentState.STOWED : IntakeCurrentState.STOWING;
+      case INTAKE -> isStowed()
+          ? IntakeCurrentState.DEPLOYING
+          : IntakeCurrentState.INTAKING_DEPLOYED;
       case KICK -> IntakeCurrentState.KICKING;
       case VOMIT -> IntakeCurrentState.VOMITING;
     };
@@ -131,14 +127,19 @@ public class Intake extends SubsystemBase {
       case STOWING:
         stow();
         break;
-      case INTAKING:
-        intake();
+      case STOWED:
+        break;
+      case INTAKING_DEPLOYED:
+        runRollers();
+        break;
+      case IDLE_DEPLOYED:
+        idling();
         break;
       case KICKING:
         kick();
         break;
       case VOMITING:
-        vomit();
+        vomitRollers();
         break;
     }
   }
@@ -149,6 +150,7 @@ public class Intake extends SubsystemBase {
   }
 
   private void deploy() {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
     hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
@@ -157,27 +159,42 @@ public class Intake extends SubsystemBase {
     hingeIO.setPosition(IntakeConstants.HingeConstants.stowedPosition);
   }
 
-  private void intake() {
+  private void runRollers() {
     rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
-    hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
   private void kick() {
-    if(MathUtil.isNear(IntakeConstants.HingeConstants.kickPosition, hingeIO.getPosition(), IntakeConstants.HingeConstants.nearPositionTolerance)) {
-      //kick down
+    if (MathUtil.isNear(
+        IntakeConstants.HingeConstants.kickPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance)) {
+      // kick down
       hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
-    }else {
-      //kick up
+    } else {
+      // kick up
       hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
     }
   }
 
-  private void vomit() {
+  private void vomitRollers() {
     rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
-    hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
-  //testing only:
+  public boolean isDeployed() {
+    return MathUtil.isNear(
+        IntakeConstants.HingeConstants.deployedPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance);
+  }
+
+  public boolean isStowed() {
+    return MathUtil.isNear(
+        IntakeConstants.HingeConstants.stowedPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance);
+  }
+
+  // testing only:
   public void setRollerPower(double power) {
     rollerSystemIO.setPower(power);
   }
@@ -199,7 +216,7 @@ public class Intake extends SubsystemBase {
         .andThen(hingeSysID.dynamic(direction));
   }
 
-    public Command rollerSysIdQuasistatic(SysIdRoutine.Direction direction) {
+  public Command rollerSysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> rollerSystemIO.setOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(rollerSysID.quasistatic(direction));

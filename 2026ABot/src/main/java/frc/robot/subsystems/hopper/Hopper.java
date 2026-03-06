@@ -1,12 +1,11 @@
 package frc.robot.subsystems.hopper;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Hopper extends SubsystemBase {
@@ -38,16 +37,14 @@ public class Hopper extends SubsystemBase {
   public Hopper(HopperIOPhoenix io) {
     this.hopperIO = io;
     sysID =
-      new SysIdRoutine(
-        new SysIdRoutine.Config(
-          null,
-          null,
-          null,
-          (state) ->
-            Logger.recordOutput(
-              "Subsystems/Hopper/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-          (voltage) -> hopperIO.setOpenLoop(voltage.in(Volts)), null, this));
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Subsystems/Hopper/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> hopperIO.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -62,8 +59,8 @@ public class Hopper extends SubsystemBase {
       currentState = newState;
       Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
-    }else {
-      if(currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
+    } else {
+      if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
         this.setWantedState(HopperWantedState.IDLE);
         hopperIO.resetPosition();
       }
@@ -86,11 +83,12 @@ public class Hopper extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> HopperCurrentState.IDLING;
       case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW -> 
-        MathUtil.isNear(HopperConstants.stowTargetPosition,
-            hopperIO.getPosition(),
-            HopperConstants.hopperAtSetpointTolerance) ?
-                HopperCurrentState.STOWING_SLOW : HopperCurrentState.STOWING_FAST;
+      case STOW -> MathUtil.isNear(
+              HopperConstants.stowTargetPosition,
+              hopperIO.getPosition(),
+              HopperConstants.atSetpointTolerance)
+          ? HopperCurrentState.STOWING_SLOW
+          : HopperCurrentState.STOWING_FAST;
     };
   }
 
@@ -144,8 +142,6 @@ public class Hopper extends SubsystemBase {
 
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> hopperIO.setOpenLoop(0.0))
-        .withTimeout(1.0)
-        .andThen(sysID.dynamic(direction));
+    return run(() -> hopperIO.setOpenLoop(0.0)).withTimeout(1.0).andThen(sysID.dynamic(direction));
   }
 }

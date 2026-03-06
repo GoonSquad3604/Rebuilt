@@ -1,4 +1,4 @@
-package frc.robot.subsystems.kicker;
+package frc.robot.subsystems.spindexer;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -17,11 +17,13 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
-public class KickerIOPhoenix implements KickerIO {
+public class SpindexerIOPhoenix implements SpindexerIO {
 
-  private final TalonFX kickerMotor;
+  private final TalonFX spindexerMotor;
+
   private final TalonFXConfiguration motorConfig;
-  private final VelocityVoltage kickerRequest;
+
+  private final VelocityVoltage spindexerRequest;
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   private final StatusSignal<Angle> position;
@@ -31,35 +33,35 @@ public class KickerIOPhoenix implements KickerIO {
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
 
-  public KickerIOPhoenix() {
+  public SpindexerIOPhoenix() {
 
     // motor config:
-    kickerMotor = new TalonFX(KickerConstants.motorID);
-    kickerRequest = new VelocityVoltage(0).withSlot(0);
+    spindexerMotor = new TalonFX(SpindexerConstants.motorID);
+    spindexerRequest = new VelocityVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     motorConfig.Slot0 =
         new Slot0Configs()
-            .withKP(KickerConstants.P)
-            .withKI(KickerConstants.I)
-            .withKD(KickerConstants.D)
-            .withKS(KickerConstants.S)
-            .withKV(KickerConstants.V)
-            .withKA(KickerConstants.A);
+            .withKP(SpindexerConstants.P)
+            .withKI(SpindexerConstants.I)
+            .withKD(SpindexerConstants.D)
+            .withKS(SpindexerConstants.S)
+            .withKV(SpindexerConstants.V)
+            .withKA(SpindexerConstants.A);
     motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
 
-    // apply config
-    PhoenixUtil.tryUntilOk(5, () -> kickerMotor.getConfigurator().apply(motorConfig));
+    // apply configs
+    PhoenixUtil.tryUntilOk(5, () -> spindexerMotor.getConfigurator().apply(motorConfig));
 
     // base status signal
-    position = kickerMotor.getPosition();
-    velocity = kickerMotor.getVelocity();
-    appliedVoltage = kickerMotor.getMotorVoltage();
-    supplyCurrent = kickerMotor.getSupplyCurrent();
-    torqueCurrent = kickerMotor.getTorqueCurrent();
-    tempCelsius = kickerMotor.getDeviceTemp();
+    position = spindexerMotor.getPosition();
+    velocity = spindexerMotor.getVelocity();
+    appliedVoltage = spindexerMotor.getMotorVoltage();
+    supplyCurrent = spindexerMotor.getSupplyCurrent();
+    torqueCurrent = spindexerMotor.getTorqueCurrent();
+    tempCelsius = spindexerMotor.getDeviceTemp();
     PhoenixUtil.tryUntilOk(
         5,
         () ->
@@ -73,35 +75,30 @@ public class KickerIOPhoenix implements KickerIO {
                 tempCelsius));
 
     // optimize bus utilization
-    PhoenixUtil.tryUntilOk(5, () -> kickerMotor.optimizeBusUtilization(0, 1.0));
+    PhoenixUtil.tryUntilOk(5, () -> spindexerMotor.optimizeBusUtilization(0, 1.0));
   }
 
   @Override
-  public void updateInputs(KickerIOInputs inputs) {
-    inputs.motorConnected = kickerMotor.isConnected();
-    inputs.voltage = kickerMotor.getMotorVoltage().getValueAsDouble();
-    inputs.current = kickerMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = kickerMotor.getVelocity().getValueAsDouble();
-    inputs.position = kickerMotor.getPosition().getValueAsDouble();
+  public void updateInputs(SpindexerIOInputs inputs) {
+    inputs.motorConnected = spindexerMotor.isConnected();
+    inputs.voltage = spindexerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.current = spindexerMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.velocity = spindexerMotor.getVelocity().getValueAsDouble();
+    inputs.position = spindexerMotor.getPosition().getValueAsDouble();
   }
 
   @Override
   public void setVelocity(double velocity) {
-    kickerMotor.setControl(kickerRequest.withVelocity(velocity));
-  }
-
-  @Override
-  public double getVelocity() {
-    return kickerMotor.getVelocity().getValueAsDouble();
+    spindexerMotor.setControl(spindexerRequest.withVelocity(velocity));
   }
 
   @Override
   public void setPower(double power) {
-    kickerMotor.set(power);
+    spindexerMotor.set(power);
   }
 
   @Override
   public void setOpenLoop(double output) {
-    kickerMotor.setControl(voltageRequest.withOutput(output));
+    spindexerMotor.setControl(voltageRequest.withOutput(output));
   }
 }

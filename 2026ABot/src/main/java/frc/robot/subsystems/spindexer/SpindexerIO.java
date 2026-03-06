@@ -1,12 +1,12 @@
-package frc.robot.subsystems.kicker;
+package frc.robot.subsystems.spindexer;
 
 import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
-public interface KickerIO {
+public interface SpindexerIO {
 
   @AutoLog
-  public static class KickerIOInputs {
+  class SpindexerIOInputs {
     public boolean motorConnected = false;
     public double voltage;
     public double current;
@@ -15,15 +15,11 @@ public interface KickerIO {
     public double position;
   }
 
-  default void updateInputs(KickerIOInputs inputs) {}
-
-  default void setPower(double power) {}
+  default void updateInputs(SpindexerIOInputs inputs) {}
 
   default void setVelocity(double velocity) {}
 
-  default double getVelocity() {
-    return 0.0;
-  }
+  default void setPower(double power) {}
 
   default void setOpenLoop(double output) {}
 }

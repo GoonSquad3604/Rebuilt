@@ -18,5 +18,5 @@ public class HopperConstants {
   public static final double extendedPos = 0;
   public static final double stowTargetPosition = 0.0;
   public static final double slowStowingPower = -.1;
-  public static final double hopperAtSetpointTolerance = 0.0;
+  public static final double atSetpointTolerance = 0.0;
 }

@@ -30,7 +30,6 @@ public class HopperIOPhoenix implements HopperIO {
   private final PositionVoltage hopperRequest;
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
-
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> appliedVoltage;
