@@ -190,7 +190,7 @@ public class Superstructure extends SubsystemBase {
     intake.setWantedState(IntakeWantedState.IDLE);
     indexer.setWantedState(IndexerWantedState.IDLE);
     if (!climber.isAutoClimbing()) {
-      climber.toggleIsAutoClimbing();
+      climber.setAutoClimbing(true);
     }
   }
 

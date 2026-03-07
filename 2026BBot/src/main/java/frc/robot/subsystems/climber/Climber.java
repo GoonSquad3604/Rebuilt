@@ -59,7 +59,6 @@ public class Climber extends SubsystemBase {
     GRABBED_HIGH_RUNG,
     RELEASING_INNER,
     RELEASED_INNER,
-    GRABBING_HIGH_RUNG_INNER_RELEASED,
     CLIMBING_HIGH_RUNG,
     ON_HIGH_RUNG
   }
@@ -128,10 +127,10 @@ public class Climber extends SubsystemBase {
         // if near deploy position, update state from deploying to deployed
       case DEPLOY -> nearPosition(ClimberConstants.outerDeployedPosition, "outer")
               && nearPosition(ClimberConstants.innerDeployedPosition, "inner")
-          ? ClimberCurrentState.DEPLOYING
-          : ClimberCurrentState.DEPLOYED;
+          ? ClimberCurrentState.DEPLOYED
+          : ClimberCurrentState.DEPLOYING;
         // if near outers's climb low rung position, update state from climbing low to on low
-      case CLIMB_LOW_RUNG -> nearPosition(ClimberConstants.outerClimbL1Position, "outer")
+      case CLIMB_LOW_RUNG -> nearPosition(ClimberConstants.checkClimbL1Position, "outer")
           ? ClimberCurrentState.ON_LOW_RUNG
           : ClimberCurrentState.CLIMBING_LOW_RUNG;
       case DECLIMB_LOW_RUNG -> ClimberCurrentState.DECLIMB_LOW_RUNG;
@@ -148,12 +147,12 @@ public class Climber extends SubsystemBase {
           : ClimberCurrentState.DEPLOYING_OUTER;
 
         // if near inner's mid rung climb position, update state from climbing mid to climbed mid
-      case CLIMB_MID_RUNG -> nearPosition(ClimberConstants.innerClimbL2Position, "inner")
+      case CLIMB_MID_RUNG -> nearPosition(ClimberConstants.checkInnerClimbL2Position, "inner")
           ? ClimberCurrentState.ON_MID_RUNG
           : ClimberCurrentState.CLIMBING_MID_RUNG;
 
         // if near outer high rung's grab position, update state from grabbing high to high rung
-      case GRAB_HIGH_RUNG -> nearPosition(ClimberConstants.outerGrabL3Position, "outer")
+      case GRAB_HIGH_RUNG -> nearPosition(ClimberConstants.checkOuterGrabL3Position, "outer")
           ? ClimberCurrentState.GRABBED_HIGH_RUNG
           : ClimberCurrentState.GRABBING_HIGH_RUNG;
 
@@ -211,8 +210,6 @@ public class Climber extends SubsystemBase {
         break;
 
         // transition states:
-      case GRABBING_HIGH_RUNG_INNER_RELEASED:
-        break;
       case DEPLOYED_OUTER:
         break;
       case GRABBED_HIGH_RUNG:
@@ -353,12 +350,8 @@ public class Climber extends SubsystemBase {
     Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
   }
 
-  public void toggleIsAutoClimbing() {
-    beganAutoClimb = true;
-  }
-
-  public void toggleIsNotAutoClimbing() {
-    beganAutoClimb = false;
+  public void setAutoClimbing(boolean newValue) {
+    beganAutoClimb = newValue;
   }
 
   public boolean isAutoClimbing() {

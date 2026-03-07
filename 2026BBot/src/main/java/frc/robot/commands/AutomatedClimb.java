@@ -12,8 +12,8 @@ import org.littletonrobotics.junction.Logger;
 public class AutomatedClimb extends SequentialCommandGroup {
   /** Creates a new AutomatedClimb. */
   public AutomatedClimb(Climber climber) {
-    Logger.recordOutput("Subsystems/Climber/BeganAutoClimb", true);
     addCommands(
+        Commands.runOnce(() -> Logger.recordOutput("Subsystems/Climber/BeganAutoClimb", true)),
         Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.DEPLOY)),
         Commands.waitUntil(() -> climber.getCurrentState() == ClimberCurrentState.DEPLOYED),
         Commands.waitUntil(
@@ -32,11 +32,9 @@ public class AutomatedClimb extends SequentialCommandGroup {
         Commands.waitUntil(
             () -> climber.getCurrentState() == ClimberCurrentState.GRABBED_HIGH_RUNG),
         Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.RELEASE_INNER)),
-        Commands.waitUntil(
-            () ->
-                climber.getCurrentState() == ClimberCurrentState.GRABBING_HIGH_RUNG_INNER_RELEASED),
+        Commands.waitUntil(() -> climber.getCurrentState() == ClimberCurrentState.RELEASED_INNER),
         Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.CLIMB_HIGH_RUNG)));
 
-    climber.toggleIsNotAutoClimbing();
+    climber.setAutoClimbing(false);
   }
 }

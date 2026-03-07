@@ -90,10 +90,12 @@ public class ClimberIOPhoenix implements ClimberIO {
     outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
     outerEncoderConfig = new CANcoderConfiguration();
     outerEncoderConfig.MagnetSensor.MagnetOffset = 0.2; // 0.8;
+    outerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     outerEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     // inner encoder config
     innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
     innerEncoderConfig = new CANcoderConfiguration();
+    innerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
 
     // motion magic
     innerMotorConfig.MotionMagic.MotionMagicAcceleration = ClimberConstants.innerAcceleration;
@@ -109,8 +111,8 @@ public class ClimberIOPhoenix implements ClimberIO {
     PhoenixUtil.tryUntilOk(5, () -> innerEncoder.getConfigurator().apply(innerEncoderConfig));
 
     // outer base status signal
-    outerPosition = outerMotor.getPosition();
-    outerVelocity = outerMotor.getVelocity();
+    outerPosition = outerEncoder.getAbsolutePosition();
+    outerVelocity = outerEncoder.getVelocity();
     outerAppliedVoltage = outerMotor.getMotorVoltage();
     outerSupplyCurrent = outerMotor.getSupplyCurrent();
     outerTorqueCurrent = outerMotor.getTorqueCurrent();
@@ -128,8 +130,8 @@ public class ClimberIOPhoenix implements ClimberIO {
                 outerTempCelsius));
 
     // inner base status signal
-    innerPosition = innerMotor.getPosition();
-    innerVelocity = innerMotor.getVelocity();
+    innerPosition = innerEncoder.getAbsolutePosition();
+    innerVelocity = innerEncoder.getVelocity();
     innerAppliedVoltage = innerMotor.getMotorVoltage();
     innerSupplyCurrent = innerMotor.getSupplyCurrent();
     innerTorqueCurrent = innerMotor.getTorqueCurrent();
@@ -157,15 +159,15 @@ public class ClimberIOPhoenix implements ClimberIO {
     inputs.outerEncoderConnected = outerEncoder.isConnected();
     inputs.outerVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
     inputs.outerCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.outerVelocity = outerMotor.getVelocity().getValueAsDouble();
-    inputs.outerPosition = outerMotor.getPosition().getValueAsDouble();
+    inputs.outerVelocity = outerEncoder.getVelocity().getValueAsDouble();
+    inputs.outerPosition = outerEncoder.getPosition().getValueAsDouble();
 
     inputs.innerMotorConnected = innerMotor.isConnected();
     inputs.innerEncoderConnected = innerEncoder.isConnected();
     inputs.innerVoltage = innerMotor.getMotorVoltage().getValueAsDouble();
     inputs.innerCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.innerVelocity = innerMotor.getVelocity().getValueAsDouble();
-    inputs.innerPosition = innerMotor.getPosition().getValueAsDouble();
+    inputs.innerVelocity = innerEncoder.getVelocity().getValueAsDouble();
+    inputs.innerPosition = innerEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   // Inner

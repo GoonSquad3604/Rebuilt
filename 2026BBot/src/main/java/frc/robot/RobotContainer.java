@@ -353,10 +353,48 @@ public class RobotContainer {
     // operatorButtonBox
     //     .button(10)
     //     .onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_IN_AUTO));
+    // isAutoClimbing.onTrue(
+    //     Commands.runOnce(() -> Logger.recordOutput("Subsystems/Climber/BeganAutoClimb", true))
+    //         .andThen(Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.DEPLOY)))
+    //         .until(
+    //             () ->
+    //                 climber.getCurrentState() == ClimberCurrentState.DEPLOYED
+    //                     && (RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)
+    //                         || RobotState.getInstance()
+    //                             .atDrivePosition(DriveConstants.rightClimbPos)))
+    //         .andThen(
+    //             Commands.runOnce(() ->
+    // climber.setWantedState(ClimberWantedState.CLIMB_LOW_RUNG)))
+    //         .until(() -> climber.getCurrentState() == ClimberCurrentState.ON_LOW_RUNG)
+    //         .andThen(
+    //             Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.GRAB_MID_RUNG)))
+    //         .until(() -> climber.getCurrentState() == ClimberCurrentState.GRABBED_MID_RUNG)
+    //         .andThen(
+    //             Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.DEPLOY_OUTER)))
+    //         .until(() -> climber.getCurrentState() == ClimberCurrentState.DEPLOYED_OUTER)
+    //         .andThen(
+    //             Commands.runOnce(() ->
+    // climber.setWantedState(ClimberWantedState.CLIMB_MID_RUNG)))
+    //         .until(() -> climber.getCurrentState() == ClimberCurrentState.ON_MID_RUNG)
+    //         .andThen(
+    //             Commands.runOnce(() ->
+    // climber.setWantedState(ClimberWantedState.GRAB_HIGH_RUNG)))
+    //         .until(() -> climber.getCurrentState() == ClimberCurrentState.GRABBED_HIGH_RUNG)
+    //         .andThen(
+    //             Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.RELEASE_INNER)))
+    //         .until(
+    //             () ->
+    //                 climber.getCurrentState()
+    //                     == ClimberCurrentState.GRABBING_HIGH_RUNG_INNER_RELEASED)
+    //         .andThen(
+    //             Commands.runOnce(() ->
+    // climber.setWantedState(ClimberWantedState.CLIMB_HIGH_RUNG)))
+    //         .andThen(Commands.runOnce(() -> climber.toggleIsNotAutoClimbing())));
+
     isAutoClimbing.onTrue(new AutomatedClimb(climber));
 
     operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
-    // operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
+    operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
     // operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
     operatorButtonBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
     // operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
@@ -378,7 +416,12 @@ public class RobotContainer {
         .button(4)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
 
-    operatorButtonBox.button(8).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+    operatorButtonBox
+        .button(8)
+        .onTrue(
+            superstructure
+                .setWantedState(WantedSuperState.STOPPED)
+                .andThen(Commands.runOnce(() -> climber.setAutoClimbing(false))));
 
     // operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.VOMIT));
     // operatorButtonBox.button(7).onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
