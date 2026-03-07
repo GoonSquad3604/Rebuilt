@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexerWantedState;
@@ -22,7 +24,7 @@ public class Superstructure extends SubsystemBase {
   private final Intake intake;
   private final Indexer indexer;
   private final Shooter shooter;
-  // private final Climber climber;
+  private final Climber climber;
 
   public enum WantedSuperState {
     STOPPED,
@@ -31,8 +33,9 @@ public class Superstructure extends SubsystemBase {
     INTAKE_AND_SHOOT,
     SHOOT,
     // CLIMB,
+    CLIMB_MANUAL,
     // CLIMB_AND_SHOOT,
-    // DECLIMB
+    DECLIMB
   }
 
   public enum CurrentSuperState {
@@ -41,9 +44,10 @@ public class Superstructure extends SubsystemBase {
     VOMITING,
     INTAKING_AND_SHOOTING,
     SHOOTING,
-    // CLIMBING,
+    CLIMBING,
+    CLIMBING_MANUAL,
     // CLIMBING_AND_SHOOTING,
-    // DECLIMBING
+    DECLIMBING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -51,12 +55,13 @@ public class Superstructure extends SubsystemBase {
   private CurrentSuperState previousSuperState;
 
   /** Creates a new Superstructure. */
-  public Superstructure(Drive drive, Intake intake, Indexer indexer, Shooter shooter) {
+  public Superstructure(
+      Drive drive, Intake intake, Indexer indexer, Shooter shooter, Climber climber) {
     this.drive = drive;
     this.intake = intake;
     this.indexer = indexer;
     this.shooter = shooter;
-    // this.climber = climber;
+    this.climber = climber;
   }
 
   @Override
@@ -84,6 +89,9 @@ public class Superstructure extends SubsystemBase {
         // case CLIMB:
         //   currentSuperState = CurrentSuperState.CLIMBING;
         //   break;
+      case CLIMB_MANUAL:
+        currentSuperState = CurrentSuperState.CLIMBING_MANUAL;
+        break;
       case STOPPED:
         currentSuperState = CurrentSuperState.STOPPED;
         break;
@@ -102,10 +110,8 @@ public class Superstructure extends SubsystemBase {
         // case CLIMB_AND_SHOOT:
         //   currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
         //   break;
-        // case DECLIMB:
-        //   currentSuperState = CurrentSuperState.DECLIMBING;
-        //   break;
-      default:
+      case DECLIMB:
+        currentSuperState = CurrentSuperState.DECLIMBING;
         break;
     }
     return currentSuperState;
@@ -134,9 +140,9 @@ public class Superstructure extends SubsystemBase {
         // case CLIMBING_AND_SHOOTING:
         //   climbAndShoot();
         //   break;
-        // case DECLIMBING:
-        //   declimb();
-        //   break;
+      case DECLIMBING:
+        declimb();
+        break;
     }
   }
 
@@ -179,24 +185,28 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
+  // auto climb
   // private void climb() {
   //   shooter.setWantedState(ShooterWantedState.IDLE);
   //   intake.setWantedState(IntakeWantedState.IDLE);
   //   indexer.setWantedState(IndexerWantedState.IDLE);
-  //   // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
   // }
 
-  // private void declimb() {
-  //   shooter.setWantedState(ShooterWantedState.IDLE);
-  //   intake.setWantedState(IntakeWantedState.IDLE);
-  //   indexer.setWantedState(IndexerWantedState.IDLE);
-  //   // climber.setWantedState(ClimberWantedState.LOWER_TO_GROUND);
-  // }
+  // descend
+  private void declimb() {
+    climber.setWantedState(ClimberWantedState.UNCLIMB_LOW_RUNG);
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    indexer.setWantedState(IndexerWantedState.IDLE);
+  }
+
+  public Command progressManualClimb() {
+    return Commands.runOnce(() -> climber.updateClimberState(climber.decideNextClimbState()));
+  }
 
   // private void climbAndShoot() {
   //   shooter.setWantedState(ShooterWantedState.SHOOT);
   //   intake.setWantedState(IntakeWantedState.IDLE);
   //   indexer.setWantedState(IndexerWantedState.INDEX);
-  //   // climber.setWantedState(ClimberWantedState.DEPLOY); // tbd
   // }
 }

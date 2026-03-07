@@ -18,6 +18,8 @@ public class Climber extends SubsystemBase {
   private SysIdRoutine climberInnerSysId;
   private SysIdRoutine climberOuterSysId;
 
+  private int manualClimbStep = 0;
+
   public enum ClimberWantedState {
     IDLE,
     STOW,
@@ -85,29 +87,22 @@ public class Climber extends SubsystemBase {
 
     climberIO.updateInputs(climberInputs);
     Logger.processInputs("Subsystems/Climber", climberInputs);
+    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
 
-    ClimberCurrentState newState = handleStateTransitions();
-    if (newState != currentState) {
-      currentState = newState;
-      Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
-      applyStates();
-    }
+    // ClimberCurrentState newState = handleStateTransitions();
+    // if (newState != currentState) {
+    //   currentState = newState;
+    //   Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+    //   applyStates();
+    // }
 
-    Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
+    // Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
   }
 
   public void setWantedState(ClimberWantedState wantedState) {
     this.wantedState = wantedState;
   }
 
-  //  IDLE,
-  //   STOW,
-  //   DEPLOY,
-  //   CLIMB_L1,
-  //   UNCLIMB_L1,
-  //   CLIMB_L2,
-  //   CLIMB_L3,
-  //   CLIMB
   private ClimberCurrentState handleStateTransitions() {
     return switch (wantedState) {
       case IDLE -> ClimberCurrentState.IDLING;
@@ -124,7 +119,7 @@ public class Climber extends SubsystemBase {
     };
   }
 
-  private ClimberCurrentState decideNextClimbState() {
+  public ClimberCurrentState decideNextClimbState() {
     return switch (currentState) {
       case IDLING -> ClimberCurrentState.IDLING;
       case DEPLOYED ->
@@ -220,23 +215,90 @@ public class Climber extends SubsystemBase {
         ClimberConstants.atSetpointTolerance);
   }
 
+  public void updateClimberState(ClimberCurrentState newState) {
+    currentState = newState;
+    Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+  }
+
+  public void resetClimbStep() {
+    manualClimbStep = 0;
+  }
+
+  public void progressManualClimb() {
+    switch (manualClimbStep) {
+      case 0:
+        // climbers are stowed, deploy
+        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+        climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+        break;
+      case 1:
+        // climbers are deployed (assuming aligned), climb L1
+        climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+        break;
+      case 2:
+        // outer hooks are on L1, grab onto L2 with inners
+        climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+        break;
+      case 3:
+        // L2 is hooked, release L1
+        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+        break;
+      case 4:
+        // L1 (outer) released, pull up on L2 (inner)
+        climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
+        break;
+      case 5:
+        // L2 pulled up, latch L3
+        climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+        break;
+      case 6:
+        // L3 is latched, release L2
+        climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
+        break;
+      case 7:
+        // L2 released, CLIMB L3!!!! (and release the inner pid)
+        climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
+        climberIO.setInnerPower(0.0);
+        break;
+      default:
+        break;
+    }
+    manualClimbStep++;
+    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
+  }
+
   // testing only, remove later:
   public void setPowerOuterRungs(double power) {
     climberIO.setOuterPower(power);
   }
 
   public void setPowerInnerRungs(double power) {
-    climberIO.setInnerPosition(power);
+    climberIO.setInnerPower(power);
   }
 
-  public Command climberInnerHooksSysIdQuasistatic(SysIdRoutine.Direction direction) {
+  public void TESTDeployClimber() {
+    climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+  }
+
+  public void TESTStowClimber() {
+    climberIO.setInnerPosition(ClimberConstants.innerStowedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerStowedPosition);
+  }
+
+  public void TESTClimbL1() {
+    // climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+  }
+
+  public Command climberInnerSysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> climberIO.setInnerOpenLoop(0))
         .withTimeout(1.0)
         .andThen(climberInnerSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
-  public Command climberInnerHooksSysIdDynamic(SysIdRoutine.Direction direction) {
+  public Command climberInnerSysIdDynamic(SysIdRoutine.Direction direction) {
     return run(() -> climberIO.setInnerOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(climberInnerSysId.dynamic(direction));

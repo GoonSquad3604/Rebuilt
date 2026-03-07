@@ -2,44 +2,57 @@ package frc.robot.subsystems.climber;
 
 /** Add your docs here. */
 public final class ClimberConstants {
-  public static final int outerMotorID = 15;
-  public static final int innerMotorID = 4;
+  public static final int outerMotorID = 4;
+  public static final int innerMotorID = 15;
 
-  public static final int outerEncoderID = 28;
-  public static final int innerEncoderID = 29;
+  public static final int outerEncoderID = 29;
+  public static final int innerEncoderID = 28;
 
-  public static final double innerP = 0;
+  public static final double innerP = 200;
   public static final double innerI = 0;
   public static final double innerD = 0;
-  public static final double innerS = 0;
-  public static final double innerV = 0;
+  public static final double innerS = 0.9;
+  public static final double innerV = 1;
   public static final double innerA = 0;
 
-  public static final double outerP = 0;
+  public static final double outerP = 200;
   public static final double outerI = 0;
   public static final double outerD = 0;
-  public static final double outerS = 0;
-  public static final double outerV = 0;
+  public static final double outerS = 0.9;
+  public static final double outerV = 1;
   public static final double outerA = 0;
 
-  // climber setpoint logic:
-  // inner&outer deploy
-  // outer climb l1
-  // inner climb l2
-  // outer deploy (cross L3)
-  // outer climb l3
+  public static final double innerStowedPosition = -0.325; // bbot only
+  public static final double outerStowedPosition = -0.480; // bbot only
 
-  public static final double innerStowedPosition = 0;
-  public static final double outerStowedPosition = 0;
+  // step 0
+  public static final double innerDeployedPosition = -0.690;
+  public static final double outerDeployedPosition = -0.132;
 
-  public static final double innerDeployedPosition = 0;
-  public static final double outerDeployedPosition = 0;
+  // step 1
+  public static final double outerClimbL1Position = -0.470; // real: -0.450;
 
-  public static final double outerClimbL1Position = 0;
+  // step 2
+  public static final double innerGrabL2Position = -0.651;
 
-  public static final double innerClimbL2Position = 0;
+  // step 3: L1 to deployed position
 
-  public static final double outerClimbL3Position = 0;
+  // step 4
+  public static final double innerClimbL2Position = -0.355;
 
-  public static final double atSetpointTolerance = 0;
+  // step 5
+  public static final double outerGrabL3Position = -0.165;
+
+  // step 6
+  public static final double innerReleaseL2Position = -0.4;
+
+  // step 7 (and disable inner pid)
+  public static final double outerClimbL3Position = -0.46; // placeholder
+
+  public static final double atSetpointTolerance = 0; // placeholder
+
+  public static final double innerAcceleration = 8;
+  public static final double outerAcceleration = 8;
+  public static final double innerVelocity = 4;
+  public static final double outerVelocity = 4;
 }
