@@ -25,7 +25,7 @@ public final class ClimberConstants {
   public static final double innerStowedPosition = 0.674; // bbot only
   public static final double outerStowedPosition = 0.515; // bbot only
 
-  public static final double outerClimbL1PositionAuto = 0.539;
+  public static final double outerClimgitbL1PositionAuto = 0.539;
 
   // step 0
   public static final double innerDeployedPosition = 0.308;
