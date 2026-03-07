@@ -176,7 +176,15 @@ public class RobotState {
   }
 
   public boolean atDrivePosition(Pose2d position) {
-    return MathUtil.isNear(position.getX(), getPose().getX(), .1)
-        && MathUtil.isNear(position.getY(), getPose().getY(), .1);
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseX", MathUtil.isNear(position.getX(), getPose().getX(), .1));
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseY", MathUtil.isNear(position.getX(), getPose().getX(), .1));
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseRotation",
+    //     MathUtil.isNear(position.getRotation().getDegrees(), -90, 05));
+    return MathUtil.isNear(position.getX(), getPose().getX(), .05)
+        && MathUtil.isNear(position.getY(), getPose().getY(), .05)
+        && MathUtil.isNear(position.getRotation().getDegrees(), -90, 1);
   }
 }

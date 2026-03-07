@@ -11,8 +11,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
+import frc.robot.commands.AutomatedClimb;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -21,6 +23,7 @@ import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -38,6 +41,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Set;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -248,6 +252,9 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
+    /* climb trigger */
+    Trigger isAutoClimbing = new Trigger(() -> climber.isAutoClimbing());
+
     /* driver */
 
     // Default command, normal field-relative drive
@@ -299,16 +306,18 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     // climb
-    // driverController
-    //     .povLeft()
-    //     .whileTrue(
-    //         Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
-    // driverController
-    //     .povRight()
-    //     .whileTrue(
-    //         Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive))
-    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos)));
+    driverController
+        .povLeft()
+        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
+    driverController
+        .povRight()
+        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
+        .whileTrue(
+            Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive))
+                .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos)));
 
     // toggle intake mode
     driverController
@@ -341,11 +350,20 @@ public class RobotContainer {
     driverController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
     /* operator */
-    operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
-    operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
-    // operatorButtonBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
-    // operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTClimbL1()));
-    operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
+    // operatorButtonBox
+    //     .button(10)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_IN_AUTO));
+    isAutoClimbing.onTrue(new AutomatedClimb(climber));
+
+    operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
+    // operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
+    // operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
+    operatorButtonBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
+    // operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
+
+    operatorButtonBox.button(8).onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB));
+
+    operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
 
     // manual target
     operatorButtonBox.button(1).onTrue(RobotState.getInstance().toggleManualShooting());

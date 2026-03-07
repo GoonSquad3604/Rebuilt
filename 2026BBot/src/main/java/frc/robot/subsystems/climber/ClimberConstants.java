@@ -25,6 +25,8 @@ public final class ClimberConstants {
   public static final double innerStowedPosition = -0.325; // bbot only
   public static final double outerStowedPosition = -0.480; // bbot only
 
+  public static final double outerClimbL1PositionAuto = -0.425;
+
   // step 0
   public static final double innerDeployedPosition = -0.690;
   public static final double outerDeployedPosition = -0.132;
@@ -49,7 +51,7 @@ public final class ClimberConstants {
   // step 7 (and disable inner pid)
   public static final double outerClimbL3Position = -0.46; // placeholder
 
-  public static final double atSetpointTolerance = 0; // placeholder
+  public static final double atSetpointTolerance = 0.001; // placeholder
 
   public static final double innerAcceleration = 8;
   public static final double outerAcceleration = 8;

@@ -23,7 +23,7 @@ public class DriveConstants {
   public static final double DRIVE_MAX_ACCELERATION = 20;
 
   public static final Pose2d leftClimbPos =
-      new Pose2d(1.677, 4.128, new Rotation2d(Units.degreesToRadians(-90)));
+      new Pose2d(1.531, 4.197, new Rotation2d(Units.degreesToRadians(-90)));
   public static final Pose2d rightClimbPos =
-      new Pose2d(1.667, 3.268, new Rotation2d(Units.degreesToRadians(-90)));
+      new Pose2d(1.523, 3.331, new Rotation2d(Units.degreesToRadians(-90)));
 }
