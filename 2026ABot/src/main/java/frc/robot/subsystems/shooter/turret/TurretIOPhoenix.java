@@ -76,7 +76,9 @@ public class TurretIOPhoenix implements TurretIO {
         new Slot0Configs()
             .withKP(ShooterConstants.TurretConstants.turretP)
             .withKI(ShooterConstants.TurretConstants.turretI)
-            .withKD(ShooterConstants.TurretConstants.turretD);
+            .withKD(ShooterConstants.TurretConstants.turretD)
+            .withKS(ShooterConstants.TurretConstants.turretS)
+            .withKV(ShooterConstants.TurretConstants.turretV);
     turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
@@ -99,16 +101,6 @@ public class TurretIOPhoenix implements TurretIO {
                 torqueCurrent,
                 tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.optimizeBusUtilization(0, 1.0));
-
-    var slot0Configs = new Slot0Configs();
-
-    slot0Configs.kP = ShooterConstants.TurretConstants.turretP;
-    slot0Configs.kI = ShooterConstants.TurretConstants.turretI;
-    slot0Configs.kD = ShooterConstants.TurretConstants.turretD;
-    slot0Configs.kS = ShooterConstants.TurretConstants.turretS;
-    slot0Configs.kV = ShooterConstants.TurretConstants.turretV;
-
-    turretMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
