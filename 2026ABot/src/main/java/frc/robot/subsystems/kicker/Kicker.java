@@ -2,6 +2,7 @@ package frc.robot.subsystems.kicker;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -88,6 +89,13 @@ public class Kicker extends SubsystemBase {
 
   private void rev() {
     kickerIO.setPower(KickerConstants.shootingVelocity);
+  }
+
+  public boolean atVelocity() {
+    return MathUtil.isNear(
+        KickerConstants.shootingVelocity,
+        kickerIO.getVelocity(),
+        KickerConstants.shootingVelocityTolerance);
   }
 
   // testing only, remove later:

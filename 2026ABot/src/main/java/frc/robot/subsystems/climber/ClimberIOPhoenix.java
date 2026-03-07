@@ -1,154 +1,204 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
 public class ClimberIOPhoenix implements ClimberIO {
+
+  private final TalonFX outerMotor, innerMotor;
+  private final CANcoder outerEncoder, innerEncoder;
+  private final TalonFXConfiguration outerMotorConfig, innerMotorConfig;
+  private final CANcoderConfiguration outerEncoderConfig, innerEncoderConfig;
+
+  private final PositionVoltage innerRequest;
+  private final PositionVoltage outerRequest;
+
   private final VoltageOut voltageRequest = new VoltageOut(0);
-  private TalonFX outerMotor, innerMotor;
-  private CANcoder outerEncoder, innerEncoder;
-  private TalonFXConfiguration outerConfig, innerConfig;
-  private CANcoderConfiguration outerEncoderConfig, innerEncoderConfig;
+
+  private final StatusSignal<Angle> outerPosition;
+  private final StatusSignal<AngularVelocity> outerVelocity;
+  private final StatusSignal<Voltage> outerAppliedVoltage;
+  private final StatusSignal<Current> outerSupplyCurrent;
+  private final StatusSignal<Current> outerTorqueCurrent;
+  private final StatusSignal<Temperature> outerTempCelsius;
+
+  private final StatusSignal<Angle> innerPosition;
+  private final StatusSignal<AngularVelocity> innerVelocity;
+  private final StatusSignal<Voltage> innerAppliedVoltage;
+  private final StatusSignal<Current> innerSupplyCurrent;
+  private final StatusSignal<Current> innerTorqueCurrent;
+  private final StatusSignal<Temperature> innerTempCelsius;
 
   public ClimberIOPhoenix() {
-    // declared motor & configs
-    outerMotor = new TalonFX(ClimberConstants.climberHook1MotorID, Constants.CANBusName);
-    innerMotor = new TalonFX(ClimberConstants.climberHook2MotorID, Constants.CANBusName);
-    outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
-    innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
 
-    outerConfig = new TalonFXConfiguration();
-    innerConfig = new TalonFXConfiguration();
+    innerRequest = new PositionVoltage(0).withSlot(0);
+    outerRequest = new PositionVoltage(0).withSlot(0);
+
+    // outer motor config
+    outerMotor = new TalonFX(ClimberConstants.outerMotorID, Constants.CANBusName);
+    outerMotorConfig = new TalonFXConfiguration();
+    outerMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    outerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    outerMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    outerMotorConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(ClimberConstants.outerP)
+            .withKI(ClimberConstants.outerI)
+            .withKD(ClimberConstants.outerD)
+            .withKS(ClimberConstants.outerS)
+            .withKV(ClimberConstants.outerV)
+            .withKA(ClimberConstants.outerA);
+    outerMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+
+    // inner motor config
+    innerMotor = new TalonFX(ClimberConstants.innerMotorID, Constants.CANBusName);
+    innerMotorConfig = new TalonFXConfiguration();
+    innerMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    innerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    innerMotorConfig.Feedback.FeedbackRemoteSensorID = ClimberConstants.innerEncoderID;
+    innerMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    innerMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    innerMotorConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(ClimberConstants.innerP)
+            .withKI(ClimberConstants.innerI)
+            .withKD(ClimberConstants.innerD)
+            .withKS(ClimberConstants.innerS)
+            .withKV(ClimberConstants.innerV)
+            .withKA(ClimberConstants.innerA);
+    innerMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+
+    // outer encoder config
+    outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
     outerEncoderConfig = new CANcoderConfiguration();
+
+    // inner encoder config
+    innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
     innerEncoderConfig = new CANcoderConfiguration();
 
-    // configs for Encoders
-    outerEncoder.getConfigurator().apply(outerEncoderConfig);
-    innerEncoder.getConfigurator().apply(innerEncoderConfig);
-
-    // configs for both motors
-    outerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
-    outerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // placeholder
-    outerConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
-    outerConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
-    outerConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
-    outerConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
-    outerConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
-    outerConfig.Voltage.PeakReverseVoltage = -12.0; // placeholder
-    outerConfig.Slot0 =
-        new Slot0Configs()
-            .withKP(ClimberConstants.innerP)
-            .withKI(ClimberConstants.innerI)
-            .withKD(ClimberConstants.innerD)
-            .withKS(ClimberConstants.innerS)
-            .withKV(ClimberConstants.innerV)
-            .withKA(ClimberConstants.innerA);
-    outerConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
-    outerConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
-
-    innerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake; // placeholder
-    innerConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // placeholder
-    innerConfig.CurrentLimits.SupplyCurrentLimitEnable = true; // placeholder
-    innerConfig.CurrentLimits.SupplyCurrentLimit = 40; // placeholder
-    innerConfig.CurrentLimits.StatorCurrentLimitEnable = true; // placeholder
-    innerConfig.CurrentLimits.StatorCurrentLimit = 80; // placeholder
-    innerConfig.Voltage.PeakForwardVoltage = 12.0; // placeholder
-    innerConfig.Voltage.PeakReverseVoltage = -12.0; // placeholde
-    innerConfig.Slot0 =
-        new Slot0Configs()
-            .withKP(ClimberConstants.innerP)
-            .withKI(ClimberConstants.innerI)
-            .withKD(ClimberConstants.innerD)
-            .withKS(ClimberConstants.innerS)
-            .withKV(ClimberConstants.innerV)
-            .withKA(ClimberConstants.innerA);
-    innerConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02; // placeholder
-    innerConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .5; // placeholder
-
     // apply configs
-    PhoenixUtil.tryUntilOk(5, () -> outerMotor.getConfigurator().apply(outerConfig));
-    PhoenixUtil.tryUntilOk(5, () -> innerMotor.getConfigurator().apply(innerConfig));
+    PhoenixUtil.tryUntilOk(5, () -> outerMotor.getConfigurator().apply(outerMotorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> innerMotor.getConfigurator().apply(innerMotorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> outerEncoder.getConfigurator().apply(outerEncoderConfig));
+    PhoenixUtil.tryUntilOk(5, () -> innerEncoder.getConfigurator().apply(innerEncoderConfig));
+
+    // outer base status signal
+    outerPosition = innerMotor.getPosition();
+    outerVelocity = innerMotor.getVelocity();
+    outerAppliedVoltage = innerMotor.getMotorVoltage();
+    outerSupplyCurrent = innerMotor.getSupplyCurrent();
+    outerTorqueCurrent = innerMotor.getTorqueCurrent();
+    outerTempCelsius = innerMotor.getDeviceTemp();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                outerPosition,
+                outerVelocity,
+                outerAppliedVoltage,
+                outerSupplyCurrent,
+                outerTorqueCurrent,
+                outerTempCelsius));
+
+    // inner base status signal
+    innerPosition = innerMotor.getPosition();
+    innerVelocity = innerMotor.getVelocity();
+    innerAppliedVoltage = innerMotor.getMotorVoltage();
+    innerSupplyCurrent = innerMotor.getSupplyCurrent();
+    innerTorqueCurrent = innerMotor.getTorqueCurrent();
+    innerTempCelsius = innerMotor.getDeviceTemp();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                innerPosition,
+                innerVelocity,
+                innerAppliedVoltage,
+                innerSupplyCurrent,
+                innerTorqueCurrent,
+                innerTempCelsius));
+
+    // optimize bus utilization
+    PhoenixUtil.tryUntilOk(5, () -> outerMotor.optimizeBusUtilization(0, 1.0));
+    PhoenixUtil.tryUntilOk(5, () -> innerMotor.optimizeBusUtilization(0, 1.0));
   }
 
   @Override
   public void updateInputs(ClimberIOInputs inputs) {
-    inputs.outerMotorConnected =
-        BaseStatusSignal.refreshAll(
-                outerMotor.getMotorVoltage(),
-                outerMotor.getSupplyCurrent(),
-                outerMotor.getDeviceTemp(),
-                outerMotor.getVelocity())
-            .isOK();
-    inputs.outerMotorVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
-    inputs.outerMotorCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
-
-    inputs.innerMotorConnected =
-        BaseStatusSignal.refreshAll(
-                innerMotor.getMotorVoltage(),
-                innerMotor.getSupplyCurrent(),
-                innerMotor.getDeviceTemp(),
-                innerMotor.getVelocity())
-            .isOK();
-    inputs.innerMotorVoltage = innerMotor.getMotorVoltage().getValueAsDouble();
-    inputs.innerMotorCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
-
+    inputs.outerMotorConnected = outerMotor.isConnected();
     inputs.outerEncoderConnected = outerEncoder.isConnected();
-    inputs.outerPosition = outerEncoder.getAbsolutePosition().getValueAsDouble();
+    inputs.outerVelocity = outerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.outerCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.outerVelocity = outerMotor.getVelocity().getValueAsDouble();
+    inputs.outerPosition = outerMotor.getPosition().getValueAsDouble();
+
+    inputs.innerMotorConnected = innerMotor.isConnected();
     inputs.innerEncoderConnected = innerEncoder.isConnected();
-    inputs.innerPostion = innerEncoder.getAbsolutePosition().getValueAsDouble();
+    inputs.innerVelocity = innerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.innerCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.innerVelocity = innerMotor.getVelocity().getValueAsDouble();
+    inputs.innerPosition = innerMotor.getPosition().getValueAsDouble();
+  }
+
+  // Inner
+  @Override
+  public void setInnerPosition(double position) {
+    innerMotor.setControl(innerRequest.withPosition(position));
   }
 
   @Override
-  public void setPowerOuter(double power) {
-    outerMotor.set(power);
+  public double getInnerPosition() {
+    return innerMotor.getPosition().getValueAsDouble();
   }
 
   @Override
-  public void setPowerInner(double power) {
+  public void setInnerPower(double power) {
     innerMotor.set(power);
   }
 
   @Override
-  public double getPositionOuter() {
-    return outerEncoder.getAbsolutePosition().getValueAsDouble();
+  public void setInnerOpenLoop(double output) {
+    innerMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  // Outer
+  @Override
+  public void setOuterPosition(double position) {
+    innerMotor.setControl(outerRequest.withPosition(position));
   }
 
   @Override
-  public double getPositionInner() {
-    return innerEncoder.getAbsolutePosition().getValueAsDouble();
+  public double getOuterPosition() {
+    return innerMotor.getPosition().getValueAsDouble();
   }
 
   @Override
-  public void setVoltageOuter(double voltage) {
-    outerMotor.setVoltage(voltage);
+  public void setOuterPower(double power) {
+    innerMotor.set(power);
   }
 
   @Override
-  public void setVoltageInner(double voltage) {
-    innerMotor.setVoltage(voltage);
-  }
-
-  @Override
-  public void setClimber1OpenLoop(double output) {
-    outerMotor.setControl(voltageRequest.withOutput(output));
-  }
-
-  @Override
-  public void setClimber2OpenLoop(double output) {
+  public void setOuterOpenLoop(double output) {
     innerMotor.setControl(voltageRequest.withOutput(output));
   }
 }

@@ -86,7 +86,7 @@ public class Hopper extends SubsystemBase {
       case STOW -> MathUtil.isNear(
               HopperConstants.stowTargetPosition,
               hopperIO.getPosition(),
-              HopperConstants.hopperAtSetpointTolerance)
+              HopperConstants.atSetpointTolerance)
           ? HopperCurrentState.STOWING_SLOW
           : HopperCurrentState.STOWING_FAST;
     };

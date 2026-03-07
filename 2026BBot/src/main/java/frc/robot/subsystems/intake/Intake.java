@@ -100,7 +100,7 @@ public class Intake extends SubsystemBase {
   }
 
   private void runIntake() {
-    io.setPower(0.6);
+    io.setPower(0.4);
   }
 
   private void stopIntake() {

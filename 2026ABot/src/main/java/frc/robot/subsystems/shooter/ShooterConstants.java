@@ -1,19 +1,19 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 public final class ShooterConstants {
 
   public static final double loopPeriodSecs = 0.02;
 
-  public static Transform2d robotToTurret =
-      new Transform2d(
+  public static Transform3d robotToTurret =
+      new Transform3d(
           Units.inchesToMeters(7.5),
           Units.inchesToMeters(0.0),
-          // Units.inchesToMeters(36),
-          Rotation2d.kZero);
+          Units.inchesToMeters(36),
+          Rotation3d.kZero);
 
   public static final class HoodConstants {
 
@@ -25,6 +25,8 @@ public final class ShooterConstants {
     public static final double hoodD = 0;
     public static final double hoodS = 0.1;
     public static final double hoodV = 0;
+
+    public static final double forwardPosition = 0.1;
   }
 
   public static final class LauncherConstants {
@@ -37,6 +39,8 @@ public final class ShooterConstants {
     public static final double launcherS = 0.14383;
     public static final double launcherV = 0.12361;
     public static final double launcherA = 0.038879;
+
+    public static final double forwardVelocity = 45;
   }
 
   public static final class TurretConstants {
@@ -50,10 +54,12 @@ public final class ShooterConstants {
     public static final double turretS = 0;
     public static final double turretV = 0;
 
-    public static final double maxEncoderPos = 0.5;
-    public static final double minEncoderPos = 0.0;
-    public static final double maxAnglePos = 180;
-    public static final double minAnglePos = 0;
+    public static final double maxEncoderPosition = 0.5;
+    public static final double minEncoderPosition = 0.0;
+    public static final double maxAnglePosition = 180;
+    public static final double minAnglePosition = 0;
+
+    public static final double forwardPosition = 0;
   }
 
   public static final class KickerConstants {

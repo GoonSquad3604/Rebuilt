@@ -1,51 +1,48 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.climber;
 
 import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface ClimberIO {
-  default void updateInputs(ClimberIOInputs inputs) {}
 
   @AutoLog
   class ClimberIOInputs {
-    public boolean lowRungMotorConnected = false;
-    public double lowRungMotorVoltage;
-    public double lowRungMotorCurrent;
-    public boolean midRungMotorConnected = false;
-    public double midRungMotorVoltage;
-    public double midRungMotorCurrent;
+    public boolean outerMotorConnected = false;
+    public boolean outerEncoderConnected = false;
+    public double outerVoltage;
+    public double outerCurrent;
+    public double outerVelocity;
+    public double outerTemperature;
+    public double outerPosition;
 
-    public boolean lowRungEncoderConnected = false;
-    public double lowRungPosition;
-    public boolean midRungEncoderConnected = false;
-    public double midRungPostion;
+    public boolean innerMotorConnected = false;
+    public boolean innerEncoderConnected = false;
+    public double innerVoltage;
+    public double innerCurrent;
+    public double innerVelocity;
+    public double innerTemperature;
+    public double innerPosition;
   }
 
-  default void setPowerLowRung(double power) {}
+  default void updateInputs(ClimberIOInputs inputs) {}
 
-  default void setPowerMidRung(double power) {}
+  default void setOuterPosition(double position) {}
 
-  default void setClimber1OpenLoop(double output) {}
+  default void setOuterPower(double power) {}
 
-  default void setClimber2OpenLoop(double output) {}
+  default void setOuterOpenLoop(double output) {}
 
-  default void setPositionLowRung(double position) {}
-
-  default void setPositionMidRung(double position) {}
-
-  default double getPositionLowRung() {
+  default double getOuterPosition() {
     return 0.0;
   }
 
-  default double getPositionMidRung() {
+  default void setInnerPosition(double position) {}
+
+  default void setInnerPower(double power) {}
+
+  default void setInnerOpenLoop(double output) {}
+
+  default double getInnerPosition() {
     return 0.0;
   }
-
-  default void setVoltageLowRung(double volts) {}
-
-  default void setVoltageMidRung(double volts) {}
 }

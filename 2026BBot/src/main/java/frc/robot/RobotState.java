@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -172,5 +173,18 @@ public class RobotState {
 
   public Pose2d getTargetPathfindPose() {
     return targetPose;
+  }
+
+  public boolean atDrivePosition(Pose2d position) {
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseX", MathUtil.isNear(position.getX(), getPose().getX(), .1));
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseY", MathUtil.isNear(position.getX(), getPose().getX(), .1));
+    // Logger.recordOutput(
+    //     "RobotState/AtDrivePoseRotation",
+    //     MathUtil.isNear(position.getRotation().getDegrees(), -90, 05));
+    return MathUtil.isNear(position.getX(), getPose().getX(), .05)
+        && MathUtil.isNear(position.getY(), getPose().getY(), .05)
+        && MathUtil.isNear(position.getRotation().getDegrees(), -90, 1);
   }
 }

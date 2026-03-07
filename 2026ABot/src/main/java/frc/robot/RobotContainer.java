@@ -33,16 +33,20 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperIOPhoenix;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.intake.hinge.HingeIOPhoenix;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
+import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIOPhoenix;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
+import frc.robot.subsystems.spindexer.Spindexer;
+import frc.robot.subsystems.spindexer.SpindexerIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -58,14 +62,17 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Climber climber;
+  private final Hopper hopper;
   private final Intake intake;
+  private final Kicker kicker;
   private final Shooter shooter;
+  private final Spindexer spindexer;
   private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
-  private final CommandXboxController testController = new CommandXboxController(2);
   private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
+  private final CommandXboxController testController = new CommandXboxController(2);
   //   private final CommandJoystick pitBox = new CommandJoystick(2);
 
   // Dashboard inputs
@@ -76,8 +83,6 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
-        // a CANcoder
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -94,31 +99,14 @@ public class RobotContainer {
                 new VisionIOPhotonVision(camera2Name, robotToCamera2),
                 new VisionIOPhotonVision(camera3Name, robotToCamera3));
         climber = new Climber(new ClimberIOPhoenix());
-        shooter =
-            new Shooter(
-                new HoodIOPhoenix(),
-                new LauncherIOPhoenix(),
-                new TurretIOPhoenix());
+        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        superstructure = new Superstructure(drive, intake, shooter, climber);
+        kicker = new Kicker(new KickerIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        spindexer = new Spindexer(new SpindexerIOPhoenix());
+        superstructure =
+            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
 
-        // The ModuleIOTalonFXS implementation provides an example implementation for
-        // TalonFXS controller connected to a CANdi with a PWM encoder. The
-        // implementations
-        // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
-        // swerve
-        // template) can be freely intermixed to support alternative hardware
-        // arrangements.
-        // Please see the AdvantageKit template documentation for more information:
-        // https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations
-        //
-        // drive =
-        // new Drive(
-        // new GyroIOPigeon2(),
-        // new ModuleIOTalonFXS(TunerConstants.FrontLeft),
-        // new ModuleIOTalonFXS(TunerConstants.FrontRight),
-        // new ModuleIOTalonFXS(TunerConstants.BackLeft),
-        // new ModuleIOTalonFXS(TunerConstants.BackRight));
         break;
 
       case SIM:
@@ -139,13 +127,13 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
                 new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
         climber = new Climber(new ClimberIOPhoenix());
+        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        shooter =
-            new Shooter(
-                new HoodIOPhoenix(),
-                new LauncherIOPhoenix(),
-                new TurretIOPhoenix());
-        superstructure = new Superstructure(drive, intake, shooter, climber);
+        kicker = new Kicker(new KickerIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        spindexer = new Spindexer(new SpindexerIOPhoenix());
+        superstructure =
+            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
         break;
 
       default:
@@ -157,18 +145,22 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
 
-        // Replayed robot, disable IO implementations
-        // (Use same number of dummy implementations as the real robot)
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         climber = new Climber(new ClimberIOPhoenix());
+        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        shooter =
-            new Shooter(
-                new HoodIOPhoenix(),
-                new LauncherIOPhoenix(),
-                new TurretIOPhoenix());
-        superstructure = new Superstructure(drive, intake, shooter, climber);
+        kicker = new Kicker(new KickerIOPhoenix());
+        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+        spindexer = new Spindexer(new SpindexerIOPhoenix());
+        superstructure =
+            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
         break;
     }
 
@@ -256,27 +248,20 @@ public class RobotContainer {
     /* driver */
 
     // Default command, normal field-relative drive
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -driverController.getLeftY(),
-    //         () -> -driverController.getLeftX(),
-    //         () -> -driverController.getRightX(),
-    //         () -> driverController.getLeftTriggerAxis() > 0.05));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX(),
+            () -> driverController.getLeftTriggerAxis() > 0.05));
 
-    // // Lock to 45° when B button is held
-    // driverController
-    //     .b()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtClosest45(
-    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
-
-    // // rotate to nearest 180° when right bumper is held
-    // driverController
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtClosest180(
-    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+    // Lock to 45° when B button is held
+    driverController
+        .b()
+        .whileTrue(
+            DriveCommands.joystickDriveAtClosest45(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -351,11 +336,11 @@ public class RobotContainer {
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING));
 
     // test controller
-    testController.povUp().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.5)));
-    testController.povUp().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    // testController.povUp().onTrue(Commands.runOnce(() -> climber.setHook1Power(0.5)));
+    // testController.povUp().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
 
-    testController.povDown().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.5)));
-    testController.povDown().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
+    // testController.povDown().onTrue(Commands.runOnce(() -> climber.setHook1Power(-0.5)));
+    // testController.povDown().onFalse(Commands.runOnce(() -> climber.setHook1Power(0.0)));
 
     // test box
     // pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setHoodPos(0.1)));
@@ -411,15 +396,6 @@ public class RobotContainer {
     // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setLauncherPower(0.0)));
     // pitBox.button(12).onFalse(Commands.runOnce(() -> shooter.setKickerPower(0.0)));
     // pitBox.button(12).onFalse(Commands.runOnce(() -> indexer.setPower(0.0)));
-  }
-
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return autoChooser.get();
   }
 
   public Superstructure getSuperstructure() {

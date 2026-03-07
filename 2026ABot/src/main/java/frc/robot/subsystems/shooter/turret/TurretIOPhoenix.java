@@ -148,10 +148,10 @@ public class TurretIOPhoenix implements TurretIO {
 
   private double convertAngleToRotations(double angle) {
     double newValue = angle / 360;
-    if (newValue > ShooterConstants.TurretConstants.maxEncoderPos) {
-      newValue = ShooterConstants.TurretConstants.maxEncoderPos;
-    } else if (newValue < ShooterConstants.TurretConstants.minEncoderPos) {
-      newValue = ShooterConstants.TurretConstants.minEncoderPos;
+    if (newValue > ShooterConstants.TurretConstants.maxEncoderPosition) {
+      newValue = ShooterConstants.TurretConstants.maxEncoderPosition;
+    } else if (newValue < ShooterConstants.TurretConstants.minEncoderPosition) {
+      newValue = ShooterConstants.TurretConstants.minEncoderPosition;
     }
     return newValue;
   }

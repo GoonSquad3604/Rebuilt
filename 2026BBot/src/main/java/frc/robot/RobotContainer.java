@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -18,7 +11,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
+import frc.robot.commands.AutomatedClimb;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -66,7 +62,7 @@ public class RobotContainer {
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
-  private final CommandXboxController testController = new CommandXboxController(2);
+  //   private final CommandXboxController testController = new CommandXboxController(2);
   private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
   //   private final CommandJoystick pitBox = new CommandJoystick(2);
 
@@ -104,25 +100,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
-
-        // The ModuleIOTalonFXS implementation provides an example implementation for
-        // TalonFXS controller connected to a CANdi with a PWM encoder. The
-        // implementations
-        // of ModuleIOTalonFX, ModuleIOTalonFXS, and ModuleIOSpark (from the Spark
-        // swerve
-        // template) can be freely intermixed to support alternative hardware
-        // arrangements.
-        // Please see the AdvantageKit template documentation for more information:
-        // https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations
-        //
-        // drive =
-        // new Drive(
-        // new GyroIOPigeon2(),
-        // new ModuleIOTalonFXS(TunerConstants.FrontLeft),
-        // new ModuleIOTalonFXS(TunerConstants.FrontRight),
-        // new ModuleIOTalonFXS(TunerConstants.BackLeft),
-        // new ModuleIOTalonFXS(TunerConstants.BackRight));
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
 
       case SIM:
@@ -151,7 +129,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
 
       default:
@@ -176,7 +154,7 @@ public class RobotContainer {
                 new LauncherIOPhoenix(),
                 new TurretIOPhoenix(),
                 new KickerIORev());
-        superstructure = new Superstructure(drive, intake, indexer, shooter);
+        superstructure = new Superstructure(drive, intake, indexer, shooter, climber);
         break;
     }
 
@@ -211,30 +189,44 @@ public class RobotContainer {
     //     "Launcher SysId (Dynamic Reverse)",
     //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    autoChooser.addOption(
+        "Kicker SysId (Quasistatic Forward)",
+        shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Kicker SysId (Quasistatic Reverse)",
+        shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Kicker SysId (Dynamic Forward)",
+        shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Kicker SysId (Dynamic Reverse)",
+        shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
     // autoChooser.addOption(
-    //     "Kicker SysId (Quasistatic Forward)",
-    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    //     "ClimberOuter SysId (Quasistatic Forward)",
+    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
     // autoChooser.addOption(
-    //     "Kicker SysId (Quasistatic Reverse)",
-    //     shooter.kickerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    //     "ClimberOuter SysId (Quasistatic Reverse)",
+    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     // autoChooser.addOption(
-    //     "Kicker SysId (Dynamic Forward)",
-    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    //     "ClimberOuter SysId (Dynamic Forward)",
+    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
     // autoChooser.addOption(
-    //     "Kicker SysId (Dynamic Reverse)",
-    //     shooter.kickerSysIdDynamic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Quasistatic Forward)",
-    //     climber.climber1SysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Quasistatic Reverse)",
-    //     climber.climber1SysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Dynamic Forward)",
-    //     climber.climber1SysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Dynamic Reverse)",
-    //     climber.climber1SysIdDynamic(SysIdRoutine.Direction.kReverse));
+    //     "ClimberOuter SysId (Dynamic Reverse)",
+    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Forward)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Reverse)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Forward)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Reverse)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Turret SysId (Quasistatic Forward)",
@@ -259,6 +251,9 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
+    /* climb trigger */
+    Trigger isAutoClimbing = new Trigger(() -> climber.isAutoClimbing());
 
     /* driver */
 
@@ -313,11 +308,13 @@ public class RobotContainer {
     // climb
     driverController
         .povLeft()
+        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
         .whileTrue(
             Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
                 .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
     driverController
         .povRight()
+        .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
         .whileTrue(
             Commands.defer(() -> drive.pathfindToClimb(false), Set.of(drive))
                 .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos)));
@@ -339,28 +336,57 @@ public class RobotContainer {
                     () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
-    /* operator */
+    // cllimber testing
+    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-1)));
+    driverController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
-    // manual target
-    operatorButtonBox.button(2).onTrue(RobotState.getInstance().toggleManualShooting());
-    operatorButtonBox
-        .button(3)
-        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
-    operatorButtonBox
-        .button(4)
-        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
-    operatorButtonBox.button(5).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
-    operatorButtonBox
-        .button(6)
-        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
+    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(1)));
+    driverController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
+
+    driverController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(1)));
+    driverController.y().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
+
+    driverController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-1)));
+    driverController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
+
+    /* operator */
+    // operatorButtonBox
+    //     .button(10)
+    //     .onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_IN_AUTO));
+    isAutoClimbing.onTrue(new AutomatedClimb(climber));
+
+    operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
+    // operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
+    // operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
+    operatorButtonBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
+    // operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
+
+    operatorButtonBox.button(8).onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB));
 
     operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
 
-    operatorButtonBox.button(11).onTrue(superstructure.setWantedState(WantedSuperState.VOMIT));
-    operatorButtonBox.button(11).onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+    // manual target
+    operatorButtonBox.button(1).onTrue(RobotState.getInstance().toggleManualShooting());
+    operatorButtonBox
+        .button(5)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
+    operatorButtonBox
+        .button(2)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
+    operatorButtonBox.button(3).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
+    operatorButtonBox
+        .button(4)
+        .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
+
+    operatorButtonBox.button(8).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    // operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.VOMIT));
+    // operatorButtonBox.button(7).onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    // operatorButtonBox.button(6).onTrue(superstructure.progressManualClimb());
 
     operatorButtonBox
-        .button(12)
+        .button(11)
         .or(driverController.back())
         .onTrue(
             Commands.either(
@@ -382,9 +408,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  //   public Command getAutonomousCommand() {
-  //     return autoChooser.get();
-  //   }
+  public Command getAutonomousCommand() {
+    return autoChooser.get();
+  }
 
   public Superstructure getSuperstructure() {
     return superstructure;

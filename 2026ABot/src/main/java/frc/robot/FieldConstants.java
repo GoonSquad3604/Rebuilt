@@ -53,7 +53,7 @@ public class FieldConstants {
    */
   public static class LinesHorizontal {
 
-    public static final double center = fieldWidth / 2.0;
+    public static final double center = 4; // fieldWidth / 2.0;
 
     // Right of hub
     public static final double rightBumpStart = Hub.nearRightCorner.getY();
@@ -194,6 +194,9 @@ public class FieldConstants {
         new Translation3d(LinesVertical.oppHubCenter, fieldWidth, openingHeight);
     public static final Translation3d oppOpeningTopRight =
         new Translation3d(LinesVertical.oppHubCenter, fieldWidth - openingWidth, openingHeight);
+
+    public static final double midPoint =
+        (LinesHorizontal.leftTrenchOpenStart + LinesHorizontal.leftTrenchOpenEnd) / 2;
   }
 
   public static class RightTrench {
@@ -216,6 +219,9 @@ public class FieldConstants {
         new Translation3d(LinesVertical.oppHubCenter, openingWidth, openingHeight);
     public static final Translation3d oppOpeningTopRight =
         new Translation3d(LinesVertical.oppHubCenter, 0, openingHeight);
+
+    public static final double midPoint =
+        (LinesHorizontal.rightTrenchOpenStart + LinesHorizontal.rightTrenchOpenEnd) / 2;
   }
 
   /** Tower related constants */

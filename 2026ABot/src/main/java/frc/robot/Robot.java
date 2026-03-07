@@ -1,14 +1,12 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathfindingCommand;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.autos.AutoChooser;
+import frc.robot.subsystems.Superstructure.WantedSuperState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -23,6 +21,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * project.
  */
 public class Robot extends LoggedRobot {
+  private AutoChooser autoChooser;
   private Command autonomousCommand;
   private RobotContainer robotContainer;
 
@@ -69,6 +68,15 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    PathfindingCommand.warmupCommand().schedule();
+
+    autoChooser = AutoChooser.create(robotContainer);
+    Shuffleboard.getTab("Autonomous")
+        .add("Auto Program", autoChooser)
+        .withSize(6, 3)
+        .withPosition(12, 0)
+        .withWidget(BuiltInWidgets.kComboBoxChooser);
   }
 
   /** This function is called periodically during all modes. */
@@ -91,21 +99,20 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    autoChooser.update();
+  }
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    autoChooser.update();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(autonomousCommand);
-    }
+    autoChooser.getSelectedCommand().ifPresent(CommandScheduler.getInstance()::schedule);
   }
 
   /** This function is called periodically during autonomous. */
@@ -122,6 +129,7 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+    robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED);
   }
 
   /** This function is called periodically during operator control. */

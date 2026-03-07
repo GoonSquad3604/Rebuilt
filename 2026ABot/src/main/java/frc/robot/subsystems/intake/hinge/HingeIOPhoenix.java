@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.subsystems.intake.IntakeConstants;
-import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
@@ -50,7 +49,7 @@ public class HingeIOPhoenix implements HingeIO {
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
+    motorConfig.Feedback.FeedbackRemoteSensorID = IntakeConstants.HingeConstants.encoderID;
     motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     motorConfig.Slot0 =

@@ -2,71 +2,75 @@ package frc.robot.subsystems.climber;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
 
-  private final ClimberIOPhoenix io;
+  private ClimberIOPhoenix climberIO = new ClimberIOPhoenix();
+  private ClimberIOInputsAutoLogged climberInputs = new ClimberIOInputsAutoLogged();
 
-  private final SysIdRoutine climber1SysId;
-  private final SysIdRoutine climber2SysId;
+  private SysIdRoutine climberInnerSysId;
+  private SysIdRoutine climberOuterSysId;
 
-  private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
+  private int manualClimbStep = 0;
 
-  private Pose2d wantedClimbPose;
-
-  private double wantedClimb1Power;
-  private double previousClimb1Power = 0;
-  private double wantedClimb2Power;
-  private double previousClimb2Power = 0;
-
-  private double wantedClimb1Pos;
-  private double previousClimb1Pos = 0;
-  private double wantedClimb2Pos;
-  private double previousClimb2Pos = 0;
+  private boolean beganAutoClimb = false;
 
   public enum ClimberWantedState {
     IDLE,
-    STOWED,
-    UNCLIMB_L1,
-    CLIMB_L1,
-    CLIMB_L2,
-    CLIMB_L3,
-    AUTO_CLIMB
+    STOW,
+    DEPLOY,
+    DEPLOY_OUTER,
+    CLIMB_LOW_RUNG,
+    CLIMB_LOW_RUNG_AUTO,
+    DECLIMB_LOW_RUNG,
+    GRAB_MID_RUNG,
+    CLIMB_MID_RUNG,
+    GRAB_HIGH_RUNG,
+    RELEASE_INNER,
+    CLIMB_HIGH_RUNG,
   }
 
-  public enum CurrentState {
+  public enum ClimberCurrentState {
     IDLING,
+
+    STOWING,
 
     DEPLOYED,
     DEPLOYING,
 
-    STOWING,
-    STOWED,
-
+    DECLIMB_LOW_RUNG,
+    CLIMBING_LOW_RUNG,
+    CLIMBING_LOW_RUNG_AUTO,
     ON_LOW_RUNG,
-    ON_MID_RUNG,
-    ON_HIGH_RUNG,
 
-    LOWERING_TO_GROUND,
-    CLIMBING_TO_LOW_RUNG,
-    CLIMBING_TO_MID_RUNG,
-    CLIMBING_TO_HIGH_RUNG
+    GRABBING_MID_RUNG,
+    GRABBED_MID_RUNG,
+    DEPLOYING_OUTER,
+    DEPLOYED_OUTER,
+    CLIMBING_MID_RUNG,
+    ON_MID_RUNG,
+
+    GRABBING_HIGH_RUNG,
+    GRABBED_HIGH_RUNG,
+    RELEASING_INNER,
+    RELEASED_INNER,
+    GRABBING_HIGH_RUNG_INNER_RELEASED,
+    CLIMBING_HIGH_RUNG,
+    ON_HIGH_RUNG
   }
 
-  private ClimberWantedState wantedState = ClimberWantedState.STOWED;
-  private CurrentState currentState = CurrentState.STOWED;
+  private ClimberWantedState wantedState = ClimberWantedState.IDLE;
+  private ClimberCurrentState currentState = ClimberCurrentState.IDLING;
 
-  public Climber(ClimberIOPhoenix io) {
-    this.io = io;
-    updatePreviousPositions();
+  public Climber(ClimberIOPhoenix climberIO) {
+    this.climberIO = climberIO;
 
-    climber1SysId =
+    climberInnerSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
                 null,
@@ -74,76 +78,103 @@ public class Climber extends SubsystemBase {
                 null,
                 (state) ->
                     Logger.recordOutput(
-                        "Subsystems/Climber/Climber1/SysIdState", state.toString())),
+                        "Subsystems/Climber/ClimberInner/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> io.setClimber1OpenLoop(voltage.in(Volts)), null, this));
+                (voltage) -> climberIO.setInnerOpenLoop(voltage.in(Volts)), null, this));
 
-    climber2SysId =
+    climberOuterSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
                 null,
                 null,
                 null,
                 (state) ->
-                    Logger.recordOutput("Subsystems/Shooter/Kicker/SysIdState", state.toString())),
+                    Logger.recordOutput(
+                        "Subsystems/Climber/ClimberOuter/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> io.setClimber2OpenLoop(voltage.in(Volts)), null, this));
+                (voltage) -> climberIO.setOuterOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    Logger.processInputs("Subsystems/Climber", inputs);
 
-    Logger.recordOutput("Subsystems/Climber/WantedClimberState", wantedState);
-    Logger.recordOutput("Subsystems/Climber/CurrentClimberState", wantedState);
+    climberIO.updateInputs(climberInputs);
+    Logger.processInputs("Subsystems/Climber", climberInputs);
+    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
 
-    currentState = handleStateTransitions();
-    // applyStates();
+    ClimberCurrentState newState = handleStateTransitions();
+    if (newState != currentState) {
+      currentState = newState;
+      Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+      applyStates();
+    }
+
+    Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
   }
 
   public void setWantedState(ClimberWantedState wantedState) {
     this.wantedState = wantedState;
   }
 
-  private CurrentState handleStateTransitions() {
+  public ClimberCurrentState getCurrentState() {
+    return currentState;
+  }
 
+  private ClimberCurrentState handleStateTransitions() {
     return switch (wantedState) {
-      case IDLE:
-        yield CurrentState.IDLING;
-      case STOWED:
-        yield CurrentState.STOWING;
-      case UNCLIMB_L1:
-        yield CurrentState.LOWERING_TO_GROUND;
-      case CLIMB_L1:
-        yield CurrentState.CLIMBING_TO_LOW_RUNG;
-      case CLIMB_L2:
-        yield CurrentState.CLIMBING_TO_MID_RUNG;
-      case CLIMB_L3:
-        yield CurrentState.CLIMBING_TO_HIGH_RUNG;
-      case AUTO_CLIMB:
-        if (currentState == CurrentState.STOWED) {
-          yield CurrentState.DEPLOYING;
-        } else if (currentState == CurrentState.DEPLOYED
-            && RobotState.getInstance().getPose() == wantedClimbPose) {
-          yield CurrentState.CLIMBING_TO_LOW_RUNG;
-        } else if (currentState == CurrentState.ON_LOW_RUNG) {
-          yield CurrentState.CLIMBING_TO_MID_RUNG;
-        } else if (currentState == CurrentState.ON_MID_RUNG) {
-          yield CurrentState.CLIMBING_TO_HIGH_RUNG;
-        } else if (currentState == CurrentState.ON_HIGH_RUNG) {
-          yield CurrentState.ON_HIGH_RUNG;
-        } else {
-          yield CurrentState.IDLING;
-        }
+      case IDLE -> ClimberCurrentState.IDLING;
+      case STOW -> isStowed() ? ClimberCurrentState.STOWING : ClimberCurrentState.IDLING;
+        // if near deploy position, update state from deploying to deployed
+      case DEPLOY -> nearPosition(ClimberConstants.outerDeployedPosition, "outer")
+              && nearPosition(ClimberConstants.innerDeployedPosition, "inner")
+          ? ClimberCurrentState.DEPLOYING
+          : ClimberCurrentState.DEPLOYED;
+        // if near outers's climb low rung position, update state from climbing low to on low
+      case CLIMB_LOW_RUNG -> nearPosition(ClimberConstants.outerClimbL1Position, "outer")
+          ? ClimberCurrentState.ON_LOW_RUNG
+          : ClimberCurrentState.CLIMBING_LOW_RUNG;
+      case DECLIMB_LOW_RUNG -> ClimberCurrentState.DECLIMB_LOW_RUNG;
+
+        // if near inner's grab mid rung position, update state from grabbing mid rung to grabbed
+        // mid rung
+      case GRAB_MID_RUNG -> nearPosition(ClimberConstants.innerGrabL2Position, "inner")
+          ? ClimberCurrentState.GRABBED_MID_RUNG
+          : ClimberCurrentState.GRABBING_MID_RUNG;
+
+        // if near outer's deploy position, update state from deploying outer to deployed outer
+      case DEPLOY_OUTER -> nearPosition(ClimberConstants.outerDeployedPosition, "outer")
+          ? ClimberCurrentState.DEPLOYED_OUTER
+          : ClimberCurrentState.DEPLOYING_OUTER;
+
+        // if near inner's mid rung climb position, update state from climbing mid to climbed mid
+      case CLIMB_MID_RUNG -> nearPosition(ClimberConstants.innerClimbL2Position, "inner")
+          ? ClimberCurrentState.ON_MID_RUNG
+          : ClimberCurrentState.CLIMBING_MID_RUNG;
+
+        // if near outer high rung's grab position, update state from grabbing high to high rung
+      case GRAB_HIGH_RUNG -> nearPosition(ClimberConstants.outerGrabL3Position, "outer")
+          ? ClimberCurrentState.GRABBED_HIGH_RUNG
+          : ClimberCurrentState.GRABBING_HIGH_RUNG;
+
+        // if near inner's grab position, update state from releasing inner to released inner
+      case RELEASE_INNER -> nearPosition(ClimberConstants.innerReleaseL2Position, "inner")
+          ? ClimberCurrentState.RELEASED_INNER
+          : ClimberCurrentState.RELEASING_INNER;
+
+        // if near outter high rung climb position, update state from climbing high rung to climbed
+        // high
+      case CLIMB_HIGH_RUNG -> nearPosition(ClimberConstants.outerClimbL3Position, "outer")
+          ? ClimberCurrentState.ON_HIGH_RUNG
+          : ClimberCurrentState.CLIMBING_HIGH_RUNG;
+      case CLIMB_LOW_RUNG_AUTO -> ClimberCurrentState.CLIMBING_LOW_RUNG_AUTO;
     };
   }
 
   private void applyStates() {
-
     switch (currentState) {
       case IDLING:
-        stopped();
+        idling();
         break;
       case DEPLOYING:
         deploy();
@@ -151,92 +182,236 @@ public class Climber extends SubsystemBase {
       case STOWING:
         stow();
         break;
-      case LOWERING_TO_GROUND:
-        decesend();
+      case DECLIMB_LOW_RUNG:
+        climbOffLowRung();
         break;
-      case CLIMBING_TO_LOW_RUNG:
+      case CLIMBING_LOW_RUNG:
         climbLowRung();
         break;
-      case CLIMBING_TO_MID_RUNG:
+      case CLIMBING_LOW_RUNG_AUTO:
+        climbLowRungInAuto();
+        break;
+      case CLIMBING_MID_RUNG:
         climbMidRung();
+        break;
+      case CLIMBING_HIGH_RUNG:
+        climbHighRung();
+        break;
+      case RELEASING_INNER:
+        releaseInner();
+        break;
+      case DEPLOYING_OUTER:
+        deployOuter();
+        break;
+      case GRABBING_HIGH_RUNG:
+        grabHighRung();
+        break;
+      case GRABBING_MID_RUNG:
+        grabmidRung();
+        break;
+
+        // transition states:
+      case GRABBING_HIGH_RUNG_INNER_RELEASED:
+        break;
+      case DEPLOYED_OUTER:
+        break;
+      case GRABBED_HIGH_RUNG:
+        break;
+      case GRABBED_MID_RUNG:
+        break;
+      case ON_HIGH_RUNG:
+        break;
+      case ON_LOW_RUNG:
+        break;
+      case ON_MID_RUNG:
+        break;
+      case RELEASED_INNER:
+        break;
+      case DEPLOYED:
+        break;
+    }
+  }
+
+  private void idling() {
+    climberIO.setInnerPower(0);
+    climberIO.setOuterPower(0);
+  }
+
+  private void deploy() {
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+    climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+  }
+
+  private void stow() {
+    climberIO.setOuterPosition(ClimberConstants.outerStowedPosition);
+    climberIO.setInnerPosition(ClimberConstants.innerStowedPosition);
+  }
+
+  private void climbOffLowRung() {
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+  }
+
+  private void climbLowRung() {
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+  }
+
+  private void climbLowRungInAuto() {
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL1PositionAuto);
+  }
+
+  private void climbMidRung() {
+    climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
+  }
+
+  private void climbHighRung() {
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
+  }
+
+  private void releaseInner() {
+    climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
+  }
+
+  private void deployOuter() {
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+  }
+
+  private void grabHighRung() {
+    climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+  }
+
+  private void grabmidRung() {
+    climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+  }
+
+  public boolean isStowed() {
+    return MathUtil.isNear(
+            ClimberConstants.innerStowedPosition,
+            climberIO.getInnerPosition(),
+            ClimberConstants.atSetpointTolerance)
+        && MathUtil.isNear(
+            ClimberConstants.outerStowedPosition,
+            climberIO.getOuterPosition(),
+            ClimberConstants.atSetpointTolerance);
+  }
+
+  public boolean nearPosition(double position, String selectedMotor) {
+    return MathUtil.isNear(
+        position,
+        selectedMotor.equals("inner") ? climberIO.getInnerPosition() : climberIO.getOuterPosition(),
+        ClimberConstants.atSetpointTolerance);
+  }
+
+  public void updateClimberState(ClimberCurrentState newState) {
+    currentState = newState;
+    Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+  }
+
+  public void resetClimbStep() {
+    manualClimbStep = 0;
+  }
+
+  public void progressManualClimb() {
+    switch (manualClimbStep) {
+      case 0:
+        // climbers are stowed, deploy
+        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+        climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+        break;
+      case 1:
+        // climbers are deployed (assuming aligned), climb L1
+        climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+        break;
+      case 2:
+        // outer hooks are on L1, grab onto L2 with inners
+        climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+        break;
+      case 3:
+        // L2 is hooked, release L1
+        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+        break;
+      case 4:
+        // L1 (outer) released, pull up on L2 (inner)
+        climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
+        break;
+      case 5:
+        // L2 pulled up, latch L3
+        climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+        break;
+      case 6:
+        // L3 is latched, release L2
+        climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
+        break;
+      case 7:
+        // L2 released, CLIMB L3!!!! (and release the inner pid)
+        climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
+        climberIO.setInnerPower(0.0);
         break;
       default:
         break;
     }
+    manualClimbStep++;
+    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
   }
 
-  private void stopped() {
-    wantedClimb1Power = 0;
-    wantedClimb2Power = 0;
-    if (wantedClimb1Power != previousClimb1Power) {
-      io.setPowerLowRung(wantedClimb1Power);
-      previousClimb1Power = wantedClimb1Power;
-    }
-
-    if (wantedClimb2Power != previousClimb2Power) {
-      io.setPowerMidRung(wantedClimb2Power);
-      previousClimb2Power = wantedClimb2Power;
-    }
+  public void toggleIsAutoClimbing() {
+    beganAutoClimb = true;
   }
 
-  private void deploy() {}
-
-  private void stow() {}
-
-  private void decesend() {}
-
-  private void climbLowRung() {}
-
-  private void climbMidRung() {}
-
-  public void setPowerLowRung(double power) {
-    io.setPowerLowRung(power);
+  public void toggleIsNotAutoClimbing() {
+    beganAutoClimb = false;
   }
 
-  public void setPowerMidRung(double power) {
-    io.setPowerMidRung(power);
+  public boolean isAutoClimbing() {
+    return beganAutoClimb;
   }
 
-  public void setWantedClimberPose(Pose2d wantedClimbPose) {
-    this.wantedClimbPose = wantedClimbPose;
+  // testing only, remove later:
+  public void setPowerOuterRungs(double power) {
+    climberIO.setOuterPower(power);
   }
 
-  public void setHook1Power(double power) {
-    io.setPowerLowRung(power);
+  public void setPowerInnerRungs(double power) {
+    climberIO.setInnerPower(power);
   }
 
-  public void setHook2Power(double power) {
-    io.setPowerMidRung(power);
+  public void TESTDeployClimber() {
+    climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
   }
 
-  private void updatePreviousPositions() {
-    previousClimb1Pos = io.getPositionLowRung();
-    previousClimb2Pos = io.getPositionMidRung();
+  public void TESTStowClimber() {
+    climberIO.setInnerPosition(ClimberConstants.innerStowedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerStowedPosition);
   }
 
-  public Command climber1SysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> io.setClimber1OpenLoop(0.0))
+  public void TESTClimbL1() {
+    // climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+  }
+
+  public Command climberInnerSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> climberIO.setInnerOpenLoop(0))
         .withTimeout(1.0)
-        .andThen(climber1SysId.quasistatic(direction));
+        .andThen(climberInnerSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
-  public Command climber1SysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> io.setClimber1OpenLoop(0.0))
+  public Command climberInnerSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> climberIO.setInnerOpenLoop(0.0))
         .withTimeout(1.0)
-        .andThen(climber1SysId.dynamic(direction));
+        .andThen(climberInnerSysId.dynamic(direction));
   }
 
-  public Command climber2SysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> io.setClimber2OpenLoop(0.0))
+  public Command climberOuterSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> climberIO.setOuterOpenLoop(0.0))
         .withTimeout(1.0)
-        .andThen(climber2SysId.quasistatic(direction));
+        .andThen(climberOuterSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
-  public Command climber2SysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> io.setClimber2OpenLoop(0.0))
+  public Command climberOuterSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> climberIO.setOuterOpenLoop(0.0))
         .withTimeout(1.0)
-        .andThen(climber2SysId.dynamic(direction));
+        .andThen(climberOuterSysId.dynamic(direction));
   }
 }

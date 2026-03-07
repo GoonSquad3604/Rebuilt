@@ -1,51 +1,48 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.climber;
 
 import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface ClimberIO {
-  default void updateInputs(ClimberIOInputs inputs) {}
 
   @AutoLog
   class ClimberIOInputs {
     public boolean outerMotorConnected = false;
-    public double outerMotorVoltage;
-    public double outerMotorCurrent;
-    public boolean innerMotorConnected = false;
-    public double innerMotorVoltage;
-    public double innerMotorCurrent;
-
     public boolean outerEncoderConnected = false;
+    public double outerVoltage;
+    public double outerCurrent;
+    public double outerVelocity;
+    public double outerTemperature;
     public double outerPosition;
+
+    public boolean innerMotorConnected = false;
     public boolean innerEncoderConnected = false;
-    public double innerPostion;
+    public double innerVoltage;
+    public double innerCurrent;
+    public double innerVelocity;
+    public double innerTemperature;
+    public double innerPosition;
   }
 
-  default void setPowerOuter(double power) {}
+  default void updateInputs(ClimberIOInputs inputs) {}
 
-  default void setPowerInner(double power) {}
+  default void setOuterPosition(double position) {}
 
-  default void setClimber1OpenLoop(double output) {}
+  default void setOuterPower(double power) {}
 
-  default void setClimber2OpenLoop(double output) {}
+  default void setOuterOpenLoop(double output) {}
 
-  default void setPositionOuter(double position) {}
-
-  default void setPositionInner(double position) {}
-
-  default double getPositionOuter() {
+  default double getOuterPosition() {
     return 0.0;
   }
 
-  default double getPositionInner() {
+  default void setInnerPosition(double position) {}
+
+  default void setInnerPower(double power) {}
+
+  default void setInnerOpenLoop(double output) {}
+
+  default double getInnerPosition() {
     return 0.0;
   }
-
-  default void setVoltageOuter(double volts) {}
-
-  default void setVoltageInner(double volts) {}
 }
