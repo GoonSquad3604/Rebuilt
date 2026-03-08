@@ -63,10 +63,10 @@ public class HingeIOPhoenix implements HingeIO {
             .withKV(IntakeConstants.HingeConstants.V)
             .withKA(IntakeConstants.HingeConstants.A)
             .withKG(IntakeConstants.HingeConstants.G);
-    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1;
 
     encoderConfig = new CANcoderConfiguration();
-    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = .75;
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> hingeMotor.getConfigurator().apply(motorConfig));

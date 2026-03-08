@@ -54,7 +54,7 @@ public class HopperIOPhoenix implements HopperIO {
             .withKS(HopperConstants.S)
             .withKV(HopperConstants.V)
             .withKA(HopperConstants.A);
-    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 2;
 
     // CAN Range config (stowed detector)
     // stowedDetector = new CANrange(HopperConstants.stowedDetectorID);

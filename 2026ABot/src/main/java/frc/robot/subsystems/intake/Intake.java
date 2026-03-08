@@ -30,6 +30,7 @@ public class Intake extends SubsystemBase {
   public enum IntakeWantedState {
     IDLE,
     INTAKE,
+    STOP_WHEELS,
     STOW,
     KICK,
     VOMIT
@@ -85,19 +86,22 @@ public class Intake extends SubsystemBase {
     hingeIO.updateInputs(hingeInputs);
     Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
     Logger.processInputs("Subsystems/Intake/Hinge", hingeInputs);
+    Logger.recordOutput("Subsystems/Intake/Hinge/isDeployed", isDeployed());
+    Logger.recordOutput("Subsystems/Intake/Hinge/isStowed", isStowed());
 
     IntakeCurrentState newState = handleStateTransitions();
     double newTimestamp = Timer.getFPGATimestamp();
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake", currentState);
-      // applyStates();
+      applyStates();
     } else {
       if (currentState == IntakeCurrentState.KICKING
           && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
-        // applyStates();
+        applyStates();
       }
     }
+    Logger.recordOutput("Subsystems/Intake", wantedState);
   }
 
   public void setWantedState(IntakeWantedState wantedState) {
@@ -108,11 +112,12 @@ public class Intake extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> isDeployed() ? IntakeCurrentState.IDLE_DEPLOYED : IntakeCurrentState.IDLING;
       case STOW -> isStowed() ? IntakeCurrentState.STOWED : IntakeCurrentState.STOWING;
-      case INTAKE -> isStowed()
+      case INTAKE -> !isDeployed()
           ? IntakeCurrentState.DEPLOYING
           : IntakeCurrentState.INTAKING_DEPLOYED;
       case KICK -> IntakeCurrentState.KICKING;
       case VOMIT -> IntakeCurrentState.VOMITING;
+      case STOP_WHEELS -> IntakeCurrentState.IDLE_DEPLOYED;
     };
   }
 
@@ -133,7 +138,7 @@ public class Intake extends SubsystemBase {
         runRollers();
         break;
       case IDLE_DEPLOYED:
-        idling();
+        idleDeployed();
         break;
       case KICKING:
         kick();
@@ -147,6 +152,10 @@ public class Intake extends SubsystemBase {
   private void idling() {
     rollerSystemIO.setPower(0);
     hingeIO.setPower(0);
+  }
+
+  private void idleDeployed() {
+    rollerSystemIO.setPower(0);
   }
 
   private void deploy() {
@@ -164,6 +173,7 @@ public class Intake extends SubsystemBase {
   }
 
   private void kick() {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
     if (MathUtil.isNear(
         IntakeConstants.HingeConstants.kickPosition,
         hingeIO.getPosition(),

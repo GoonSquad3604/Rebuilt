@@ -103,6 +103,10 @@ public class Kicker extends SubsystemBase {
     kickerIO.setPower(power);
   }
 
+  public void setVelocity(double velocity) {
+    kickerIO.setVelocity(velocity);
+  }
+
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return run(() -> kickerIO.setOpenLoop(0.0))
         .withTimeout(1.0)

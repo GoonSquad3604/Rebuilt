@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -37,6 +38,8 @@ public class Shooter extends SubsystemBase {
   private boolean turretAtSetpoint = false;
   private boolean hoodAtSetpoint = false;
   private boolean launcherAtSetpoint = false;
+
+  private double wantedHoodPosition;
 
   public enum ShooterWantedState {
     IDLE,
@@ -98,10 +101,10 @@ public class Shooter extends SubsystemBase {
 
     Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
 
-    Logger.recordOutput("Subsystems/Shooter/TurretAtSetpoint", turretAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/HoodAtSetpoint", hoodAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/LauncherAtSetpoint", launcherAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoints());
+    // Logger.recordOutput("Subsystems/Shooter/TurretAtSetpoint", turretAtSetpoint);
+    // Logger.recordOutput("Subsystems/Shooter/HoodAtSetpoint", hoodAtSetpoint);
+    // Logger.recordOutput("Subsystems/Shooter/LauncherAtSetpoint", launcherAtSetpoint);
+    // Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoints());
 
     if (ShotCalculator.getInstance().getParameters() != null) {
       if (lastParameters == null) {
@@ -122,6 +125,9 @@ public class Shooter extends SubsystemBase {
       // applyStates();
     }
     RobotState.getInstance().setTurretAngle(Rotation2d.fromDegrees(turretIO.getAngle()));
+
+    // SmartDashboard.putNumber("WantedHoodPosition", wantedHoodPosition);
+    wantedHoodPosition = SmartDashboard.getNumber("WantedHoodPosition", -1);
   }
 
   public CurrentState handleStateTransitions() {
@@ -213,8 +219,20 @@ public class Shooter extends SubsystemBase {
     hoodIO.setPower(power);
   }
 
+  public void setHoodPosition(double position) {
+    hoodIO.setPosition(position);
+  }
+
+  public void setHoodPositionDashboard() {
+    hoodIO.setPosition(wantedHoodPosition);
+  }
+
   public void setLauncherPower(double power) {
     launcherIO.setPower(power);
+  }
+
+  public void setLauncherVelocity(double velocity) {
+    launcherIO.setVelocity(velocity);
   }
 
   public Command launcherSysIdQuasistatic(SysIdRoutine.Direction direction) {

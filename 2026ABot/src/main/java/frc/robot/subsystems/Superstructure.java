@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.AutomatedClimb;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.Drive;
@@ -35,22 +37,24 @@ public class Superstructure extends SubsystemBase {
   public enum WantedSuperState {
     STOPPED,
     INTAKE,
+    STOW,
     VOMIT,
     SHOOT,
     INTAKE_AND_SHOOT,
     CLIMB,
-    CLIMB_AND_SHOOT,
+    // CLIMB_AND_SHOOT,
     DECLIMB
   }
 
   public enum CurrentSuperState {
     STOPPED,
     INTAKING,
+    STOWING,
     VOMITING,
     SHOOTING,
     INTAKING_AND_SHOOTING,
     CLIMBING,
-    CLIMBING_AND_SHOOTING,
+    // CLIMBING_AND_SHOOTING,
     DECLIMBING
   }
 
@@ -85,6 +89,8 @@ public class Superstructure extends SubsystemBase {
 
     currentSuperState = handleStateTransitions();
     applyStates();
+
+    new Trigger(() -> climber.isAutoClimbing()).onTrue(new AutomatedClimb(climber));
   }
 
   public Command setWantedState(WantedSuperState state) {
@@ -116,11 +122,14 @@ public class Superstructure extends SubsystemBase {
       case CLIMB:
         currentSuperState = CurrentSuperState.CLIMBING;
         break;
-      case CLIMB_AND_SHOOT:
-        currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
-        break;
+        // case CLIMB_AND_SHOOT:
+        //   currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
+        //   break;
       case DECLIMB:
         currentSuperState = CurrentSuperState.DECLIMBING;
+        break;
+      case STOW:
+        currentSuperState = CurrentSuperState.STOWING;
         break;
     }
     return currentSuperState;
@@ -146,34 +155,57 @@ public class Superstructure extends SubsystemBase {
       case CLIMBING:
         climb();
         break;
-      case CLIMBING_AND_SHOOTING:
-        climbAndShoot();
-        break;
+        // case CLIMBING_AND_SHOOTING:
+        //   climbAndShoot();
+        //   break;
       case DECLIMBING:
         declimb();
+        break;
+      case STOWING:
+        stow();
         break;
     }
   }
 
   private void stopped() {
-    // climber.setWantedState(ClimberWantedState.IDLE);
-    // hopper.setWantedState(HopperWantedState.IDLE);
-    // intake.setWantedState(IntakeWantedState.IDLE);
-    // kicker.setWantedState(KickerWantedState.IDLE);
-    // shooter.setWantedState(ShooterWantedState.IDLE);
-    // spindexer.setWantedState(SpindexerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.IDLE);
+    hopper.setWantedState(HopperWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.STOP_WHEELS);
+    kicker.setWantedState(KickerWantedState.IDLE);
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
   private void intake() {
     climber.setWantedState(ClimberWantedState.IDLE);
-    if (!hopper.isDeployed()) {
-      hopper.setWantedState(HopperWantedState.DEPLOY);
-    } else {
-      intake.setWantedState(IntakeWantedState.INTAKE);
-    }
     kicker.setWantedState(KickerWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
+
+    if (!hopper.isDeployed()) {
+      hopper.setWantedState(HopperWantedState.DEPLOY);
+      intake.setWantedState(IntakeWantedState.STOW);
+    } else {
+      intake.setWantedState(IntakeWantedState.INTAKE);
+    }
+  }
+
+  private void stow() {
+    climber.setWantedState(ClimberWantedState.IDLE);
+    kicker.setWantedState(KickerWantedState.IDLE);
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
+
+    if (!intake.isStowed()) {
+      intake.setWantedState(IntakeWantedState.STOW);
+      hopper.setWantedState(HopperWantedState.IDLE);
+    } else {
+      if (!hopper.isStowed()) {
+        hopper.setWantedState(HopperWantedState.STOW);
+      } else {
+        wantedSuperState = WantedSuperState.STOPPED;
+      }
+    }
   }
 
   private void vomit() {
@@ -190,48 +222,63 @@ public class Superstructure extends SubsystemBase {
 
   private void shoot() {
     climber.setWantedState(ClimberWantedState.IDLE);
-    shooter.setWantedState(ShooterWantedState.SHOOT);
-    kicker.setWantedState(KickerWantedState.REV);
-    if (shooter.reachedSetpoints() && kicker.atVelocity()) {
-      intake.setWantedState(IntakeWantedState.KICK);
-      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    // shooter.setWantedState(ShooterWantedState.SHOOT);
+    // kicker.setWantedState(KickerWantedState.REV);
+
+    if (!hopper.isDeployed()) {
+      hopper.setWantedState(HopperWantedState.DEPLOY);
+      intake.setWantedState(IntakeWantedState.STOW);
     } else {
-      intake.setWantedState(IntakeWantedState.IDLE);
-      spindexer.setWantedState(SpindexerWantedState.IDLE);
+      intake.setWantedState(IntakeWantedState.KICK);
     }
+
+    // if (shooter.reachedSetpoints() && kicker.atVelocity()) {
+    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
+    // } else {
+    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    // }
   }
 
   private void intakeAndShoot() {
     climber.setWantedState(ClimberWantedState.IDLE);
+    // shooter.setWantedState(ShooterWantedState.SHOOT);
+    // kicker.setWantedState(KickerWantedState.REV);
+
     if (!hopper.isDeployed()) {
       hopper.setWantedState(HopperWantedState.DEPLOY);
+      intake.setWantedState(IntakeWantedState.STOW);
     } else {
       intake.setWantedState(IntakeWantedState.INTAKE);
     }
-    shooter.setWantedState(ShooterWantedState.SHOOT);
-    kicker.setWantedState(KickerWantedState.REV);
-    if (shooter.reachedSetpoints() && kicker.atVelocity()) {
-      spindexer.setWantedState(SpindexerWantedState.SPIN);
-    } else {
-      spindexer.setWantedState(SpindexerWantedState.IDLE);
-    }
+
+    // if (shooter.reachedSetpoints() && kicker.atVelocity()) {
+    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
+    // } else {
+    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    // }
   }
 
   private void climb() {
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
-  }
+    if (!intake.isStowed()) {
+      intake.setWantedState(IntakeWantedState.STOW);
+      hopper.setWantedState(HopperWantedState.IDLE);
+    } else {
+      if (!hopper.isStowed()) {
+        hopper.setWantedState(HopperWantedState.STOW);
+      } else {
+        // ready to climb
 
-  private void climbAndShoot() {
-    shooter.setWantedState(ShooterWantedState.SHOOT);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.SPIN);
+      }
+    }
+
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    // intake.setWantedState(IntakeWantedState.IDLE);
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
   private void declimb() {
     shooter.setWantedState(ShooterWantedState.IDLE);
-    intake.setWantedState(IntakeWantedState.IDLE);
+    // intake.setWantedState(IntakeWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 }

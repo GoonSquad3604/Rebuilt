@@ -39,7 +39,7 @@ public class LauncherIOPhoenix implements LauncherIO {
     launcherMotorConfig = new TalonFXConfiguration();
     launcherRequest = new VelocityVoltage(0).withSlot(0);
 
-    launcherMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    launcherMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
     launcherMotorConfig.CurrentLimits.StatorCurrentLimit = 100;

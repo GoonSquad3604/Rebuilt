@@ -15,8 +15,6 @@ public class Hopper extends SubsystemBase {
 
   private SysIdRoutine sysID;
 
-  private boolean deployed = false;
-
   public enum HopperWantedState {
     IDLE,
     STOW,
@@ -53,23 +51,19 @@ public class Hopper extends SubsystemBase {
 
     hopperIO.updateInputs(hopperInputs);
     Logger.processInputs("Subsystems/Hopper", hopperInputs);
+    Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
+    Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
-      // applyStates();
+      applyStates();
     } else {
       if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
-        this.setWantedState(HopperWantedState.IDLE);
+        wantedState = HopperWantedState.IDLE;
         hopperIO.resetPosition();
       }
-    }
-
-    if (MathUtil.isNear(HopperConstants.extendedPos, hopperIO.getPosition(), 5)) {
-      deployed = true;
-    } else {
-      deployed = false;
     }
 
     Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
@@ -83,12 +77,13 @@ public class Hopper extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> HopperCurrentState.IDLING;
       case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW -> MathUtil.isNear(
-              HopperConstants.stowTargetPosition,
-              hopperIO.getPosition(),
-              HopperConstants.atSetpointTolerance)
-          ? HopperCurrentState.STOWING_SLOW
-          : HopperCurrentState.STOWING_FAST;
+        // case STOW -> MathUtil.isNear(
+        //         HopperConstants.stowTargetPosition,
+        //         hopperIO.getPosition(),
+        //         HopperConstants.atSetpointTolerance)
+        //     ? HopperCurrentState.STOWING_SLOW
+        //     : HopperCurrentState.STOWING_FAST;
+      case STOW -> HopperCurrentState.STOWING_FAST;
     };
   }
 
@@ -126,7 +121,12 @@ public class Hopper extends SubsystemBase {
   }
 
   public boolean isDeployed() {
-    return deployed;
+    return MathUtil.isNear(
+        HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+  }
+
+  public boolean isStowed() {
+    return MathUtil.isNear(0, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
   }
 
   public void zeroEncoder() {

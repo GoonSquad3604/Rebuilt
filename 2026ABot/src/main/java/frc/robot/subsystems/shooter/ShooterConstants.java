@@ -20,25 +20,31 @@ public final class ShooterConstants {
     public static final int hoodID = 9;
     public static final int hoodEncoderID = 25;
 
-    public static final double hoodP = 24;
+    public static final double hoodP = 15;
     public static final double hoodI = 0;
-    public static final double hoodD = 0;
+    public static final double hoodD = 0.0;
     public static final double hoodS = 0.1;
-    public static final double hoodV = 0;
+    public static final double hoodV = 0.0;
+    public static final double hoodG = 0.0;
 
-    public static final double forwardPosition = 0.1;
+    public static final double acceleration = 4;
+    public static final double velocity = 2;
+
+    public static final double forwardPosition = 0.0;
+    public static final double hoodMaxPos = 0.78;
+    public static final double hoodMinPos = 0.37;
   }
 
   public static final class LauncherConstants {
 
     public static final int launcherID = 14;
 
-    public static final double launcherP = 0.061342;
+    public static final double launcherP = 0.18937;
     public static final double launcherI = 0;
     public static final double launcherD = 0;
-    public static final double launcherS = 0.14383;
-    public static final double launcherV = 0.12361;
-    public static final double launcherA = 0.038879;
+    public static final double launcherS = 0.0955;
+    public static final double launcherV = 0.12313;
+    public static final double launcherA = 0.041093;
 
     public static final double forwardVelocity = 45;
   }
