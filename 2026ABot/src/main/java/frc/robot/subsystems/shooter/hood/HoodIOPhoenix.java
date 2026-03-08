@@ -67,12 +67,14 @@ public class HoodIOPhoenix implements HoodIO {
         new Slot0Configs()
             .withKP(ShooterConstants.HoodConstants.hoodP)
             .withKI(ShooterConstants.HoodConstants.hoodI)
-            .withKD(ShooterConstants.HoodConstants.hoodD);
+            .withKD(ShooterConstants.HoodConstants.hoodD)
+            .withKS(ShooterConstants.HoodConstants.hoodS)
+            .withKV(ShooterConstants.HoodConstants.hoodV);
     hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.getConfigurator().apply(hoodMotorConfig));
 
-    position = hoodMotor.getPosition();
-    velocity = hoodMotor.getVelocity();
+    position = hoodEncoder.getPosition();
+    velocity = hoodEncoder.getVelocity();
     appliedVoltage = hoodMotor.getMotorVoltage();
     supplyCurrent = hoodMotor.getSupplyCurrent();
     torqueCurrent = hoodMotor.getTorqueCurrent();
@@ -90,16 +92,6 @@ public class HoodIOPhoenix implements HoodIO {
                 torqueCurrent,
                 tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.optimizeBusUtilization(0, 1.0));
-
-    var slot0Configs = new Slot0Configs();
-
-    slot0Configs.kP = ShooterConstants.HoodConstants.hoodP;
-    slot0Configs.kI = ShooterConstants.HoodConstants.hoodI;
-    slot0Configs.kD = ShooterConstants.HoodConstants.hoodD;
-    slot0Configs.kS = ShooterConstants.HoodConstants.hoodS;
-    slot0Configs.kV = ShooterConstants.HoodConstants.hoodV;
-
-    hoodMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override

@@ -7,13 +7,15 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -32,6 +34,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -43,8 +46,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.generated.TunerConstants;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -219,6 +224,14 @@ public class Drive extends SubsystemBase {
 
     m_field.setRobotPose(getPose());
     SmartDashboard.putData("Field", m_field);
+
+    // delete this later
+    // Logger.recordOutput(
+    //     "Subsystems/Drive/LeftTrenchPos",
+    //     new Pose2d(5.0, FieldConstants.LeftTrench.midPoint, new Rotation2d()));
+    // Logger.recordOutput(
+    //     "Subsystems/Drive/RightTrenchPos",
+    //     new Pose2d(5.0, FieldConstants.RightTrench.midPoint, new Rotation2d()));
   }
 
   /**
@@ -368,5 +381,41 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public Command pathfindToClimb() {
+    boolean isLeft = getPose().getY() >= (FieldConstants.fieldWidth / 2.0) ? true : false;
+    Pose2d targetPose;
+    if (isLeft) targetPose = new Pose2d(1.677, 4.128, new Rotation2d(Units.degreesToRadians(-90)));
+    else targetPose = new Pose2d(1.667, 3.5, new Rotation2d(Units.degreesToRadians(-90)));
+    PathConstraints constraints =
+        new PathConstraints(
+            DriveConstants.PATHFIND_MAX_SPEED,
+            DriveConstants.PATHFIND_MAX_ACCEL,
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_SPEED_ANGULAR),
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_ACCEL_ANGULAR));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0);
+  }
+
+  public Command pathfindToClimb(boolean isLeft) {
+    Pose2d targetPose;
+    if (isLeft)
+      targetPose =
+          AllianceFlipUtil.apply(
+              new Pose2d(1.677, 4.128, new Rotation2d(Units.degreesToRadians(-90))));
+    else
+      targetPose =
+          AllianceFlipUtil.apply(
+              new Pose2d(1.667, 3.268, new Rotation2d(Units.degreesToRadians(-90))));
+    RobotState.getInstance().setTargetPathfindPose(targetPose);
+    PathConstraints constraints =
+        new PathConstraints(
+            DriveConstants.PATHFIND_MAX_SPEED,
+            DriveConstants.PATHFIND_MAX_ACCEL,
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_SPEED_ANGULAR),
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_ACCEL_ANGULAR));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0);
   }
 }

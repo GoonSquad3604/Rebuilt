@@ -58,7 +58,7 @@ public class Hopper extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
-      applyStates();
+      // applyStates();
     } else {
       if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
         this.setWantedState(HopperWantedState.IDLE);
@@ -127,6 +127,10 @@ public class Hopper extends SubsystemBase {
 
   public boolean isDeployed() {
     return deployed;
+  }
+
+  public void zeroEncoder() {
+    hopperIO.resetPosition();
   }
 
   // testing only, remove later:

@@ -55,7 +55,7 @@ public class Kicker extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Kicker/CurrentState", currentState);
-      applyStates();
+      // applyStates();
     }
 
     Logger.recordOutput("Subsystems/Kicker/WantedState", wantedState);

@@ -156,12 +156,12 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void stopped() {
-    climber.setWantedState(ClimberWantedState.IDLE);
-    hopper.setWantedState(HopperWantedState.IDLE);
-    intake.setWantedState(IntakeWantedState.IDLE);
-    kicker.setWantedState(KickerWantedState.IDLE);
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
+    // climber.setWantedState(ClimberWantedState.IDLE);
+    // hopper.setWantedState(HopperWantedState.IDLE);
+    // intake.setWantedState(IntakeWantedState.IDLE);
+    // kicker.setWantedState(KickerWantedState.IDLE);
+    // shooter.setWantedState(ShooterWantedState.IDLE);
+    // spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
   private void intake() {

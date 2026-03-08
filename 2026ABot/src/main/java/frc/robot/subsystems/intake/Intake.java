@@ -91,11 +91,11 @@ public class Intake extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake", currentState);
-      applyStates();
+      // applyStates();
     } else {
       if (currentState == IntakeCurrentState.KICKING
           && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
-        applyStates();
+        // applyStates();
       }
     }
   }
@@ -201,6 +201,10 @@ public class Intake extends SubsystemBase {
 
   public void setHingePower(double power) {
     hingeIO.setPower(power);
+  }
+
+  public void setHingePosition(double position) {
+    hingeIO.setPosition(position);
   }
 
   public Command hingeSysIdQuasistatic(SysIdRoutine.Direction direction) {

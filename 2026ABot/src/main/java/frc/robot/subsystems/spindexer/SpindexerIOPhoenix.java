@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
@@ -36,7 +37,7 @@ public class SpindexerIOPhoenix implements SpindexerIO {
   public SpindexerIOPhoenix() {
 
     // motor config:
-    spindexerMotor = new TalonFX(SpindexerConstants.motorID);
+    spindexerMotor = new TalonFX(SpindexerConstants.motorID, Constants.CANBusName);
     spindexerRequest = new VelocityVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;

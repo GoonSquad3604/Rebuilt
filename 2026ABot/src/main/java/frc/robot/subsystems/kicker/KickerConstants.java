@@ -1,7 +1,7 @@
 package frc.robot.subsystems.kicker;
 
 public class KickerConstants {
-  public static final int motorID = 6;
+  public static final int motorID = 13;
 
   public static final double P = 1.6687E-07;
   public static final double I = 0;

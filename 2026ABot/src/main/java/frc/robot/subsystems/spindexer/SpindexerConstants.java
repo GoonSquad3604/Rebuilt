@@ -3,7 +3,7 @@ package frc.robot.subsystems.spindexer;
 /** Add your docs here. */
 public class SpindexerConstants {
 
-  public static final int motorID = 0; // placeholder
+  public static final int motorID = 12;
 
   public static final double P = 0;
   public static final double I = 0;

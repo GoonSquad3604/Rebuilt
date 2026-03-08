@@ -54,7 +54,7 @@ public class Spindexer extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Spindexer/CurrentState", currentState);
-      applyStates();
+      // applyStates();
     }
 
     Logger.recordOutput("Subsystems/Spindexer/WantedState", wantedState);

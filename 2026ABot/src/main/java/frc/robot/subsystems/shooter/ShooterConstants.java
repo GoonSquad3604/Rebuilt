@@ -17,8 +17,8 @@ public final class ShooterConstants {
 
   public static final class HoodConstants {
 
-    public static final int hoodID = 14;
-    public static final int hoodEncoderID = 27;
+    public static final int hoodID = 9;
+    public static final int hoodEncoderID = 25;
 
     public static final double hoodP = 24;
     public static final double hoodI = 0;
@@ -31,7 +31,7 @@ public final class ShooterConstants {
 
   public static final class LauncherConstants {
 
-    public static final int launcherID = 9;
+    public static final int launcherID = 14;
 
     public static final double launcherP = 0.061342;
     public static final double launcherI = 0;
@@ -45,7 +45,7 @@ public final class ShooterConstants {
 
   public static final class TurretConstants {
 
-    public static final int turretID = 11;
+    public static final int turretID = 5;
     public static final int turretEncoderID = 26;
 
     public static final double turretP = 12;

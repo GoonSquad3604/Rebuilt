@@ -119,13 +119,12 @@ public class Shooter extends SubsystemBase {
       currentState = newState;
       lastParameters = shootingParameters;
       Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
-      applyStates();
+      // applyStates();
     }
     RobotState.getInstance().setTurretAngle(Rotation2d.fromDegrees(turretIO.getAngle()));
   }
 
   public CurrentState handleStateTransitions() {
-
     switch (wantedState) {
       case IDLE:
         return CurrentState.IDLING;
@@ -208,6 +207,14 @@ public class Shooter extends SubsystemBase {
 
   public void setTurretPos(double position) {
     turretIO.setAngle(position);
+  }
+
+  public void setHoodPower(double power) {
+    hoodIO.setPower(power);
+  }
+
+  public void setLauncherPower(double power) {
+    launcherIO.setPower(power);
   }
 
   public Command launcherSysIdQuasistatic(SysIdRoutine.Direction direction) {

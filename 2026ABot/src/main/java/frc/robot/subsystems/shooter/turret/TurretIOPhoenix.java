@@ -13,7 +13,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.units.measure.Angle;
@@ -56,7 +55,7 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = -.936;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = 0;
     turretEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
@@ -67,7 +66,6 @@ public class TurretIOPhoenix implements TurretIO {
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
     turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
         ShooterConstants.TurretConstants.turretEncoderID;
     turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
@@ -76,7 +74,9 @@ public class TurretIOPhoenix implements TurretIO {
         new Slot0Configs()
             .withKP(ShooterConstants.TurretConstants.turretP)
             .withKI(ShooterConstants.TurretConstants.turretI)
-            .withKD(ShooterConstants.TurretConstants.turretD);
+            .withKD(ShooterConstants.TurretConstants.turretD)
+            .withKS(ShooterConstants.TurretConstants.turretS)
+            .withKV(ShooterConstants.TurretConstants.turretV);
     turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
@@ -99,16 +99,6 @@ public class TurretIOPhoenix implements TurretIO {
                 torqueCurrent,
                 tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.optimizeBusUtilization(0, 1.0));
-
-    var slot0Configs = new Slot0Configs();
-
-    slot0Configs.kP = ShooterConstants.TurretConstants.turretP;
-    slot0Configs.kI = ShooterConstants.TurretConstants.turretI;
-    slot0Configs.kD = ShooterConstants.TurretConstants.turretD;
-    slot0Configs.kS = ShooterConstants.TurretConstants.turretS;
-    slot0Configs.kV = ShooterConstants.TurretConstants.turretV;
-
-    turretMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
