@@ -337,10 +337,10 @@ public class RobotContainer {
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
     // cllimber testing
-    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-1)));
+    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(1)));
     driverController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
-    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(1)));
+    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-1)));
     driverController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
     driverController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(1)));
@@ -395,13 +395,13 @@ public class RobotContainer {
 
     operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
     operatorButtonBox.button(6).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
-    // operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
+    operatorButtonBox.button(7).onTrue(Commands.runOnce(() -> climber.resetClimbStep()));
     operatorButtonBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
     // operatorButtonBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
 
     operatorButtonBox.button(8).onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB));
 
-    operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+    // operatorButtonBox.button(7).onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
 
     // manual target
     operatorButtonBox.button(1).onTrue(RobotState.getInstance().toggleManualShooting());

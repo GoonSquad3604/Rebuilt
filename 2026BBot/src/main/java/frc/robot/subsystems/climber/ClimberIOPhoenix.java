@@ -71,7 +71,7 @@ public class ClimberIOPhoenix implements ClimberIO {
     // inner motor config
     innerMotor = new TalonFX(ClimberConstants.innerMotorID, Constants.CANBusName);
     innerMotorConfig = new TalonFXConfiguration();
-    innerMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    innerMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     innerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     innerMotorConfig.Feedback.FeedbackRemoteSensorID = ClimberConstants.innerEncoderID;
     innerMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
@@ -89,13 +89,14 @@ public class ClimberIOPhoenix implements ClimberIO {
     // outer encoder config
     outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
     outerEncoderConfig = new CANcoderConfiguration();
-    outerEncoderConfig.MagnetSensor.MagnetOffset = 0.2; // 0.8;
+    // outerEncoderConfig.MagnetSensor.MagnetOffset = 0.2; // 0.8;
     outerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     outerEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     // inner encoder config
     innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
     innerEncoderConfig = new CANcoderConfiguration();
     innerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    innerEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     // motion magic
     innerMotorConfig.MotionMagic.MotionMagicAcceleration = ClimberConstants.innerAcceleration;
@@ -160,7 +161,7 @@ public class ClimberIOPhoenix implements ClimberIO {
     inputs.outerVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
     inputs.outerCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
     inputs.outerVelocity = outerEncoder.getVelocity().getValueAsDouble();
-    inputs.outerPosition = outerEncoder.getPosition().getValueAsDouble();
+    inputs.outerPosition = outerEncoder.getAbsolutePosition().getValueAsDouble();
 
     inputs.innerMotorConnected = innerMotor.isConnected();
     inputs.innerEncoderConnected = innerEncoder.isConnected();
