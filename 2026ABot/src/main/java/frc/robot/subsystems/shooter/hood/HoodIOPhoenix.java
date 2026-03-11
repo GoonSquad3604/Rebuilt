@@ -4,13 +4,12 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -24,9 +23,9 @@ import frc.robot.util.PhoenixUtil;
 public class HoodIOPhoenix implements HoodIO {
 
   // motor
-  private final TalonFXS hoodMotor;
-  private final PositionVoltage hoodRequest;
-  private final TalonFXSConfiguration hoodMotorConfig;
+  private final TalonFX hoodMotor;
+  private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
+  private final TalonFXConfiguration hoodMotorConfig;
 
   // encoder
   private final CANcoder hoodEncoder;
@@ -42,39 +41,43 @@ public class HoodIOPhoenix implements HoodIO {
 
   public HoodIOPhoenix() {
 
-    hoodMotor = new TalonFXS(ShooterConstants.HoodConstants.hoodID, Constants.CANBusName);
-    hoodRequest = new PositionVoltage(0);
+    hoodMotor = new TalonFX(ShooterConstants.HoodConstants.hoodID, Constants.CANBusName);
 
     hoodEncoder = new CANcoder(ShooterConstants.HoodConstants.hoodEncoderID, Constants.CANBusName);
     hoodEncoderConfig = new CANcoderConfiguration();
 
     hoodEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    hoodEncoderConfig.MagnetSensor.MagnetOffset = .3;
+    hoodEncoderConfig.MagnetSensor.MagnetOffset = 0.5;
 
     hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
 
-    hoodMotorConfig = new TalonFXSConfiguration();
+    hoodMotorConfig = new TalonFXConfiguration();
 
-    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    hoodMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
-    hoodMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
-        ShooterConstants.HoodConstants.hoodEncoderID;
-    hoodMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
-        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
+    hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
+    hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    // hoodMotorConfig.MotorOutput.PeakForwardDutyCycle = .2;
+    // hoodMotorConfig.MotorOutput.PeakReverseDutyCycle = -.2;
+
+    hoodMotorConfig.MotionMagic.MotionMagicAcceleration =
+        ShooterConstants.HoodConstants.acceleration;
+    hoodMotorConfig.MotionMagic.MotionMagicCruiseVelocity = ShooterConstants.HoodConstants.velocity;
+
     hoodMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.HoodConstants.hoodP)
             .withKI(ShooterConstants.HoodConstants.hoodI)
             .withKD(ShooterConstants.HoodConstants.hoodD)
             .withKS(ShooterConstants.HoodConstants.hoodS)
-            .withKV(ShooterConstants.HoodConstants.hoodV);
+            .withKV(ShooterConstants.HoodConstants.hoodV)
+            .withKG(ShooterConstants.HoodConstants.hoodG);
     hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.getConfigurator().apply(hoodMotorConfig));
 
-    position = hoodMotor.getPosition();
-    velocity = hoodMotor.getVelocity();
+    position = hoodEncoder.getPosition();
+    velocity = hoodEncoder.getVelocity();
     appliedVoltage = hoodMotor.getMotorVoltage();
     supplyCurrent = hoodMotor.getSupplyCurrent();
     torqueCurrent = hoodMotor.getTorqueCurrent();
@@ -92,16 +95,6 @@ public class HoodIOPhoenix implements HoodIO {
                 torqueCurrent,
                 tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.optimizeBusUtilization(0, 1.0));
-
-    var slot0Configs = new Slot0Configs();
-
-    slot0Configs.kP = ShooterConstants.HoodConstants.hoodP;
-    slot0Configs.kI = ShooterConstants.HoodConstants.hoodI;
-    slot0Configs.kD = ShooterConstants.HoodConstants.hoodD;
-    slot0Configs.kS = ShooterConstants.HoodConstants.hoodS;
-    slot0Configs.kV = ShooterConstants.HoodConstants.hoodV;
-
-    hoodMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
@@ -122,7 +115,7 @@ public class HoodIOPhoenix implements HoodIO {
 
   @Override
   public void setPosition(double position) {
-    hoodMotor.setControl(hoodRequest.withPosition(position));
+    hoodMotor.setControl(hoodRequest.withPosition(position).withEnableFOC(true));
   }
 
   @Override

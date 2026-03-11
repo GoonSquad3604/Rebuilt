@@ -170,7 +170,7 @@ public class ShotCalculator {
             lookaheadTurretToTargetDistance >= minDistance
                 && lookaheadTurretToTargetDistance <= maxDistance,
             turretAngleRotation2d,
-            turretAngle,
+            360 - turretAngle,
             // turretVelocity,
             hoodPose,
             // hoodVelocity,

@@ -3,6 +3,7 @@ package frc.robot.subsystems.hopper;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
+// import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -16,6 +17,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
@@ -40,7 +42,7 @@ public class HopperIOPhoenix implements HopperIO {
   public HopperIOPhoenix() {
 
     // motor config:
-    hopperMotor = new TalonFX(HopperConstants.motorID);
+    hopperMotor = new TalonFX(HopperConstants.motorID, Constants.CANBusName);
     hopperRequest = new PositionVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -54,11 +56,16 @@ public class HopperIOPhoenix implements HopperIO {
             .withKS(HopperConstants.S)
             .withKV(HopperConstants.V)
             .withKA(HopperConstants.A);
-    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 2;
 
     // CAN Range config (stowed detector)
-    stowedDetector = new CANrange(HopperConstants.stowedDetectorID);
+    stowedDetector = new CANrange(HopperConstants.stowedDetectorID, Constants.CANBusName);
     stowedDetectorConfig = new CANrangeConfiguration();
+
+    stowedDetectorConfig.ProximityParams.MinSignalStrengthForValidMeasurement =
+        HopperConstants.stowedDetectorTriggerDistance;
+    stowedDetectorConfig.FovParams.FOVCenterX = 0;
+    stowedDetectorConfig.FovParams.FOVCenterY = 0;
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> hopperMotor.getConfigurator().apply(motorConfig));
@@ -92,6 +99,7 @@ public class HopperIOPhoenix implements HopperIO {
     inputs.motorConnected = hopperMotor.isConnected();
     inputs.stowedDetectorConnected = stowedDetector.isConnected();
     inputs.stowedDetectorDistance = stowedDetector.getDistance().getValueAsDouble();
+    inputs.stowedDetectorTriggered = stowedDetector.getIsDetected().getValue().booleanValue();
     inputs.voltage = hopperMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hopperMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = hopperMotor.getVelocity().getValueAsDouble();
@@ -115,8 +123,9 @@ public class HopperIOPhoenix implements HopperIO {
 
   @Override
   public boolean stowedDetectorTriggered() {
-    return stowedDetector.getDistance().getValueAsDouble()
-        < HopperConstants.stowedDetectorTriggerDistance;
+    // return stowedDetector.getDistance().getValueAsDouble()
+    //     < HopperConstants.stowedDetectorTriggerDistance;
+    return stowedDetector.getIsDetected().getValue().booleanValue();
   }
 
   @Override

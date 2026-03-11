@@ -9,27 +9,28 @@ public class IntakeConstants {
 
   public static final class HingeConstants {
 
-    public static final int motorID = 0;
-    public static final int encoderID = 0;
+    public static final int motorID = 10;
+    public static final int encoderID = 27;
 
-    public static final double P = 0;
+    public static final double P = 33;
     public static final double I = 0;
-    public static final double D = 0;
-    public static final double S = 0;
-    public static final double V = 0;
+    public static final double D = 0.3;
+    public static final double S = 5;
+    public static final double V = 0.75;
     public static final double A = 0;
+    public static final double G = 0.0;
 
-    public static final double deployedPosition = 0.0;
-    public static final double stowedPosition = 0.0;
-    public static final double kickPosition = 0.0;
+    public static final double deployedPosition = 0.460;
+    public static final double stowedPosition = 0.310;
+    public static final double kickPosition = 0.2;
 
-    public static final double kickInterval = 1.5;
-    public static final double nearPositionTolerance = 0.0;
+    public static final double kickInterval = 3;
+    public static final double nearPositionTolerance = 0.015;
   }
 
   public static final class RollerConstants {
 
-    public static final int motorID = 0;
+    public static final int motorID = 11;
 
     public static final double P = 0;
     public static final double I = 0;
@@ -38,7 +39,7 @@ public class IntakeConstants {
     public static final double V = 0;
     public static final double A = 0;
 
-    public static final double intakeSpeed = 0.4;
-    public static final double vomitSpeed = -0.4;
+    public static final double intakeSpeed = 0.95;
+    public static final double vomitSpeed = -0.6;
   }
 }

@@ -2,6 +2,7 @@ package frc.robot.subsystems.spindexer;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -12,6 +13,8 @@ public class Spindexer extends SubsystemBase {
 
   private SpindexerIOPhoenix spindexerIO = new SpindexerIOPhoenix();
   private SpindexerIOInputsAutoLogged spindexerInputs = new SpindexerIOInputsAutoLogged();
+
+  private final Alert spindexerMotorDisconnected;
 
   private SysIdRoutine sysID;
 
@@ -31,6 +34,10 @@ public class Spindexer extends SubsystemBase {
   /** Creates a new Hopper. */
   public Spindexer(SpindexerIOPhoenix io) {
     this.spindexerIO = io;
+
+    spindexerMotorDisconnected =
+        new Alert("Spindexer Motor Disconnected", Alert.AlertType.kWarning);
+
     sysID =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -58,6 +65,8 @@ public class Spindexer extends SubsystemBase {
     }
 
     Logger.recordOutput("Subsystems/Spindexer/WantedState", wantedState);
+
+    spindexerMotorDisconnected.set(!spindexerInputs.motorConnected);
   }
 
   public void setWantedState(SpindexerWantedState state) {
@@ -93,6 +102,10 @@ public class Spindexer extends SubsystemBase {
   // testing only, remove later:
   public void setPower(double power) {
     spindexerIO.setPower(power);
+  }
+
+  public void setVelocity(double velocity) {
+    spindexerIO.setVelocity(velocity);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

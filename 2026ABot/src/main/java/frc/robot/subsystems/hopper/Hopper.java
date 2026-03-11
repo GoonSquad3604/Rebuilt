@@ -3,6 +3,7 @@ package frc.robot.subsystems.hopper;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -13,9 +14,10 @@ public class Hopper extends SubsystemBase {
   private HopperIOPhoenix hopperIO = new HopperIOPhoenix();
   private HopperIOInputsAutoLogged hopperInputs = new HopperIOInputsAutoLogged();
 
-  private SysIdRoutine sysID;
+  private final Alert hopperMotorDisconnected;
+  private final Alert stowedDetectorDisconnected;
 
-  private boolean deployed = false;
+  private SysIdRoutine sysID;
 
   public enum HopperWantedState {
     IDLE,
@@ -36,6 +38,11 @@ public class Hopper extends SubsystemBase {
   /** Creates a new Hopper. */
   public Hopper(HopperIOPhoenix io) {
     this.hopperIO = io;
+
+    hopperMotorDisconnected = new Alert("Hopper Motor Disconnected", Alert.AlertType.kWarning);
+    stowedDetectorDisconnected =
+        new Alert("Stowed Detector Disconnected", Alert.AlertType.kWarning);
+
     sysID =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -53,6 +60,8 @@ public class Hopper extends SubsystemBase {
 
     hopperIO.updateInputs(hopperInputs);
     Logger.processInputs("Subsystems/Hopper", hopperInputs);
+    Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
+    Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
     if (newState != currentState) {
@@ -61,18 +70,15 @@ public class Hopper extends SubsystemBase {
       applyStates();
     } else {
       if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
-        this.setWantedState(HopperWantedState.IDLE);
+        wantedState = HopperWantedState.IDLE;
         hopperIO.resetPosition();
       }
     }
 
-    if (MathUtil.isNear(HopperConstants.extendedPos, hopperIO.getPosition(), 5)) {
-      deployed = true;
-    } else {
-      deployed = false;
-    }
-
     Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
+
+    hopperMotorDisconnected.set(!hopperInputs.motorConnected);
+    stowedDetectorDisconnected.set(!hopperInputs.stowedDetectorConnected);
   }
 
   public void setWantedState(HopperWantedState state) {
@@ -83,12 +89,13 @@ public class Hopper extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> HopperCurrentState.IDLING;
       case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW -> MathUtil.isNear(
-              HopperConstants.stowTargetPosition,
-              hopperIO.getPosition(),
-              HopperConstants.atSetpointTolerance)
-          ? HopperCurrentState.STOWING_SLOW
-          : HopperCurrentState.STOWING_FAST;
+        // case STOW -> MathUtil.isNear(
+        //         HopperConstants.stowTargetPosition,
+        //         hopperIO.getPosition(),
+        //         HopperConstants.atSetpointTolerance)
+        //     ? HopperCurrentState.STOWING_SLOW
+        //     : HopperCurrentState.STOWING_FAST;
+      case STOW -> HopperCurrentState.STOWING_FAST;
     };
   }
 
@@ -126,7 +133,16 @@ public class Hopper extends SubsystemBase {
   }
 
   public boolean isDeployed() {
-    return deployed;
+    return MathUtil.isNear(
+        HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+  }
+
+  public boolean isStowed() {
+    return MathUtil.isNear(0, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+  }
+
+  public void zeroEncoder() {
+    hopperIO.resetPosition();
   }
 
   // testing only, remove later:
