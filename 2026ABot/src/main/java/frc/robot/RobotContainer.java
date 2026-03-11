@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -45,6 +38,7 @@ import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.spindexer.Spindexer;
+import frc.robot.subsystems.spindexer.SpindexerConstants;
 import frc.robot.subsystems.spindexer.SpindexerIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -90,16 +84,16 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-
+        hopper = new Hopper(new HopperIOPhoenix());
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(
+                    camera0Name, robotToCamera0Retracted, robotToCamera0Extended, hopper),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1),
                 new VisionIOPhotonVision(camera2Name, robotToCamera2),
                 new VisionIOPhotonVision(camera3Name, robotToCamera3));
         climber = new Climber(new ClimberIOPhoenix());
-        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
         kicker = new Kicker(new KickerIOPhoenix());
         shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
@@ -119,15 +113,15 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
+        hopper = new Hopper(new HopperIOPhoenix());
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted, drive::getPose),
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
                 new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
         climber = new Climber(new ClimberIOPhoenix());
-        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
         kicker = new Kicker(new KickerIOPhoenix());
         shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
@@ -145,16 +139,16 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        hopper = new Hopper(new HopperIOPhoenix());
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted, drive::getPose),
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
                 new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
 
         climber = new Climber(new ClimberIOPhoenix());
-        hopper = new Hopper(new HopperIOPhoenix());
         intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
         kicker = new Kicker(new KickerIOPhoenix());
         shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
@@ -197,15 +191,29 @@ public class RobotContainer {
     //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     autoChooser.addOption(
-        "Kicker SysId (Quasistatic Forward)",
-        kicker.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "Spindexer SysId (Quasistatic Forward)",
+        spindexer.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Kicker SysId (Quasistatic Reverse)",
-        kicker.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Spindexer SysId (Quasistatic Reverse)",
+        spindexer.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-        "Kicker SysId (Dynamic Forward)", kicker.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Spindexer SysId (Dynamic Forward)",
+        spindexer.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Spindexer SysId (Dynamic Reverse)",
+        spindexer.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Forward)",
+    //     kicker.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Quasistatic Reverse)",
+    //     kicker.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Forward)", kicker.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
     // autoChooser.addOption(
     //     "Climber1 SysId (Quasistatic Forward)",
     //     climber.climber1SysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -243,8 +251,6 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    /* climb trigger */
-
     /* driver */
 
     // Default command, normal field-relative drive
@@ -262,17 +268,10 @@ public class RobotContainer {
     //     .whileTrue(
     //         DriveCommands.alignToTrench(
     //             drive,
-    //             () -> -driverController.getLeftY(), // xsupplier
-    //             () -> -driverController.getLeftX(), // ysupplier
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
     //             () -> -driverController.getRightX(),
     //             () -> driverController.getLeftTriggerAxis() > 0.05));
-
-    // test drive to pose
-    // driverController
-    //     .povUp()
-    //     .whileTrue(
-    //         DriveCommands.alignToPose(
-    //             drive, AllianceFlipUtil.apply(new Pose2d(2.9, 6.7, new Rotation2d()))));
 
     // Lock to 45° when B button is held
     driverController
@@ -325,6 +324,16 @@ public class RobotContainer {
                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
                     () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
+
+    // hopper in
+    driverController.leftBumper().onTrue(Commands.runOnce(() -> hopper.setPower(0.15)));
+    driverController.leftBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
+
+    driverController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.15)));
+    driverController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
+
+    // reset hopper
+    driverController.a().onTrue(Commands.runOnce(() -> hopper.zeroEncoder()));
 
     // cllimber testing
     // driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-1)));
@@ -392,22 +401,6 @@ public class RobotContainer {
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
     // test buttons:
-    // hopper out/in
-    driverController.leftBumper().onTrue(Commands.runOnce(() -> hopper.setPower(0.15)));
-    driverController.leftBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
-    driverController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.15)));
-    driverController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
-
-    // intake hinge up/down
-    testController.y().onTrue(Commands.runOnce(() -> intake.setHingePower(-0.2)));
-    testController.y().onFalse(Commands.runOnce(() -> intake.setHingePower(0.0)));
-    testController.a().onTrue(Commands.runOnce(() -> intake.setHingePower(0.2)));
-    testController.a().onFalse(Commands.runOnce(() -> intake.setHingePower(0.0)));
-
-    // intake rollers
-    // driverController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setRollerPower(.95)));
-    // driverController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setRollerPower(0.0)));
-
     // kicker and shooter
     testController
         .b()
@@ -423,23 +416,17 @@ public class RobotContainer {
                 Commands.runOnce(() -> kicker.setPower(0)),
                 Commands.runOnce(() -> shooter.setLauncherPower(0))));
 
-    // kicker
-    // testController.b().onTrue(Commands.runOnce(() -> kicker.setPower(0.5)));
-
-    // reset hopper
-    driverController.a().onTrue(Commands.runOnce(() -> hopper.zeroEncoder()));
-
     // spindex
-    pitBox
-        .button(4)
-        .onTrue(
-            Commands.runOnce(() -> shooter.setLauncherVelocity(40))
-                .alongWith(Commands.runOnce(() -> kicker.setVelocity(40))));
-    pitBox
-        .button(4)
-        .onFalse(
-            Commands.runOnce(() -> shooter.setLauncherPower(0.0))
-                .alongWith(Commands.runOnce(() -> kicker.setPower(0.0))));
+    // pitBox
+    //     .button(4)
+    //     .onTrue(
+    //         Commands.runOnce(() -> shooter.setLauncherVelocity(40))
+    //             .alongWith(Commands.runOnce(() -> kicker.setVelocity(40))));
+    // pitBox
+    //     .button(4)
+    //     .onFalse(
+    //         Commands.runOnce(() -> shooter.setLauncherPower(0.0))
+    //             .alongWith(Commands.runOnce(() -> kicker.setPower(0.0))));
 
     pitBox.button(5).onTrue(Commands.runOnce(() -> spindexer.setPower(0.6)));
     pitBox.button(5).onFalse(Commands.runOnce(() -> spindexer.setPower(0.0)));
@@ -471,15 +458,19 @@ public class RobotContainer {
     pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setHoodPositionDashboard()));
 
     pitBox
-        .button(11)
-        .onTrue(
-            Commands.runOnce(
-                () -> intake.setHingePosition(IntakeConstants.HingeConstants.deployedPosition)));
+        .button(4)
+        .onTrue(Commands.runOnce(() -> spindexer.setVelocity(SpindexerConstants.spinVelocity)));
+    pitBox.button(4).onFalse(Commands.runOnce(() -> spindexer.setPower(0)));
+
     pitBox
-        .button(10)
+        .button(5)
         .onTrue(
-            Commands.runOnce(
-                () -> intake.setHingePosition(IntakeConstants.HingeConstants.stowedPosition)));
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                superstructure.setWantedState(WantedSuperState.EJECT),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.EJECTING));
+
+    pitBox.button(10).onTrue(Commands.runOnce(() -> shooter.setTurretPos(0.5)));
   }
 
   /**

@@ -3,6 +3,7 @@ package frc.robot.subsystems.climber;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -12,6 +13,11 @@ public class Climber extends SubsystemBase {
 
   private ClimberIOPhoenix climberIO = new ClimberIOPhoenix();
   private ClimberIOInputsAutoLogged climberInputs = new ClimberIOInputsAutoLogged();
+
+  private final Alert climberOuterMotorDisconnected;
+  private final Alert climberInnerMotorDisconnected;
+  private final Alert climberOuterEncoderDisconnected;
+  private final Alert climberInnerEncoderDisconnected;
 
   private SysIdRoutine climberInnerSysId;
   private SysIdRoutine climberOuterSysId;
@@ -69,6 +75,15 @@ public class Climber extends SubsystemBase {
   public Climber(ClimberIOPhoenix climberIO) {
     this.climberIO = climberIO;
 
+    climberOuterMotorDisconnected =
+        new Alert("Climber Outer Motor Disconnected", Alert.AlertType.kWarning);
+    climberInnerMotorDisconnected =
+        new Alert("Climber Inner Motor Disconnected", Alert.AlertType.kWarning);
+    climberOuterEncoderDisconnected =
+        new Alert("Climber Outer Encoder Disconnected", Alert.AlertType.kWarning);
+    climberInnerEncoderDisconnected =
+        new Alert("Climber Inner Encoder Disconnected", Alert.AlertType.kWarning);
+
     climberInnerSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -110,6 +125,10 @@ public class Climber extends SubsystemBase {
     }
 
     Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
+    climberOuterMotorDisconnected.set(!climberInputs.outerMotorConnected);
+    climberInnerMotorDisconnected.set(!climberInputs.innerMotorConnected);
+    climberOuterEncoderDisconnected.set(!climberInputs.outerEncoderConnected);
+    climberInnerEncoderDisconnected.set(!climberInputs.innerEncoderConnected);
   }
 
   public void setWantedState(ClimberWantedState wantedState) {

@@ -3,6 +3,7 @@ package frc.robot.subsystems.kicker;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -13,6 +14,8 @@ public class Kicker extends SubsystemBase {
 
   private KickerIOPhoenix kickerIO = new KickerIOPhoenix();
   private KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
+
+  private final Alert kickerMotorDisconnected;
 
   private SysIdRoutine sysID;
 
@@ -32,6 +35,8 @@ public class Kicker extends SubsystemBase {
   /** Creates a new Kicker. */
   public Kicker(KickerIOPhoenix io) {
     this.kickerIO = io;
+
+    kickerMotorDisconnected = new Alert("Kicker Motor Disconnected", Alert.AlertType.kWarning);
 
     sysID =
         new SysIdRoutine(
@@ -55,10 +60,12 @@ public class Kicker extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Kicker/CurrentState", currentState);
-      // applyStates();
+      applyStates();
     }
 
     Logger.recordOutput("Subsystems/Kicker/WantedState", wantedState);
+
+    kickerMotorDisconnected.set(!kickerInputs.motorConnected);
   }
 
   public void setWantedState(KickerWantedState state) {

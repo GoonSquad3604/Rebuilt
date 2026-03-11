@@ -55,15 +55,16 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = 0;
-    turretEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = 0.025;
+    turretEncoderConfig.MagnetSensor.SensorDirection =
+        SensorDirectionValue.CounterClockwise_Positive;
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
 
     turretMotorConfig = new TalonFXSConfiguration();
 
     turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
-    turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    turretMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
@@ -79,9 +80,10 @@ public class TurretIOPhoenix implements TurretIO {
             .withKV(ShooterConstants.TurretConstants.turretV);
     turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
+    // do a try until ok on turret encoder
 
-    position = turretMotor.getPosition();
-    velocity = turretMotor.getVelocity();
+    position = turretEncoder.getAbsolutePosition();
+    velocity = turretEncoder.getVelocity();
     appliedVoltage = turretMotor.getMotorVoltage();
     supplyCurrent = turretMotor.getSupplyCurrent();
     torqueCurrent = turretMotor.getTorqueCurrent();
@@ -133,11 +135,12 @@ public class TurretIOPhoenix implements TurretIO {
   public double getPosition() {
     return turretMotor.getPosition().getValueAsDouble();
   }
+
   // my favorite angle is 210 -lucas
-  @Override
-  public double getAngle() {
-    return turretEncoder.getAbsolutePosition().getValue().in(Degrees);
-  }
+  // @Override
+  // public double getAngle() {
+  //   return turretEncoder.getAbsolutePosition().getValue().in(Degrees);
+  // }
 
   @Override
   public void setVoltage(double voltage) {
@@ -145,7 +148,7 @@ public class TurretIOPhoenix implements TurretIO {
   }
 
   private double convertAngleToRotations(double angle) {
-    double newValue = angle / 360;
+    double newValue = (angle) / 360;
     if (newValue > ShooterConstants.TurretConstants.maxEncoderPosition) {
       newValue = ShooterConstants.TurretConstants.maxEncoderPosition;
     } else if (newValue < ShooterConstants.TurretConstants.minEncoderPosition) {

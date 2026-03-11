@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -12,6 +5,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.subsystems.hopper.Hopper;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +16,9 @@ import org.photonvision.PhotonCamera;
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  protected final Transform3d robotToCamera2;
+
+  private Hopper hopper;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -32,6 +29,14 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
+    this.robotToCamera2 = new Transform3d();
+  }
+
+  public VisionIOPhotonVision(
+      String name, Transform3d robotToCamera, Transform3d robotToCamera2, Hopper hopper) {
+    camera = new PhotonCamera(name);
+    this.robotToCamera = robotToCamera;
+    this.robotToCamera2 = robotToCamera2;
   }
 
   @Override
@@ -58,7 +63,22 @@ public class VisionIOPhotonVision implements VisionIO {
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        Transform3d fieldToRobot;
+        if (robotToCamera2.equals(new Transform3d())) {
+          // camera position as normal
+          fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        } else {
+          // camera position based on hopper position
+          if (hopper.isStowed()) {
+            // use stowed position
+            fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+          } else if (hopper.isDeployed()) {
+            // use extended position
+            fieldToRobot = fieldToCamera.plus(robotToCamera2.inverse());
+          } else {
+            fieldToRobot = new Transform3d();
+          }
+        }
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance

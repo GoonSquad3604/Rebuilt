@@ -41,7 +41,7 @@ public class SpindexerIOPhoenix implements SpindexerIO {
     spindexerRequest = new VelocityVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     motorConfig.Slot0 =
         new Slot0Configs()

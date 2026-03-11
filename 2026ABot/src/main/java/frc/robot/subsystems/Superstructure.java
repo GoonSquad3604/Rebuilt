@@ -43,7 +43,8 @@ public class Superstructure extends SubsystemBase {
     INTAKE_AND_SHOOT,
     CLIMB,
     // CLIMB_AND_SHOOT,
-    DECLIMB
+    DECLIMB,
+    EJECT
   }
 
   public enum CurrentSuperState {
@@ -55,7 +56,8 @@ public class Superstructure extends SubsystemBase {
     INTAKING_AND_SHOOTING,
     CLIMBING,
     // CLIMBING_AND_SHOOTING,
-    DECLIMBING
+    DECLIMBING,
+    EJECTING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -122,14 +124,14 @@ public class Superstructure extends SubsystemBase {
       case CLIMB:
         currentSuperState = CurrentSuperState.CLIMBING;
         break;
-        // case CLIMB_AND_SHOOT:
-        //   currentSuperState = CurrentSuperState.CLIMBING_AND_SHOOTING;
-        //   break;
       case DECLIMB:
         currentSuperState = CurrentSuperState.DECLIMBING;
         break;
       case STOW:
         currentSuperState = CurrentSuperState.STOWING;
+        break;
+      case EJECT:
+        currentSuperState = CurrentSuperState.EJECTING;
         break;
     }
     return currentSuperState;
@@ -155,14 +157,14 @@ public class Superstructure extends SubsystemBase {
       case CLIMBING:
         climb();
         break;
-        // case CLIMBING_AND_SHOOTING:
-        //   climbAndShoot();
-        //   break;
       case DECLIMBING:
         declimb();
         break;
       case STOWING:
         stow();
+        break;
+      case EJECTING:
+        eject();
         break;
     }
   }
@@ -198,12 +200,12 @@ public class Superstructure extends SubsystemBase {
 
     if (!intake.isStowed()) {
       intake.setWantedState(IntakeWantedState.STOW);
-      hopper.setWantedState(HopperWantedState.IDLE);
+      // hopper.setWantedState(HopperWantedState.IDLE);
     } else {
       if (!hopper.isStowed()) {
-        hopper.setWantedState(HopperWantedState.STOW);
+        // hopper.setWantedState(HopperWantedState.STOW);
       } else {
-        wantedSuperState = WantedSuperState.STOPPED;
+        // wantedSuperState = WantedSuperState.STOPPED;
       }
     }
   }
@@ -222,21 +224,21 @@ public class Superstructure extends SubsystemBase {
 
   private void shoot() {
     climber.setWantedState(ClimberWantedState.IDLE);
-    // shooter.setWantedState(ShooterWantedState.SHOOT);
+    shooter.setWantedState(ShooterWantedState.SHOOT);
     // kicker.setWantedState(KickerWantedState.REV);
 
-    if (!hopper.isDeployed()) {
-      hopper.setWantedState(HopperWantedState.DEPLOY);
-      intake.setWantedState(IntakeWantedState.STOW);
-    } else {
-      intake.setWantedState(IntakeWantedState.KICK);
-    }
-
-    // if (shooter.reachedSetpoints() && kicker.atVelocity()) {
-    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
+    // if (!hopper.isDeployed()) {
+    //   hopper.setWantedState(HopperWantedState.DEPLOY);
+    //   intake.setWantedState(IntakeWantedState.STOW);
     // } else {
-    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    //   intake.setWantedState(IntakeWantedState.KICK);
     // }
+
+    if (shooter.reachedSetpoints() /*&& kicker.atVelocity() */) {
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    } else {
+      spindexer.setWantedState(SpindexerWantedState.IDLE);
+    }
   }
 
   private void intakeAndShoot() {
@@ -280,5 +282,11 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.IDLE);
     // intake.setWantedState(IntakeWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
+  }
+
+  private void eject() {
+    shooter.setLauncherPower(0.3);
+    spindexer.setVelocity(30);
+    kicker.setVelocity(50);
   }
 }

@@ -3,6 +3,7 @@ package frc.robot.subsystems.hopper;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -12,6 +13,9 @@ public class Hopper extends SubsystemBase {
 
   private HopperIOPhoenix hopperIO = new HopperIOPhoenix();
   private HopperIOInputsAutoLogged hopperInputs = new HopperIOInputsAutoLogged();
+
+  private final Alert hopperMotorDisconnected;
+  private final Alert stowedDetectorDisconnected;
 
   private SysIdRoutine sysID;
 
@@ -34,6 +38,11 @@ public class Hopper extends SubsystemBase {
   /** Creates a new Hopper. */
   public Hopper(HopperIOPhoenix io) {
     this.hopperIO = io;
+
+    hopperMotorDisconnected = new Alert("Hopper Motor Disconnected", Alert.AlertType.kWarning);
+    stowedDetectorDisconnected =
+        new Alert("Stowed Detector Disconnected", Alert.AlertType.kWarning);
+
     sysID =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -67,6 +76,9 @@ public class Hopper extends SubsystemBase {
     }
 
     Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
+
+    hopperMotorDisconnected.set(!hopperInputs.motorConnected);
+    stowedDetectorDisconnected.set(!hopperInputs.stowedDetectorConnected);
   }
 
   public void setWantedState(HopperWantedState state) {
