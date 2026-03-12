@@ -115,16 +115,16 @@ public class Climber extends SubsystemBase {
 
     climberIO.updateInputs(climberInputs);
     Logger.processInputs("Subsystems/Climber", climberInputs);
-    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
+    // Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
 
     ClimberCurrentState newState = handleStateTransitions();
     if (newState != currentState) {
       currentState = newState;
-      Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+      // Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
       applyStates();
     }
 
-    Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
+    // Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
     climberOuterMotorDisconnected.set(!climberInputs.outerMotorConnected);
     climberInnerMotorDisconnected.set(!climberInputs.innerMotorConnected);
     climberOuterEncoderDisconnected.set(!climberInputs.outerEncoderConnected);

@@ -109,11 +109,6 @@ public class RobotState {
     return estimatedPose;
   }
 
-  // @AutoLogOutput
-  // public Optional<Rotation2d> getTurretAngle(double timestamp) {
-  //   return turretAngleBuffer.getSample(timestamp);
-  // }
-
   public ShooterTarget getTarget() {
     // checks override
     if (!override) {
@@ -138,15 +133,19 @@ public class RobotState {
       target = manualTarget;
     }
 
-    Logger.recordOutput("RobotState/ShotTarget", target);
-    Logger.recordOutput("RobotState/ManualTarget", manualTarget);
-    Logger.recordOutput("RobotState/Override", override);
+    // Logger.recordOutput("RobotState/ShotTarget", target);
+    // Logger.recordOutput("RobotState/ManualTarget", manualTarget);
+    // Logger.recordOutput("RobotState/Override", override);
 
     return target;
   }
 
   public Command setManualTarget(ShooterTarget newTarget) {
     return Commands.runOnce(() -> manualTarget = newTarget);
+  }
+
+  public ShooterTarget getManualTarget() {
+    return manualTarget;
   }
 
   public Command toggleManualShooting() {
@@ -159,7 +158,7 @@ public class RobotState {
 
   public void setTargetPathfindPose(Pose2d newPose) {
     targetPose = newPose;
-    Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
+    // Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
   }
 
   public Pose2d getTargetPathfindPose() {

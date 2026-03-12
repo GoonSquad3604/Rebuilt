@@ -74,7 +74,7 @@ public class DriveCommands {
           omega = Math.copySign(omega * omega, omega);
 
           // is slowmode?
-          double multiplier = slowMode.getAsBoolean() ? 0.4 : 1;
+          double multiplier = slowMode.getAsBoolean() ? 0.33 : 1;
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
