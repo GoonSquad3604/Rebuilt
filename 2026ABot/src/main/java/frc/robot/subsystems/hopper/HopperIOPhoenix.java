@@ -1,7 +1,5 @@
 package frc.robot.subsystems.hopper;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 // import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -12,11 +10,6 @@ import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
@@ -32,12 +25,12 @@ public class HopperIOPhoenix implements HopperIO {
   private final PositionVoltage hopperRequest;
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
-  private final StatusSignal<Angle> position;
-  private final StatusSignal<AngularVelocity> velocity;
-  private final StatusSignal<Voltage> appliedVoltage;
-  private final StatusSignal<Current> supplyCurrent;
-  private final StatusSignal<Current> torqueCurrent;
-  private final StatusSignal<Temperature> tempCelsius;
+  // private final StatusSignal<Angle> position;
+  // private final StatusSignal<AngularVelocity> velocity;
+  // private final StatusSignal<Voltage> appliedVoltage;
+  // private final StatusSignal<Current> supplyCurrent;
+  // private final StatusSignal<Current> torqueCurrent;
+  // private final StatusSignal<Temperature> tempCelsius;
 
   public HopperIOPhoenix() {
 
@@ -72,23 +65,23 @@ public class HopperIOPhoenix implements HopperIO {
     PhoenixUtil.tryUntilOk(5, () -> stowedDetector.getConfigurator().apply(stowedDetectorConfig));
 
     // base status signal
-    position = hopperMotor.getPosition();
-    velocity = hopperMotor.getVelocity();
-    appliedVoltage = hopperMotor.getMotorVoltage();
-    supplyCurrent = hopperMotor.getSupplyCurrent();
-    torqueCurrent = hopperMotor.getTorqueCurrent();
-    tempCelsius = hopperMotor.getDeviceTemp();
-    PhoenixUtil.tryUntilOk(
-        5,
-        () ->
-            BaseStatusSignal.setUpdateFrequencyForAll(
-                50.0,
-                position,
-                velocity,
-                appliedVoltage,
-                supplyCurrent,
-                torqueCurrent,
-                tempCelsius));
+    // position = hopperMotor.getPosition();
+    // velocity = hopperMotor.getVelocity();
+    // appliedVoltage = hopperMotor.getMotorVoltage();
+    // supplyCurrent = hopperMotor.getSupplyCurrent();
+    // torqueCurrent = hopperMotor.getTorqueCurrent();
+    // tempCelsius = hopperMotor.getDeviceTemp();
+    // PhoenixUtil.tryUntilOk(
+    //     5,
+    //     () ->
+    //         BaseStatusSignal.setUpdateFrequencyForAll(
+    //             50.0,
+    //             position,
+    //             velocity,
+    //             appliedVoltage,
+    //             supplyCurrent,
+    //             torqueCurrent,
+    //             tempCelsius));
 
     // optimize bus utilization
     PhoenixUtil.tryUntilOk(5, () -> hopperMotor.optimizeBusUtilization(0, 1.0));
@@ -123,8 +116,7 @@ public class HopperIOPhoenix implements HopperIO {
 
   @Override
   public boolean stowedDetectorTriggered() {
-    // return stowedDetector.getDistance().getValueAsDouble()
-    //     < HopperConstants.stowedDetectorTriggerDistance;
+    if (stowedDetector.getIsDetected().getValue().booleanValue()) resetPosition();
     return stowedDetector.getIsDetected().getValue().booleanValue();
   }
 

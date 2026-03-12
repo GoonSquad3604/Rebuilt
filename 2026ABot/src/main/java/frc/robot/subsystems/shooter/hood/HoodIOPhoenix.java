@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -25,6 +26,7 @@ public class HoodIOPhoenix implements HoodIO {
   // motor
   private final TalonFX hoodMotor;
   private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
+  private final PositionVoltage hoodPositionRequest = new PositionVoltage(0);
   private final TalonFXConfiguration hoodMotorConfig;
 
   // encoder
@@ -73,7 +75,7 @@ public class HoodIOPhoenix implements HoodIO {
             .withKS(ShooterConstants.HoodConstants.hoodS)
             .withKV(ShooterConstants.HoodConstants.hoodV)
             .withKG(ShooterConstants.HoodConstants.hoodG);
-    hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+    hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.getConfigurator().apply(hoodMotorConfig));
 
     position = hoodEncoder.getPosition();
@@ -115,7 +117,7 @@ public class HoodIOPhoenix implements HoodIO {
 
   @Override
   public void setPosition(double position) {
-    hoodMotor.setControl(hoodRequest.withPosition(position).withEnableFOC(true));
+    hoodMotor.setControl(hoodPositionRequest.withPosition(position).withEnableFOC(true));
   }
 
   @Override

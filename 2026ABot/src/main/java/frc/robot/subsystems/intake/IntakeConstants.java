@@ -40,6 +40,7 @@ public class IntakeConstants {
     public static final double A = 0;
 
     public static final double intakeSpeed = 0.95;
+    public static final double kickIntakeSpeed = 0.5;
     public static final double vomitSpeed = -0.6;
   }
 }

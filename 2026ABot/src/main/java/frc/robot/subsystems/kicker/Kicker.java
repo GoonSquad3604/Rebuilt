@@ -69,7 +69,7 @@ public class Kicker extends SubsystemBase {
   }
 
   public void setWantedState(KickerWantedState state) {
-    wantedState = state;
+    this.wantedState = state;
   }
 
   private KickerCurrentState handleStateTransitions() {
@@ -95,7 +95,7 @@ public class Kicker extends SubsystemBase {
   }
 
   private void rev() {
-    kickerIO.setPower(KickerConstants.shootingVelocity);
+    kickerIO.setVelocity(KickerConstants.shootingVelocity);
   }
 
   public boolean atVelocity() {

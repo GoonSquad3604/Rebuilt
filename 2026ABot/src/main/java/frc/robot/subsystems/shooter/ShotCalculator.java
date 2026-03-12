@@ -58,33 +58,19 @@ public class ShotCalculator {
     maxDistance = 5.60;
     phaseDelay = 0.02;
 
-    shotHoodAngleMap.put(1.34, 0.1);
-    shotHoodAngleMap.put(1.78, 0.2);
-    shotHoodAngleMap.put(2.17, 0.3);
-    shotHoodAngleMap.put(2.81, 0.4);
-    shotHoodAngleMap.put(3.82, 0.425);
-    shotHoodAngleMap.put(4.09, 0.45);
-    shotHoodAngleMap.put(4.40, 0.475);
-    shotHoodAngleMap.put(4.77, 0.5);
-    shotHoodAngleMap.put(5.57, 0.6);
-    shotHoodAngleMap.put(5.60, 0.7);
+    shotFlywheelSpeedMap.put(2.02, 45.0);
+    shotFlywheelSpeedMap.put(2.23, 50.0);
+    shotFlywheelSpeedMap.put(2.60, 53.0);
+    shotFlywheelSpeedMap.put(2.80, 55.0);
+    shotFlywheelSpeedMap.put(3.04, 57.0);
+    shotFlywheelSpeedMap.put(3.61, 67.0);
 
-    shotFlywheelSpeedMap.put(1.34, 40.0);
-    shotFlywheelSpeedMap.put(1.78, 42.0);
-    shotFlywheelSpeedMap.put(2.17, 44.0);
-    shotFlywheelSpeedMap.put(2.81, 46.0);
-    shotFlywheelSpeedMap.put(3.82, 48.0);
-    shotFlywheelSpeedMap.put(4.09, 50.0);
-    shotFlywheelSpeedMap.put(4.40, 52.0);
-    shotFlywheelSpeedMap.put(4.77, 54.0);
-    shotFlywheelSpeedMap.put(5.57, 56.0);
-    shotFlywheelSpeedMap.put(5.60, 58.0);
-
-    timeOfFlightMap.put(5.68, 1.16);
-    timeOfFlightMap.put(4.55, 1.12);
-    timeOfFlightMap.put(3.15, 1.11);
-    timeOfFlightMap.put(1.88, 1.09);
-    timeOfFlightMap.put(1.38, 0.90);
+    timeOfFlightMap.put(2.02, 0.92);
+    timeOfFlightMap.put(2.23, 1.09);
+    timeOfFlightMap.put(2.6, 1.27);
+    timeOfFlightMap.put(2.8, 1.18);
+    timeOfFlightMap.put(3.04, 1.19);
+    timeOfFlightMap.put(3.61, 1.35);
   }
 
   public ShootingParameters getParameters() {
@@ -144,7 +130,7 @@ public class ShotCalculator {
     }
 
     // Calculate parameters accounted for imparted velocity
-    hoodPose = shotHoodAngleMap.get(lookaheadTurretToTargetDistance);
+    // hoodPose = shotHoodAngleMap.get(lookaheadTurretToTargetDistance);
     if (lastTurretAngle == null) lastTurretAngle = turretAngleRotation2d;
     if (Double.isNaN(lastHoodPose)) lastHoodPose = hoodPose;
 
@@ -160,11 +146,16 @@ public class ShotCalculator {
     } else if (turretAngle < 0) {
       turretAngle += 360;
     }
-    if (hoodPose < 0.1) {
-      hoodPose = 0.1;
-    } else if (hoodPose > 0.7) {
-      hoodPose = 0.7;
-    }
+    // hoodPose =
+    //     turretToTargetDistance < 2
+    //         ? ShooterConstants.HoodConstants.hoodMinPos
+    //         : ShooterConstants.HoodConstants.hoodMaxPos;
+    // hoodPose =
+    //     MathUtil.clamp(
+    //         hoodPose,
+    //         ShooterConstants.HoodConstants.hoodMinPos,
+    //         ShooterConstants.HoodConstants.hoodMaxPos);
+    hoodPose = ShooterConstants.HoodConstants.hoodMaxPos;
     latestParameters =
         new ShootingParameters(
             lookaheadTurretToTargetDistance >= minDistance

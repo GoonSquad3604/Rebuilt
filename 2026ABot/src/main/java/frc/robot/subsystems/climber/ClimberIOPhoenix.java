@@ -41,12 +41,12 @@ public class ClimberIOPhoenix implements ClimberIO {
   private final StatusSignal<Current> outerTorqueCurrent;
   private final StatusSignal<Temperature> outerTempCelsius;
 
-  private final StatusSignal<Angle> innerPosition;
-  private final StatusSignal<AngularVelocity> innerVelocity;
-  private final StatusSignal<Voltage> innerAppliedVoltage;
-  private final StatusSignal<Current> innerSupplyCurrent;
-  private final StatusSignal<Current> innerTorqueCurrent;
-  private final StatusSignal<Temperature> innerTempCelsius;
+  // private final StatusSignal<Angle> innerPosition;
+  // private final StatusSignal<AngularVelocity> innerVelocity;
+  // private final StatusSignal<Voltage> innerAppliedVoltage;
+  // private final StatusSignal<Current> innerSupplyCurrent;
+  // private final StatusSignal<Current> innerTorqueCurrent;
+  // private final StatusSignal<Temperature> innerTempCelsius;
 
   public ClimberIOPhoenix() {
 
@@ -130,23 +130,23 @@ public class ClimberIOPhoenix implements ClimberIO {
                 outerTempCelsius));
 
     // inner base status signal
-    innerPosition = innerEncoder.getAbsolutePosition();
-    innerVelocity = innerEncoder.getVelocity();
-    innerAppliedVoltage = innerMotor.getMotorVoltage();
-    innerSupplyCurrent = innerMotor.getSupplyCurrent();
-    innerTorqueCurrent = innerMotor.getTorqueCurrent();
-    innerTempCelsius = innerMotor.getDeviceTemp();
-    PhoenixUtil.tryUntilOk(
-        5,
-        () ->
-            BaseStatusSignal.setUpdateFrequencyForAll(
-                50.0,
-                innerPosition,
-                innerVelocity,
-                innerAppliedVoltage,
-                innerSupplyCurrent,
-                innerTorqueCurrent,
-                innerTempCelsius));
+    // innerPosition = innerEncoder.getAbsolutePosition();
+    // innerVelocity = innerEncoder.getVelocity();
+    // innerAppliedVoltage = innerMotor.getMotorVoltage();
+    // innerSupplyCurrent = innerMotor.getSupplyCurrent();
+    // innerTorqueCurrent = innerMotor.getTorqueCurrent();
+    // innerTempCelsius = innerMotor.getDeviceTemp();
+    // PhoenixUtil.tryUntilOk(
+    //     5,
+    //     () ->
+    //         BaseStatusSignal.setUpdateFrequencyForAll(
+    //             50.0,
+    //             innerPosition,
+    //             innerVelocity,
+    //             innerAppliedVoltage,
+    //             innerSupplyCurrent,
+    //             innerTorqueCurrent,
+    //             innerTempCelsius));
 
     // optimize bus utilization
     PhoenixUtil.tryUntilOk(5, () -> outerMotor.optimizeBusUtilization(0, 1.0));

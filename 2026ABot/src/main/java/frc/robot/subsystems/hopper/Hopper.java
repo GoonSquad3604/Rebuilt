@@ -29,6 +29,7 @@ public class Hopper extends SubsystemBase {
     IDLING,
     STOWING_FAST,
     STOWING_SLOW,
+    STOWED,
     DEPLOYING,
   }
 
@@ -60,22 +61,19 @@ public class Hopper extends SubsystemBase {
 
     hopperIO.updateInputs(hopperInputs);
     Logger.processInputs("Subsystems/Hopper", hopperInputs);
-    Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
-    Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
+    // Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
+    // Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
-    if (newState != currentState) {
+    if (newState != currentState || (wantedState == HopperWantedState.STOW && !isStowed())) {
       currentState = newState;
-      Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
+      // Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
     } else {
-      if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
-        wantedState = HopperWantedState.IDLE;
-        hopperIO.resetPosition();
-      }
+
     }
 
-    Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
+    // Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
 
     hopperMotorDisconnected.set(!hopperInputs.motorConnected);
     stowedDetectorDisconnected.set(!hopperInputs.stowedDetectorConnected);
@@ -89,13 +87,17 @@ public class Hopper extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> HopperCurrentState.IDLING;
       case DEPLOY -> HopperCurrentState.DEPLOYING;
-        // case STOW -> MathUtil.isNear(
-        //         HopperConstants.stowTargetPosition,
-        //         hopperIO.getPosition(),
-        //         HopperConstants.atSetpointTolerance)
-        //     ? HopperCurrentState.STOWING_SLOW
-        //     : HopperCurrentState.STOWING_FAST;
-      case STOW -> HopperCurrentState.STOWING_FAST;
+      case STOW ->
+      // is hopper stowed?
+      isStowed()
+          ?
+          // if so, current state is idle
+          HopperCurrentState.IDLING
+          :
+          // if not, current state is stowing slow if higher than target position
+          hopperIO.getPosition() > HopperConstants.stowTargetPosition
+              ? HopperCurrentState.STOWING_SLOW
+              : HopperCurrentState.STOWING_FAST;
     };
   }
 
@@ -112,6 +114,9 @@ public class Hopper extends SubsystemBase {
         break;
       case STOWING_SLOW:
         stowSlow();
+        break;
+      case STOWED:
+        stowed();
         break;
     }
   }
@@ -132,13 +137,18 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPower(0);
   }
 
+  private void stowed() {
+    hopperIO.setPower(0);
+  }
+
   public boolean isDeployed() {
     return MathUtil.isNear(
         HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
   }
 
   public boolean isStowed() {
-    return MathUtil.isNear(0, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+    // return MathUtil.isNear(0, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+    return hopperIO.stowedDetectorTriggered();
   }
 
   public void zeroEncoder() {
