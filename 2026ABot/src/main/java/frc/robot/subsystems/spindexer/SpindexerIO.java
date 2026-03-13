@@ -11,8 +11,8 @@ public interface SpindexerIO {
     public double voltage;
     public double current;
     public double velocity;
-    public double temperature;
-    public double position;
+    // public double temperature;
+    // public double position;
   }
 
   default void updateInputs(SpindexerIOInputs inputs) {}

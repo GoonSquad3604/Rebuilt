@@ -69,8 +69,6 @@ public class Hopper extends SubsystemBase {
       currentState = newState;
       // Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
-    } else {
-
     }
 
     // Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);

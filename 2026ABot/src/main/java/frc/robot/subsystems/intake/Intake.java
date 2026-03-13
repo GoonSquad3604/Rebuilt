@@ -94,7 +94,7 @@ public class Intake extends SubsystemBase {
     // This method will be called once per scheduler run
     rollerSystemIO.updateInputs(rollerSystemInputs);
     hingeIO.updateInputs(hingeInputs);
-    Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
+    // Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
     Logger.processInputs("Subsystems/Intake/Hinge", hingeInputs);
     // Logger.recordOutput("Subsystems/Intake/Hinge/isDeployed", isDeployed());
     // Logger.recordOutput("Subsystems/Intake/Hinge/isStowed", isStowed());
@@ -111,7 +111,7 @@ public class Intake extends SubsystemBase {
         applyStates();
       }
     }
-    Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
+    // Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
 
     hingeMotorDisconnected.set(!hingeInputs.motorConnected);
     hingeEncoderDisconnected.set(!hingeInputs.encoderConnected);

@@ -83,7 +83,7 @@ public class KickerIOPhoenix implements KickerIO {
     inputs.voltage = kickerMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = kickerMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = kickerMotor.getVelocity().getValueAsDouble();
-    inputs.position = kickerMotor.getPosition().getValueAsDouble();
+    // inputs.position = kickerMotor.getPosition().getValueAsDouble();
   }
 
   @Override

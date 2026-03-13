@@ -23,9 +23,12 @@ public class AutoChooser extends SendableChooser<Autos> {
 
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
-          // new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
+          new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
           new AutoProgram(Autos.MIDDLE, "MIDDLE", AutoFactory::createMiddleAuto),
-          new AutoProgram(Autos.LEFT_TEST, "Left Test", AutoFactory::createLeftTestAuto));
+          new AutoProgram(Autos.LEFT, "Left", AutoFactory::createLeftAuto),
+          new AutoProgram(Autos.RIGHT, "Right", AutoFactory::createRightAuto),
+          new AutoProgram(Autos.BORING_LEFT, "BoringLeft", AutoFactory::createBoringLeftAuto),
+          new AutoProgram(Autos.BORING_RIGHT, "BoringRight", AutoFactory::createBoringRightAuto));
 
   private final Map<Autos, AutoProgram> programs;
   private final Map<DriverStation.Alliance, Map<Autos, Pair<Pose2d, Command>>> commandCache;

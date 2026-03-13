@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeomUtil;
-import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
 
@@ -61,7 +60,7 @@ public class RobotState {
     // for (int i = 0; i < 3; ++i) {
     // qStdDevs.set(i, 0, Math.pow(odometryStateStdDevs.get(i, 0), 2));
     // }
-    Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
+    // Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
   }
 
   /** Reset the pose estimate and odometry pose to the given pose. */
@@ -74,22 +73,12 @@ public class RobotState {
     // poseBuffer.clear();
   }
 
-  public boolean isLeftSide(Pose2d pose) {
-    if (AllianceFlipUtil.shouldFlip()) {
-      return pose.getY() < FieldConstants.Hub.topCenterPoint.getY();
-    } else {
-      return pose.getY() > FieldConstants.Hub.topCenterPoint.getY();
-    }
+  public boolean isLeftSide() {
+    return AllianceFlipUtil.apply(getPose()).getY() > AllianceFlipUtil.applyY(4.5);
   }
 
-  public boolean isInMiddle(Pose2d pose) {
-    if (AllianceFlipUtil.shouldFlip()) {
-      return pose.getY() < FieldConstants.Hub.leftFace.getY()
-          && pose.getY() > FieldConstants.Hub.rightFace.getY();
-    } else {
-      return pose.getY() > FieldConstants.Hub.leftFace.getY()
-          && pose.getY() < FieldConstants.Hub.rightFace.getY();
-    }
+  public boolean isInMiddle() {
+    return getPose().getY() > 3.25 && getPose().getY() < 4.5;
   }
 
   /** Get the rotation of the estimated pose. */

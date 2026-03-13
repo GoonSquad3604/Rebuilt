@@ -62,11 +62,11 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+      // Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
     }
 
     // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
+    // List<Pose3d> allTagPoses = new LinkedList<>();
     List<Pose3d> allRobotPoses = new LinkedList<>();
     List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
@@ -77,18 +77,18 @@ public class Vision extends SubsystemBase {
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
 
       // Initialize logging values
-      List<Pose3d> tagPoses = new LinkedList<>();
+      // List<Pose3d> tagPoses = new LinkedList<>();
       List<Pose3d> robotPoses = new LinkedList<>();
       List<Pose3d> robotPosesAccepted = new LinkedList<>();
       List<Pose3d> robotPosesRejected = new LinkedList<>();
 
       // Add tag poses
-      for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = aprilTagLayout.getTagPose(tagId);
-        if (tagPose.isPresent()) {
-          tagPoses.add(tagPose.get());
-        }
-      }
+      // for (int tagId : inputs[cameraIndex].tagIds) {
+      //   var tagPose = aprilTagLayout.getTagPose(tagId);
+      //   if (tagPose.isPresent()) {
+      //     tagPoses.add(tagPose.get());
+      //   }
+      // }
 
       // Loop over pose observations
       for (var observation : inputs[cameraIndex].poseObservations) {
@@ -153,7 +153,7 @@ public class Vision extends SubsystemBase {
       // Logger.recordOutput(
       //     "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
       //     robotPosesRejected.toArray(new Pose3d[0]));
-      allTagPoses.addAll(tagPoses);
+      // allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);

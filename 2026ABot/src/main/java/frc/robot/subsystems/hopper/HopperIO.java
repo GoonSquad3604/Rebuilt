@@ -9,12 +9,12 @@ public interface HopperIO {
   class HopperIOInputs {
     public boolean motorConnected = false;
     public boolean stowedDetectorConnected = false;
-    public double stowedDetectorDistance;
+    // public double stowedDetectorDistance;
     public boolean stowedDetectorTriggered = false;
     public double voltage;
     public double current;
-    public double velocity;
-    public double temperature;
+    // public double velocity;
+    // public double temperature;
     public double position;
   }
 

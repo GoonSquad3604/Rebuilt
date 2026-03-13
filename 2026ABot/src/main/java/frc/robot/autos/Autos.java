@@ -3,5 +3,8 @@ package frc.robot.autos;
 public enum Autos {
   MAIN,
   MIDDLE,
-  LEFT_TEST
+  LEFT,
+  RIGHT,
+  BORING_LEFT,
+  BORING_RIGHT
 }

@@ -63,22 +63,22 @@ public class VisionIOPhotonVision implements VisionIO {
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
-        Transform3d fieldToRobot;
-        if (robotToCamera2.equals(new Transform3d())) {
-          // camera position as normal
-          fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-        } else {
-          // camera position based on hopper position
-          if (hopper.isStowed()) {
-            // use stowed position
-            fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-          } else if (hopper.isDeployed()) {
-            // use extended position
-            fieldToRobot = fieldToCamera.plus(robotToCamera2.inverse());
-          } else {
-            fieldToRobot = new Transform3d();
-          }
-        }
+        Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        // if (robotToCamera2.equals(new Transform3d())) {
+        //   // camera position as normal
+
+        // } else {
+        //   // camera position based on hopper position
+        //   if (hopper.isStowed()) {
+        //     // use stowed position
+        //     fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        //   } else if (hopper.isDeployed()) {
+        //     // use extended position
+        //     fieldToRobot = fieldToCamera.plus(robotToCamera2.inverse());
+        //   } else {
+        //     fieldToRobot = new Transform3d();
+        //   }
+        // }
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance
@@ -136,10 +136,10 @@ public class VisionIOPhotonVision implements VisionIO {
     }
 
     // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
-    int i = 0;
-    for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
-    }
+    // inputs.tagIds = new int[tagIds.size()];
+    // int i = 0;
+    // for (int id : tagIds) {
+    //   inputs.tagIds[i++] = id;
+    // }
   }
 }

@@ -77,7 +77,7 @@ public class RollerSystemIOPhoenix implements RollerSystemIO {
     inputs.voltage = rollerSystemMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = rollerSystemMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = rollerSystemMotor.getVelocity().getValueAsDouble();
-    inputs.position = rollerSystemMotor.getPosition().getValueAsDouble();
+    // inputs.position = rollerSystemMotor.getPosition().getValueAsDouble();
   }
 
   @Override

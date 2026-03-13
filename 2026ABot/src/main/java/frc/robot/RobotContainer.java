@@ -21,10 +21,7 @@ import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIOPhoenix;
@@ -41,7 +38,6 @@ import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIOPhoenix;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -73,89 +69,90 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        drive =
-            new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
-        hopper = new Hopper(new HopperIOPhoenix());
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVision(
-                    camera0Name, robotToCamera0Retracted, robotToCamera0Extended, hopper),
-                new VisionIOPhotonVision(camera1Name, robotToCamera1),
-                new VisionIOPhotonVision(camera2Name, robotToCamera2),
-                new VisionIOPhotonVision(camera3Name, robotToCamera3));
-        climber = new Climber(new ClimberIOPhoenix());
-        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        kicker = new Kicker(new KickerIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        spindexer = new Spindexer(new SpindexerIOPhoenix());
-        superstructure =
-            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
+    // switch (Constants.currentMode) {
+    //   case REAL:
+    //     // Real robot, instantiate hardware IO implementations
+    drive =
+        new Drive(
+            new GyroIOPigeon2(),
+            new ModuleIOTalonFX(TunerConstants.FrontLeft),
+            new ModuleIOTalonFX(TunerConstants.FrontRight),
+            new ModuleIOTalonFX(TunerConstants.BackLeft),
+            new ModuleIOTalonFX(TunerConstants.BackRight));
+    hopper = new Hopper(new HopperIOPhoenix());
+    vision =
+        new Vision(
+            drive::addVisionMeasurement,
+            new VisionIOPhotonVision(camera0Name, robotToCamera0),
+            new VisionIOPhotonVision(camera1Name, robotToCamera1),
+            new VisionIOPhotonVision(camera2Name, robotToCamera2),
+            new VisionIOPhotonVision(camera3Name, robotToCamera3));
+    climber = new Climber(new ClimberIOPhoenix());
+    intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
+    kicker = new Kicker(new KickerIOPhoenix());
+    shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+    spindexer = new Spindexer(new SpindexerIOPhoenix());
+    superstructure = new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
 
-        break;
+    // break;
 
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+    //   case SIM:
+    //     // Sim robot, instantiate physics sim IO implementations
+    //     drive =
+    //         new Drive(
+    //             new GyroIO() {},
+    //             new ModuleIOSim(TunerConstants.FrontLeft),
+    //             new ModuleIOSim(TunerConstants.FrontRight),
+    //             new ModuleIOSim(TunerConstants.BackLeft),
+    //             new ModuleIOSim(TunerConstants.BackRight));
 
-        hopper = new Hopper(new HopperIOPhoenix());
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
-                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
-                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
-        climber = new Climber(new ClimberIOPhoenix());
-        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        kicker = new Kicker(new KickerIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        spindexer = new Spindexer(new SpindexerIOPhoenix());
-        superstructure =
-            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
-        break;
+    //     hopper = new Hopper(new HopperIOPhoenix());
+    //     vision =
+    //         new Vision(
+    //             drive::addVisionMeasurement,
+    //             new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted,
+    // drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
+    //     climber = new Climber(new ClimberIOPhoenix());
+    //     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
+    //     kicker = new Kicker(new KickerIOPhoenix());
+    //     shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new
+    // TurretIOPhoenix());
+    //     spindexer = new Spindexer(new SpindexerIOPhoenix());
+    //     superstructure =
+    //         new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
+    //     break;
 
-      default:
-        // Replayed robot, disable IO implementations
-        drive =
-            new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
-        hopper = new Hopper(new HopperIOPhoenix());
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
-                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
-                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
+    //   default:
+    //     // Replayed robot, disable IO implementations
+    //     drive =
+    //         new Drive(
+    //             new GyroIO() {},
+    //             new ModuleIO() {},
+    //             new ModuleIO() {},
+    //             new ModuleIO() {},
+    //             new ModuleIO() {});
+    //     hopper = new Hopper(new HopperIOPhoenix());
+    //     vision =
+    //         new Vision(
+    //             drive::addVisionMeasurement,
+    //             new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted,
+    // drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+    //             new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
 
-        climber = new Climber(new ClimberIOPhoenix());
-        intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-        kicker = new Kicker(new KickerIOPhoenix());
-        shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
-        spindexer = new Spindexer(new SpindexerIOPhoenix());
-        superstructure =
-            new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
-        break;
-    }
+    //     climber = new Climber(new ClimberIOPhoenix());
+    //     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
+    //     kicker = new Kicker(new KickerIOPhoenix());
+    //     shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new
+    // TurretIOPhoenix());
+    //     spindexer = new Spindexer(new SpindexerIOPhoenix());
+    //     superstructure =
+    //         new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
+    //     break;
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -165,16 +162,16 @@ public class RobotContainer {
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Launcher SysId (Quasistatic Forward)",
@@ -213,18 +210,31 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Quasistatic Forward)",
-    //     climber.climber1SysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Quasistatic Reverse)",
-    //     climber.climber1SysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Dynamic Forward)",
-    //     climber.climber1SysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Climber1 SysId (Dynamic Reverse)",
-    //     climber.climber1SysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Quasistatic Forward)",
+        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Quasistatic Reverse)",
+        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Dynamic Forward)",
+        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Dynamic Reverse)",
+        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Forward)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Reverse)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Forward)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Reverse)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Turret SysId (Quasistatic Forward)",
@@ -272,6 +282,10 @@ public class RobotContainer {
                 () -> -driverController.getRightX(),
                 () -> driverController.getLeftTriggerAxis() > 0.05));
 
+    // driverController
+    //     .leftBumper()
+    //     .onTrue(Commands.runOnce(() -> hopper.setPower(HopperConstants.slowStowingPower)));
+
     // Lock to 45° when B button is held
     driverController
         .b()
@@ -293,7 +307,21 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
+    driverController
+        .back()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                superstructure.setWantedState(WantedSuperState.EJECT),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.EJECTING));
+
     // climb
+    driverController.povLeft().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_LEFT));
+    driverController.povLeft().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    driverController.povRight().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_RIGHT));
+    driverController.povRight().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+
     // driverController
     //     .povLeft()
     //     .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
@@ -383,12 +411,12 @@ public class RobotContainer {
     //             .alongWith(Commands.runOnce(() -> kicker.setPower(0))));
 
     // set climb mode
-    operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
+    // operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
 
     // toggle shoot mode
     operatorButtonBox
         .button(11)
-        .or(driverController.back())
+        .or(driverController.leftBumper())
         .onTrue(
             Commands.either(
                 superstructure.setWantedState(WantedSuperState.SHOOT),
@@ -402,6 +430,28 @@ public class RobotContainer {
                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
                     () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
+
+    // pitbox
+    pitBox.button(8).onTrue(Commands.runOnce(() -> climber.TESTDeployClimber()));
+    pitBox.button(9).onTrue(Commands.runOnce(() -> climber.TESTStowClimber()));
+    pitBox.button(10).onTrue(Commands.runOnce(() -> climber.TESTClimbL1()));
+    // pitBox.button(11).onTrue(Commands.runOnce(() -> climber.TESTClimbL2()));
+
+    pitBox.button(1).onTrue(Commands.runOnce(() -> shooter.setTurretPower(0.1)));
+    pitBox.button(1).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    pitBox.button(2).onTrue(Commands.runOnce(() -> shooter.setTurretPower(-0.1)));
+    pitBox.button(2).onFalse(Commands.runOnce(() -> shooter.setTurretPower(0.0)));
+
+    pitBox.button(3).onTrue(Commands.runOnce(() -> shooter.setTurretPos(0.5)));
+
+    pitBox
+        .button(11)
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.TESTING_SHOOTING));
   }
 
   /**

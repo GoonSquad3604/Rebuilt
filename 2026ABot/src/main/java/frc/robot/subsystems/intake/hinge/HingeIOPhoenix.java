@@ -1,5 +1,7 @@
 package frc.robot.subsystems.intake.hinge;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -10,6 +12,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.util.PhoenixUtil;
@@ -26,12 +33,12 @@ public class HingeIOPhoenix implements HingeIO {
   private final PositionVoltage hingeRequest;
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
-  // private final StatusSignal<Angle> position;
-  // private final StatusSignal<AngularVelocity> velocity;
-  // private final StatusSignal<Voltage> appliedVoltage;
-  // private final StatusSignal<Current> supplyCurrent;
-  // private final StatusSignal<Current> torqueCurrent;
-  // private final StatusSignal<Temperature> tempCelsius;
+  private final StatusSignal<Angle> position;
+  private final StatusSignal<AngularVelocity> velocity;
+  private final StatusSignal<Voltage> appliedVoltage;
+  private final StatusSignal<Current> supplyCurrent;
+  private final StatusSignal<Current> torqueCurrent;
+  private final StatusSignal<Temperature> tempCelsius;
 
   public HingeIOPhoenix() {
 
@@ -66,23 +73,23 @@ public class HingeIOPhoenix implements HingeIO {
     PhoenixUtil.tryUntilOk(5, () -> hingeEncoder.getConfigurator().apply(encoderConfig));
 
     // base status signal
-    // position = hingeEncoder.getPosition();
-    // velocity = hingeEncoder.getVelocity();
-    // appliedVoltage = hingeMotor.getMotorVoltage();
-    // supplyCurrent = hingeMotor.getSupplyCurrent();
-    // torqueCurrent = hingeMotor.getTorqueCurrent();
-    // tempCelsius = hingeMotor.getDeviceTemp();
-    // PhoenixUtil.tryUntilOk(
-    //     5,
-    //     () ->
-    //         BaseStatusSignal.setUpdateFrequencyForAll(
-    //             50.0,
-    //             position,
-    //             velocity,
-    //             appliedVoltage,
-    //             supplyCurrent,
-    //             torqueCurrent,
-    //             tempCelsius));
+    position = hingeEncoder.getPosition();
+    velocity = hingeEncoder.getVelocity();
+    appliedVoltage = hingeMotor.getMotorVoltage();
+    supplyCurrent = hingeMotor.getSupplyCurrent();
+    torqueCurrent = hingeMotor.getTorqueCurrent();
+    tempCelsius = hingeMotor.getDeviceTemp();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                position,
+                velocity,
+                appliedVoltage,
+                supplyCurrent,
+                torqueCurrent,
+                tempCelsius));
 
     // optimize bus utilization
     PhoenixUtil.tryUntilOk(5, () -> hingeMotor.optimizeBusUtilization(0, 1.0));
@@ -94,7 +101,7 @@ public class HingeIOPhoenix implements HingeIO {
     inputs.encoderConnected = hingeEncoder.isConnected();
     inputs.voltage = hingeMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hingeMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = hingeEncoder.getVelocity().getValueAsDouble();
+    // inputs.velocity = hingeEncoder.getVelocity().getValueAsDouble();
     inputs.position = hingeEncoder.getPosition().getValueAsDouble();
   }
 

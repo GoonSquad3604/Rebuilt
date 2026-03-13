@@ -12,8 +12,8 @@ public interface HoodIO {
     public boolean encoderConnected = false;
     public double voltage;
     public double current;
-    public double velocity;
-    public double temperature;
+    // public double velocity;
+    // public double temperature;
     public double position;
   }
 
