@@ -28,6 +28,8 @@ public interface HopperIO {
 
   default void resetPosition() {}
 
+  default void setEncoderPosition(double position) {}
+
   default boolean stowedDetectorTriggered() {
     return false;
   }

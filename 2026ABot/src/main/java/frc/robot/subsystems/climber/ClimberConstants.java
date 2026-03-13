@@ -15,7 +15,7 @@ public final class ClimberConstants {
   public static final double innerV = 1;
   public static final double innerA = 0;
 
-  public static final double outerP = 100;
+  public static final double outerP = 110;
   public static final double outerI = 0;
   public static final double outerD = 0;
   public static final double outerS = 1;
@@ -23,9 +23,9 @@ public final class ClimberConstants {
   public static final double outerA = 0;
 
   public static final double innerStowedPosition = 0.74;
-  public static final double outerStowedPosition = 0.453;
+  public static final double outerStowedPosition = 0.451;
 
-  public static final double outerClimbL1PositionAuto = 0.530;
+  public static final double outerClimbL1PositionAuto = 0.60;
 
   // step 0
   public static final double innerDeployedPosition = 0.348;
@@ -55,7 +55,7 @@ public final class ClimberConstants {
   // step 7 (and disable inner pid)
   public static final double outerClimbL3Position = 0.536; // placeholder
 
-  public static final double atSetpointTolerance = 0.0025; // placeholder
+  public static final double atSetpointTolerance = 0.0075; // placeholder
 
   public static final double innerAcceleration = 8;
   public static final double outerAcceleration = 8;

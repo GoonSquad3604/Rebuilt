@@ -16,7 +16,8 @@ public class HopperConstants {
   public static final double stowedDetectorTriggerDistance = 7000;
 
   public static final double extendedPos = -22;
-  public static final double stowTargetPosition = -1;
-  public static final double slowStowingPower = .3;
+  public static final double stowTargetPosition = -1.5;
+  public static final double slowStowingPower = .35;
+  public static final double forceStowPower = .425;
   public static final double atSetpointTolerance = 0.5;
 }

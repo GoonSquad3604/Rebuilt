@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftStartToNeutralZone"
+            "pathName": "RightStartToNeutralZone"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftPickUpDepot"
+            "pathName": "RightCorralToClimbStart"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftClimb"
+            "pathName": "RightClimb"
           }
         }
       ]

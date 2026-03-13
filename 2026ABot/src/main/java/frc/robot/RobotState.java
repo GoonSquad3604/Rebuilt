@@ -159,6 +159,11 @@ public class RobotState {
         && MathUtil.isNear(position.getY(), getPose().getY(), .1);
   }
 
+  public boolean isAwayFromTower() {
+    Translation2d towerPose = AllianceFlipUtil.apply(new Translation2d(1.8, 3.7));
+    return towerPose.getDistance(getPose().getTranslation()) > 1.5;
+  }
+
   public double getDistanceToHubInches() {
     Translation2d hubPose =
         AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());

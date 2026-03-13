@@ -117,8 +117,8 @@ public class HopperIOPhoenix implements HopperIO {
   }
 
   @Override
-  public void resetPosition() {
-    hopperMotor.setPosition(0);
+  public void setEncoderPosition(double position) {
+    hopperMotor.setPosition(position);
   }
 
   @Override

@@ -11,11 +11,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
-import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.Hopper.HopperWantedState;
 import frc.robot.subsystems.intake.Intake;
@@ -26,7 +24,6 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.Spindexer.SpindexerWantedState;
-import java.util.Set;
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {
@@ -39,32 +36,46 @@ public class Superstructure extends SubsystemBase {
   private final Shooter shooter;
   private final Spindexer spindexer;
 
+  private boolean tracking = true;
+
   public enum WantedSuperState {
     STOPPED,
     INTAKE,
     STOW,
+    FORCE_STOW,
     SHOOT,
     INTAKE_AND_SHOOT,
     CLIMB_LEFT,
     CLIMB_RIGHT,
+    // CLIMB_LEFT_IN_AUTO,
+    // CLIMB_RIGHT_IN_AUTO,
+    SET_UP_AUTO_CLIMB,
+    CLIMB_IN_AUTO,
     DECLIMB,
     EJECT,
-    TEST_SHOOT
+    TEST_SHOOT,
+    RESET_HOPPER,
+    STOP_TRACKING
   }
 
   public enum CurrentSuperState {
     STOPPED,
     INTAKING,
     STOWING,
+    FORCEFULLY_STOWING,
     SHOOTING,
     INTAKING_AND_SHOOTING,
     CLIMBING_LEFT,
     CLIMBING_RIGHT,
-    CLIMBING_LEFT_L1,
-    CLIMBING_RIGHT_L1,
+    // CLIMBING_LEFT_IN_AUTO,
+    // CLIMBING_RIGHT_IN_AUTO,
+    SETTING_UP_AUTO_CLIMB,
+    CLIMBING_IN_AUTO,
     DECLIMBING,
     EJECTING,
-    TESTING_SHOOTING
+    TESTING_SHOOTING,
+    RESETTING_HOPPER,
+    QUITTING_TRACKING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -95,13 +106,18 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Subsystems/Superstructure/CurrentSuperState", currentSuperState);
     // Logger.recordOutput("Subsystems/Superstructure/PreviousSuperState", previousSuperState);
     // Logger.recordOutput("RobotState/Override", RobotState.getInstance().isOverride());
-    // SmartDashboard.putBoolean("isOverride", RobotState.getInstance().isOverride());
-    // SmartDashboard.putString("manualTarget",
-    // RobotState.getInstance().getManualTarget().toString());
+    SmartDashboard.putBoolean("isOverride", RobotState.getInstance().isOverride());
+    SmartDashboard.putString("manualTarget", RobotState.getInstance().getManualTarget().toString());
 
     SmartDashboard.putString("Alliance Shift Status", decideAllianceShiftInfo());
 
     // Logger.recordOutput("RobotState/ManualTarget", RobotState.getInstance().getManualTarget());
+
+    // SmartDashboard.putBoolean(
+    //     "at climb setpoint",
+    // RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos));
+
+    SmartDashboard.putBoolean("turret is tracking", tracking);
 
     currentSuperState = handleStateTransitions();
     applyStates();
@@ -145,45 +161,25 @@ public class Superstructure extends SubsystemBase {
   }
 
   private CurrentSuperState handleStateTransitions() {
-    switch (wantedSuperState) {
-      case STOPPED:
-        currentSuperState = CurrentSuperState.STOPPED;
-        break;
-      case INTAKE:
-        currentSuperState = CurrentSuperState.INTAKING;
-        break;
-      case SHOOT:
-        currentSuperState = CurrentSuperState.SHOOTING;
-        break;
-      case INTAKE_AND_SHOOT:
-        currentSuperState = CurrentSuperState.INTAKING_AND_SHOOTING;
-        break;
-      case CLIMB_LEFT:
-        currentSuperState =
-            DriverStation.isAutonomous()
-                ? CurrentSuperState.CLIMBING_LEFT_L1
-                : CurrentSuperState.CLIMBING_LEFT;
-        break;
-      case CLIMB_RIGHT:
-        currentSuperState =
-            DriverStation.isAutonomous()
-                ? CurrentSuperState.CLIMBING_RIGHT_L1
-                : CurrentSuperState.CLIMBING_RIGHT;
-        break;
-      case DECLIMB:
-        currentSuperState = CurrentSuperState.DECLIMBING;
-        break;
-      case STOW:
-        currentSuperState = CurrentSuperState.STOWING;
-        break;
-      case EJECT:
-        currentSuperState = CurrentSuperState.EJECTING;
-        break;
-      case TEST_SHOOT:
-        currentSuperState = CurrentSuperState.TESTING_SHOOTING;
-        break;
-    }
-    return currentSuperState;
+    return switch (wantedSuperState) {
+      case STOPPED -> CurrentSuperState.STOPPED;
+      case INTAKE -> CurrentSuperState.INTAKING;
+      case SHOOT -> CurrentSuperState.SHOOTING;
+      case INTAKE_AND_SHOOT -> CurrentSuperState.INTAKING_AND_SHOOTING;
+      case CLIMB_LEFT -> CurrentSuperState.CLIMBING_LEFT;
+      case CLIMB_RIGHT -> CurrentSuperState.CLIMBING_RIGHT;
+        // case CLIMB_LEFT_IN_AUTO -> CurrentSuperState.CLIMBING_LEFT_IN_AUTO;
+        // case CLIMB_RIGHT_IN_AUTO -> CurrentSuperState.CLIMBING_RIGHT_IN_AUTO;
+      case SET_UP_AUTO_CLIMB -> CurrentSuperState.SETTING_UP_AUTO_CLIMB;
+      case CLIMB_IN_AUTO -> CurrentSuperState.CLIMBING_IN_AUTO;
+      case DECLIMB -> CurrentSuperState.DECLIMBING;
+      case STOW -> CurrentSuperState.STOWING;
+      case EJECT -> CurrentSuperState.EJECTING;
+      case TEST_SHOOT -> CurrentSuperState.TESTING_SHOOTING;
+      case FORCE_STOW -> CurrentSuperState.FORCEFULLY_STOWING;
+      case RESET_HOPPER -> CurrentSuperState.RESETTING_HOPPER;
+      case STOP_TRACKING -> CurrentSuperState.QUITTING_TRACKING;
+    };
   }
 
   private void applyStates() {
@@ -206,12 +202,18 @@ public class Superstructure extends SubsystemBase {
       case CLIMBING_RIGHT:
         climbRight();
         break;
-      case CLIMBING_LEFT_L1:
-        climbLeftAuto();
+      case SETTING_UP_AUTO_CLIMB:
+        setUpAutoClimb();
         break;
-      case CLIMBING_RIGHT_L1:
-        climbRightAuto();
+      case CLIMBING_IN_AUTO:
+        climbInAuto();
         break;
+        // case CLIMBING_LEFT_IN_AUTO:
+        //   climbLeftAuto();
+        //   break;
+        // case CLIMBING_RIGHT_IN_AUTO:
+        //   climbRightAuto();
+        //   break;
       case DECLIMBING:
         declimb();
         break;
@@ -224,36 +226,60 @@ public class Superstructure extends SubsystemBase {
       case TESTING_SHOOTING:
         testShoot();
         break;
+      case FORCEFULLY_STOWING:
+        forceStow();
+        break;
+      case RESETTING_HOPPER:
+        resetHopper();
+        break;
+      case QUITTING_TRACKING:
+        quitTracking();
+        break;
     }
   }
 
   private void stopped() {
-    climber.setWantedState(ClimberWantedState.IDLE);
+    // climber.setWantedState(ClimberWantedState.IDLE);
     // hopper.setWantedState(HopperWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
-    shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    if (tracking) {
+      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    } else {
+      shooter.setWantedState(ShooterWantedState.IDLE);
+    }
     spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
   private void intake() {
-    climber.setWantedState(ClimberWantedState.IDLE);
+
+    // climber.setWantedState(ClimberWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
-    shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    if (tracking) {
+      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    } else {
+      shooter.setWantedState(ShooterWantedState.IDLE);
+    }
     spindexer.setWantedState(SpindexerWantedState.IDLE);
 
-    if (!hopper.isDeployed()) {
-      hopper.setWantedState(HopperWantedState.DEPLOY);
-      intake.setWantedState(IntakeWantedState.STOW);
-    } else {
-      intake.setWantedState(IntakeWantedState.INTAKE);
+    if (climber.isStowed()) {
+      if (!hopper.isDeployed()) {
+        hopper.setWantedState(HopperWantedState.DEPLOY);
+        intake.setWantedState(IntakeWantedState.STOW);
+      } else {
+        intake.setWantedState(IntakeWantedState.INTAKE);
+      }
     }
   }
 
   private void stow() {
-    climber.setWantedState(ClimberWantedState.IDLE);
+    // climber.setWantedState(ClimberWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
-    shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    if (tracking) {
+      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    } else {
+      shooter.setWantedState(ShooterWantedState.IDLE);
+    }
     spindexer.setWantedState(SpindexerWantedState.IDLE);
 
     if (!intake.isStowed()) {
@@ -268,156 +294,235 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
+  private void forceStow() {
+    // climber.setWantedState(ClimberWantedState.IDLE);
+    kicker.setWantedState(KickerWantedState.IDLE);
+    if (tracking) {
+      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    } else {
+      shooter.setWantedState(ShooterWantedState.IDLE);
+    }
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
+
+    if (!intake.isStowed()) {
+      intake.setWantedState(IntakeWantedState.STOW);
+      hopper.setWantedState(HopperWantedState.IDLE);
+    } else {
+      if (!hopper.isStowed()) {
+        hopper.setWantedState(HopperWantedState.FORCE_STOW);
+      } else {
+        wantedSuperState = WantedSuperState.STOPPED;
+      }
+    }
+  }
+
   private void shoot() {
-    climber.setWantedState(ClimberWantedState.IDLE);
+    // climber.setWantedState(ClimberWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
-    if (!hopper.isDeployed()) {
-      hopper.setWantedState(HopperWantedState.DEPLOY);
-      intake.setWantedState(IntakeWantedState.STOW);
-    } else {
-      intake.setWantedState(IntakeWantedState.KICK);
+    if (climber.isStowed()) {
+      if (!hopper.isDeployed()) {
+        hopper.setWantedState(HopperWantedState.DEPLOY);
+        intake.setWantedState(IntakeWantedState.STOW);
+      } else {
+        intake.setWantedState(IntakeWantedState.KICK);
+      }
     }
 
     // if (shooter.reachedSetpoints() && kicker.atVelocity()) {
-    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    if (shooter.validShootingLocation()) {
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    } else {
+      spindexer.setWantedState(SpindexerWantedState.IDLE);
+    }
     // } else {
     //   spindexer.setWantedState(SpindexerWantedState.IDLE);
     // }
   }
 
   private void intakeAndShoot() {
-    climber.setWantedState(ClimberWantedState.IDLE);
+    // climber.setWantedState(ClimberWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
-    if (!hopper.isDeployed()) {
-      hopper.setWantedState(HopperWantedState.DEPLOY);
-      intake.setWantedState(IntakeWantedState.STOW);
-    } else {
-      intake.setWantedState(IntakeWantedState.INTAKE);
+    if (climber.isStowed()) {
+      if (!hopper.isDeployed()) {
+        hopper.setWantedState(HopperWantedState.DEPLOY);
+        intake.setWantedState(IntakeWantedState.STOW);
+      } else {
+        intake.setWantedState(IntakeWantedState.INTAKE);
+      }
     }
 
     // if (shooter.reachedSetpoints() && kicker.atVelocity()) {
-    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    if (shooter.validShootingLocation()) {
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    } else {
+      spindexer.setWantedState(SpindexerWantedState.IDLE);
+    }
     // } else {
     //   spindexer.setWantedState(SpindexerWantedState.IDLE);
     // }
   }
 
   private void climbLeft() {
-    if (!intake.isStowed()) {
-      intake.setWantedState(IntakeWantedState.STOW);
-      hopper.setWantedState(HopperWantedState.IDLE);
-    } else {
-      if (!hopper.isStowed()) {
-        hopper.setWantedState(HopperWantedState.STOW);
-      } else {
-        // ready to climb
-        climber.setWantedState(ClimberWantedState.DEPLOY);
-        if (RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)) {
-          // climb
-          climber.setWantedState(ClimberWantedState.CLIMB);
-        } else {
-          // drive to climb pose
-          Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-              .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos));
-        }
-      }
-    }
+    //   if (!intake.isStowed()) {
+    //     intake.setWantedState(IntakeWantedState.STOW);
+    //     hopper.setWantedState(HopperWantedState.IDLE);
+    //   } else {
+    //     if (!hopper.isStowed()) {
+    //       hopper.setWantedState(HopperWantedState.STOW);
+    //     } else {
+    //       // ready to climb
+    //       climber.setWantedState(ClimberWantedState.DEPLOY);
+    //       if (RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)) {
+    //         // climb
+    //         climber.setWantedState(ClimberWantedState.CLIMB);
+    //       } else {
+    //         // drive to climb pose
+    //         Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
+    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos));
+    //       }
+    //     }
+    //   }
 
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
-    kicker.setWantedState(KickerWantedState.IDLE);
+    //   shooter.setWantedState(ShooterWantedState.IDLE);
+    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    //   kicker.setWantedState(KickerWantedState.IDLE);
   }
 
   private void climbRight() {
+    //   if (!intake.isStowed()) {
+    //     intake.setWantedState(IntakeWantedState.STOW);
+    //     hopper.setWantedState(HopperWantedState.IDLE);
+    //   } else {
+    //     if (!hopper.isStowed()) {
+    //       hopper.setWantedState(HopperWantedState.STOW);
+    //     } else {
+    //       // ready to climb
+    //       climber.setWantedState(ClimberWantedState.DEPLOY);
+    //       if (RobotState.getInstance().atDrivePosition(DriveConstants.rightClimbPos)) {
+    //         // climb
+    //         climber.setWantedState(ClimberWantedState.CLIMB);
+    //       } else {
+    //         // drive to climb pose
+    //         Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
+    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos));
+    //       }
+    //     }
+    //   }
+
+    //   shooter.setWantedState(ShooterWantedState.IDLE);
+    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    //   kicker.setWantedState(KickerWantedState.IDLE);
+  }
+
+  private void setUpAutoClimb() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
+    kicker.setWantedState(KickerWantedState.IDLE);
+
+    // stow intake
     if (!intake.isStowed()) {
       intake.setWantedState(IntakeWantedState.STOW);
       hopper.setWantedState(HopperWantedState.IDLE);
     } else {
+      // stow hopper
       if (!hopper.isStowed()) {
         hopper.setWantedState(HopperWantedState.STOW);
       } else {
-        // ready to climb
-        climber.setWantedState(ClimberWantedState.DEPLOY);
-        if (RobotState.getInstance().atDrivePosition(DriveConstants.rightClimbPos)) {
-          // climb
-          climber.setWantedState(ClimberWantedState.CLIMB);
-        } else {
-          // drive to climb pose
-          Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-              .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos));
+        // everything is stowed, deploy climber
+        if (!climber.isOuterDeployed()) {
+          climber.setWantedState(ClimberWantedState.DEPLOY_OUTER);
         }
       }
     }
-
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
-    kicker.setWantedState(KickerWantedState.IDLE);
   }
 
-  private void climbLeftAuto() {
-    if (!intake.isStowed()) {
-      intake.setWantedState(IntakeWantedState.STOW);
-      hopper.setWantedState(HopperWantedState.IDLE);
-    } else {
-      if (!hopper.isStowed()) {
-        hopper.setWantedState(HopperWantedState.STOW);
-      } else {
-        // ready to climb
-        climber.setWantedState(ClimberWantedState.DEPLOY);
-        if (RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)) {
-          // climb
-          climber.setWantedState(ClimberWantedState.CLIMB_L1);
-        } else {
-          // drive to climb pose
-          Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-              .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos));
-        }
-      }
-    }
-
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
-    kicker.setWantedState(KickerWantedState.IDLE);
+  public void climbInAuto() {
+    climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
+    wantedSuperState = WantedSuperState.STOPPED;
   }
 
-  private void climbRightAuto() {
-    if (!intake.isStowed()) {
-      intake.setWantedState(IntakeWantedState.STOW);
-      hopper.setWantedState(HopperWantedState.IDLE);
-    } else {
-      if (!hopper.isStowed()) {
-        hopper.setWantedState(HopperWantedState.STOW);
-      } else {
-        // ready to climb
-        climber.setWantedState(ClimberWantedState.DEPLOY);
-        if (RobotState.getInstance().atDrivePosition(DriveConstants.rightClimbPos)) {
-          // climb
-          climber.setWantedState(ClimberWantedState.CLIMB_L1);
-        } else {
-          // drive to climb pose
-          Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-              .andThen(DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos));
-        }
-      }
-    }
+  // private void climbLeftAuto() {
+  //   shooter.setWantedState(ShooterWantedState.IDLE);
+  //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+  //   kicker.setWantedState(KickerWantedState.IDLE);
 
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
-    kicker.setWantedState(KickerWantedState.IDLE);
-  }
+  //   // stow intake
+  //   if (!intake.isStowed()) {
+  //     intake.setWantedState(IntakeWantedState.STOW);
+  //     hopper.setWantedState(HopperWantedState.IDLE);
+  //   } else {
+  //     // stow hopper
+  //     if (!hopper.isStowed()) {
+  //       hopper.setWantedState(HopperWantedState.STOW);
+  //     } else {
+  //       // everything is stowed, deploy climber
+  //       if (!climber.isOuterDeployed()) {
+  //         climber.setWantedState(ClimberWantedState.DEPLOY_OUTER);
+  //       } else {
+  //         // climber is deployed, check if at position
+  //         if (!RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)) {
+  //           // drive to climb pose
+  //           Commands.defer(
+  //               () -> DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos),
+  // Set.of(drive));
+  //         } else {
+  //           // at pose, climb L1
+  //           climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
+  //           wantedSuperState = WantedSuperState.STOPPED;
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // private void climbRightAuto() {
+  //   shooter.setWantedState(ShooterWantedState.IDLE);
+  //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+  //   kicker.setWantedState(KickerWantedState.IDLE);
+
+  //   // stow intake
+  //   if (!intake.isStowed()) {
+  //     intake.setWantedState(IntakeWantedState.STOW);
+  //     hopper.setWantedState(HopperWantedState.IDLE);
+  //   } else {
+  //     // stow hopper
+  //     if (!hopper.isStowed()) {
+  //       hopper.setWantedState(HopperWantedState.STOW);
+  //     } else {
+  //       // everything is stowed, deploy climber
+  //       if (!climber.isDeployed()
+  //           && climber.getCurrentState() != ClimberCurrentState.CLIMBING_IN_AUTO) {
+  //         climber.setWantedState(ClimberWantedState.DEPLOY);
+  //       } else {
+  //         // climber is deployed, check if at position
+  //         if (!RobotState.getInstance().atDrivePosition(DriveConstants.rightClimbPos)) {
+  //           // drive to climb pose
+  //           DriveCommands.alignToPose(drive, DriveConstants.rightClimbPos);
+  //         } else {
+  //           // at pose, climb L1
+  //           climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   private void declimb() {
     shooter.setWantedState(ShooterWantedState.IDLE);
-    // intake.setWantedState(IntakeWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
+    kicker.setWantedState(KickerWantedState.IDLE);
+    climber.setWantedState(ClimberWantedState.DECLIMB);
+    wantedSuperState = WantedSuperState.STOPPED;
   }
 
   private void eject() {
     shooter.setWantedState(ShooterWantedState.SHOOT);
+    hopper.setWantedState(HopperWantedState.RESET);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
     kicker.setWantedState(KickerWantedState.REV);
     intake.setWantedState(IntakeWantedState.VOMIT);
@@ -427,5 +532,19 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.TEST_SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
+  }
+
+  private void resetHopper() {
+    hopper.setWantedState(HopperWantedState.RESET);
+  }
+
+  private void quitTracking() {
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    tracking = !tracking;
+    wantedSuperState = WantedSuperState.STOPPED;
+  }
+
+  public boolean climberDeployed() {
+    return climber.isDeployed();
   }
 }

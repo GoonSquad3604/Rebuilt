@@ -17,6 +17,7 @@ import frc.robot.util.GeomUtil;
 public class ShotCalculator {
   private static ShotCalculator instance;
 
+  private double isValid;
   private Rotation2d lastTurretAngle;
   private double lastHoodPose;
   private Rotation2d turretAngleRotation2d;
@@ -45,31 +46,43 @@ public class ShotCalculator {
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
-  private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
-      new InterpolatingDoubleTreeMap();
+  // private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
+  //     new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap shotFlywheelSpeedMap =
       new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap timeOfFlightMap =
       new InterpolatingDoubleTreeMap();
 
   static {
-    minDistance = 1.34;
-    maxDistance = 5.60;
+    minDistance = 2;
+    maxDistance = 4;
     phaseDelay = 0.02;
 
     shotFlywheelSpeedMap.put(2.02, 43.0);
     shotFlywheelSpeedMap.put(2.23, 48.0);
     shotFlywheelSpeedMap.put(2.60, 50.0);
     shotFlywheelSpeedMap.put(2.80, 53.0);
+    shotFlywheelSpeedMap.put(2.95, 50.0); // ok
     shotFlywheelSpeedMap.put(3.04, 55.0);
+    shotFlywheelSpeedMap.put(3.2, 57.0);
+    shotFlywheelSpeedMap.put(3.32, 60.0); // ok
+    shotFlywheelSpeedMap.put(3.4, 59.0);
     shotFlywheelSpeedMap.put(3.61, 65.0);
+    shotFlywheelSpeedMap.put(3.8, 67.0);
+    shotFlywheelSpeedMap.put(4.0, 70.0);
 
     timeOfFlightMap.put(2.02, 0.92);
     timeOfFlightMap.put(2.23, 1.09);
-    timeOfFlightMap.put(2.6, 1.0); //.82 to 1.82
+    timeOfFlightMap.put(2.6, 1.0);
     timeOfFlightMap.put(2.8, 1.18);
+    timeOfFlightMap.put(2.95, 0.97); // ok
     timeOfFlightMap.put(3.04, 1.19);
+    timeOfFlightMap.put(3.2, 1.2);
+    timeOfFlightMap.put(3.32, 1.08); // ok
+    timeOfFlightMap.put(3.4, 1.3);
     timeOfFlightMap.put(3.61, 1.35);
+    timeOfFlightMap.put(3.8, 1.37);
+    timeOfFlightMap.put(4.0, 1.4);
   }
 
   public ShootingParameters getParameters() {
@@ -145,10 +158,10 @@ public class ShotCalculator {
     } else if (turretAngle < 0) {
       turretAngle += 360;
     }
-    // hoodPose =
-    //     turretToTargetDistance < 2
-    //         ? ShooterConstants.HoodConstants.hoodMinPos
-    //         : ShooterConstants.HoodConstants.hoodMaxPos;
+    hoodPose =
+        turretToTargetDistance < 1.75
+            ? ShooterConstants.HoodConstants.hoodMinPos
+            : ShooterConstants.HoodConstants.hoodMaxPos;
     // hoodPose =
     //     MathUtil.clamp(
     //         hoodPose,
@@ -157,8 +170,9 @@ public class ShotCalculator {
     hoodPose = ShooterConstants.HoodConstants.hoodMaxPos;
     latestParameters =
         new ShootingParameters(
-            lookaheadTurretToTargetDistance >= minDistance
-                && lookaheadTurretToTargetDistance <= maxDistance,
+            (lookaheadTurretToTargetDistance >= minDistance
+                    && lookaheadTurretToTargetDistance <= maxDistance)
+                || RobotState.getInstance().getTarget() != ShooterTarget.HUB,
             turretAngleRotation2d,
             360 - turretAngle,
             // turretVelocity,

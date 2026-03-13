@@ -22,7 +22,7 @@ public class IntakeConstants {
 
     public static final double deployedPosition = 0.479;
     public static final double stowedPosition = 0.310;
-    public static final double kickPosition = 0.2;
+    public static final double kickPosition = 0.265;
 
     public static final double kickInterval = 3;
     public static final double nearPositionTolerance = 0.015;
@@ -39,8 +39,8 @@ public class IntakeConstants {
     public static final double V = 0;
     public static final double A = 0;
 
-    public static final double intakeSpeed = 0.95;
+    public static final double intakeSpeed = 0.85;
     public static final double kickIntakeSpeed = 0.5;
-    public static final double vomitSpeed = -0.6;
+    public static final double vomitSpeed = 0.4;
   }
 }

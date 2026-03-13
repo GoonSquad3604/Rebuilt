@@ -259,6 +259,10 @@ public class Shooter extends SubsystemBase {
     hoodIO.setPosition(shootingParameters.hoodPose());
   }
 
+  public boolean validShootingLocation() {
+    return shootingParameters.isValid();
+  }
+
   // testcontroller:
   public void setTurretPower(double power) {
     turretIO.setPower(power);
