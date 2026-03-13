@@ -83,8 +83,8 @@ public class LauncherIOPhoenix implements LauncherIO {
     inputs.voltage = launcherMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = launcherMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = launcherMotor.getVelocity().getValueAsDouble();
-    inputs.temperature = launcherMotor.getDeviceTemp().getValueAsDouble();
-    inputs.position = launcherMotor.getPosition().getValueAsDouble();
+    // inputs.temperature = launcherMotor.getDeviceTemp().getValueAsDouble();
+    // inputs.position = launcherMotor.getPosition().getValueAsDouble();
   }
 
   @Override

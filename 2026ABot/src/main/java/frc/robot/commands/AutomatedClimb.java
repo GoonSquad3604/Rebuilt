@@ -7,13 +7,12 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.Climber.ClimberCurrentState;
 import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.DriveConstants;
-import org.littletonrobotics.junction.Logger;
 
 public class AutomatedClimb extends SequentialCommandGroup {
   /** Creates a new AutomatedClimb. */
   public AutomatedClimb(Climber climber) {
     addCommands(
-        Commands.runOnce(() -> Logger.recordOutput("Subsystems/Climber/BeganAutoClimb", true)),
+        // Commands.runOnce(() -> Logger.recordOutput("Subsystems/Climber/BeganAutoClimb", true)),
         Commands.runOnce(() -> climber.setWantedState(ClimberWantedState.DEPLOY)),
         Commands.waitUntil(() -> climber.getCurrentState() == ClimberCurrentState.DEPLOYED),
         Commands.waitUntil(

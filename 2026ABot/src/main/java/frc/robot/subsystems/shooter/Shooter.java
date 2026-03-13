@@ -53,18 +53,15 @@ public class Shooter extends SubsystemBase {
 
   public enum ShooterWantedState {
     IDLE,
+    TRACK_TARGET,
     SHOOT,
     TEST_SHOOT
   }
 
   private enum CurrentState {
     IDLING,
-
-    /* MANUAL SHOOTING */
-    // REVVING_FORWARD,
+    TRACKING_TARGET,
     SHOOTING_FORWARD,
-
-    // REVVING,
     SHOOTING,
     TESTING_SHOOTING
   }
@@ -114,7 +111,7 @@ public class Shooter extends SubsystemBase {
     launcherIO.updateInputs(launcherInputs);
     turretIO.updateInputs(turretInputs);
 
-    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+    // Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
     Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
@@ -147,14 +144,14 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putNumber(
         "TurretToHubMeters", RobotState.getInstance().getDistanceToHubMeters());
-    SmartDashboard.putNumber(
-        "TurretToHubInches", RobotState.getInstance().getDistanceToHubInches());
+    // SmartDashboard.putNumber(
+    //     "TurretToHubInches", RobotState.getInstance().getDistanceToHubInches());
 
-    dashboardHoodPosition =
-        SmartDashboard.getNumber("Hood Pose", ShooterConstants.HoodConstants.hoodMinPos);
+    // dashboardHoodPosition =
+    //     SmartDashboard.getNumber("Hood Pose", ShooterConstants.HoodConstants.hoodMinPos);
     dashboardLauncherVelocity = SmartDashboard.getNumber("Launcher Velocity", 0);
 
-    SmartDashboard.putNumber("Hood Pose", dashboardHoodPosition);
+    // SmartDashboard.putNumber("Hood Pose", dashboardHoodPosition);
     SmartDashboard.putNumber("Launcher Velocity", dashboardLauncherVelocity);
 
     hoodMotorDisconnected.set(!hoodInputs.motorConnected);
@@ -172,6 +169,7 @@ public class Shooter extends SubsystemBase {
           ? CurrentState.SHOOTING_FORWARD
           : CurrentState.SHOOTING;
       case TEST_SHOOT -> CurrentState.TESTING_SHOOTING;
+      case TRACK_TARGET -> CurrentState.TRACKING_TARGET;
     };
   }
 
@@ -188,6 +186,9 @@ public class Shooter extends SubsystemBase {
         break;
       case TESTING_SHOOTING:
         testShoot();
+        break;
+      case TRACKING_TARGET:
+        trackTarget();
         break;
     }
   }
@@ -250,6 +251,12 @@ public class Shooter extends SubsystemBase {
     launcherIO.setVelocity(dashboardLauncherVelocity);
     hoodIO.setPosition(shootingParameters.hoodPose());
     turretIO.setAngle(shootingParameters.turretAngle());
+  }
+
+  private void trackTarget() {
+    turretIO.setAngle(shootingParameters.turretAngle());
+    launcherIO.setPower(0);
+    hoodIO.setPosition(shootingParameters.hoodPose());
   }
 
   // testcontroller:

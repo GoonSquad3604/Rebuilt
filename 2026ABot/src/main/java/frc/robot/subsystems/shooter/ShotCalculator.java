@@ -13,7 +13,6 @@ import frc.robot.RobotState;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeomUtil;
-import org.littletonrobotics.junction.Logger;
 
 public class ShotCalculator {
   private static ShotCalculator instance;
@@ -58,12 +57,12 @@ public class ShotCalculator {
     maxDistance = 5.60;
     phaseDelay = 0.02;
 
-    shotFlywheelSpeedMap.put(2.02, 45.0);
-    shotFlywheelSpeedMap.put(2.23, 50.0);
-    shotFlywheelSpeedMap.put(2.60, 53.0);
-    shotFlywheelSpeedMap.put(2.80, 55.0);
-    shotFlywheelSpeedMap.put(3.04, 57.0);
-    shotFlywheelSpeedMap.put(3.61, 67.0);
+    shotFlywheelSpeedMap.put(2.02, 43.0);
+    shotFlywheelSpeedMap.put(2.23, 48.0);
+    shotFlywheelSpeedMap.put(2.60, 51.0);
+    shotFlywheelSpeedMap.put(2.80, 53.0);
+    shotFlywheelSpeedMap.put(3.04, 55.0);
+    shotFlywheelSpeedMap.put(3.61, 65.0);
 
     timeOfFlightMap.put(2.02, 0.92);
     timeOfFlightMap.put(2.23, 1.09);
@@ -168,11 +167,11 @@ public class ShotCalculator {
             shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values
-    Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
-    Logger.recordOutput("Subsystems/Shooter/ShotCalculator/LookaheadPose", lookaheadPose);
-    Logger.recordOutput(
-        "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
-        lookaheadTurretToTargetDistance);
+    // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
+    // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/LookaheadPose", lookaheadPose);
+    // Logger.recordOutput(
+    //     "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
+    //     lookaheadTurretToTargetDistance);
 
     return latestParameters;
   }

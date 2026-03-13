@@ -5,35 +5,35 @@ public final class ClimberConstants {
   public static final int outerMotorID = 4;
   public static final int innerMotorID = 15;
 
-  public static final int outerEncoderID = 29;
-  public static final int innerEncoderID = 28;
+  public static final int outerEncoderID = 28;
+  public static final int innerEncoderID = 26;
 
-  public static final double innerP = 230;
+  public static final double innerP = 100;
   public static final double innerI = 0;
   public static final double innerD = 0;
   public static final double innerS = 1;
   public static final double innerV = 1;
   public static final double innerA = 0;
 
-  public static final double outerP = 220;
+  public static final double outerP = 100;
   public static final double outerI = 0;
   public static final double outerD = 0;
   public static final double outerS = 1;
   public static final double outerV = 1;
   public static final double outerA = 0;
 
-  public static final double innerStowedPosition = 0.674; // bbot only
-  public static final double outerStowedPosition = 0.515; // bbot only
+  public static final double innerStowedPosition = 0.74;
+  public static final double outerStowedPosition = 0.453;
 
-  public static final double outerClimbL1PositionAuto = 0.539;
+  public static final double outerClimbL1PositionAuto = 0.530;
 
   // step 0
-  public static final double innerDeployedPosition = 0.308;
-  public static final double outerDeployedPosition = 0.875;
+  public static final double innerDeployedPosition = 0.348;
+  public static final double outerDeployedPosition = 0.844;
 
   // step 1
   public static final double outerClimbL1Position = 0.547;
-  public static final double checkClimbL1Position = 0.547; // .539
+  public static final double checkClimbL1Position = 0.547;
 
   // step 2
   public static final double innerGrabL2Position = 0.348;
@@ -41,7 +41,7 @@ public final class ClimberConstants {
   // step 3: L1 to deployed position
 
   // step 4
-  public static final double innerClimbL2Position = 0.651;
+  public static final double innerClimbL2Position = 0.621;
   public static final double checkInnerClimbL2Position = 0.644;
 
   // step 5

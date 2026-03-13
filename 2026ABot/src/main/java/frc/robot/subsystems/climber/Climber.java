@@ -28,11 +28,12 @@ public class Climber extends SubsystemBase {
 
   public enum ClimberWantedState {
     IDLE,
-    STOW,
     DEPLOY,
+    CLIMB,
+    CLIMB_L1,
+    STOW,
     DEPLOY_OUTER,
     CLIMB_LOW_RUNG,
-    CLIMB_LOW_RUNG_AUTO,
     DECLIMB_LOW_RUNG,
     GRAB_MID_RUNG,
     CLIMB_MID_RUNG,
@@ -51,7 +52,6 @@ public class Climber extends SubsystemBase {
 
     DECLIMB_LOW_RUNG,
     CLIMBING_LOW_RUNG,
-    CLIMBING_LOW_RUNG_AUTO,
     ON_LOW_RUNG,
 
     GRABBING_MID_RUNG,
@@ -143,6 +143,13 @@ public class Climber extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> ClimberCurrentState.IDLING;
       case STOW -> isStowed() ? ClimberCurrentState.STOWING : ClimberCurrentState.IDLING;
+        // case DEPLOY -> ClimberCurrentState.DEPLOYING;
+      case CLIMB_L1 ->
+      // not deployed? deploy. otherwise climb
+      !isDeployed() ? ClimberCurrentState.DEPLOYING : ClimberCurrentState.CLIMBING_LOW_RUNG;
+        // case CLIMB -> ClimberCurrentState.
+
+        // not at mid rung? go to mid rung;
         // if near deploy position, update state from deploying to deployed
       case DEPLOY -> nearPosition(ClimberConstants.outerDeployedPosition, "outer")
               && nearPosition(ClimberConstants.innerDeployedPosition, "inner")
@@ -185,7 +192,8 @@ public class Climber extends SubsystemBase {
       case CLIMB_HIGH_RUNG -> nearPosition(ClimberConstants.outerClimbL3Position, "outer")
           ? ClimberCurrentState.ON_HIGH_RUNG
           : ClimberCurrentState.CLIMBING_HIGH_RUNG;
-      case CLIMB_LOW_RUNG_AUTO -> ClimberCurrentState.CLIMBING_LOW_RUNG_AUTO;
+      case CLIMB -> throw new UnsupportedOperationException("Unimplemented case: " + wantedState);
+      default -> throw new IllegalArgumentException("Unexpected value: " + wantedState);
     };
   }
 
@@ -206,9 +214,9 @@ public class Climber extends SubsystemBase {
       case CLIMBING_LOW_RUNG:
         climbLowRung();
         break;
-      case CLIMBING_LOW_RUNG_AUTO:
-        climbLowRungInAuto();
-        break;
+        // case CLIMBING_LOW_RUNG_AUTO:
+        //   climbLowRungInAuto();
+        //   break;
       case CLIMBING_MID_RUNG:
         climbMidRung();
         break;
@@ -230,19 +238,12 @@ public class Climber extends SubsystemBase {
 
         // transition states:
       case DEPLOYED_OUTER:
-        break;
       case GRABBED_HIGH_RUNG:
-        break;
       case GRABBED_MID_RUNG:
-        break;
       case ON_HIGH_RUNG:
-        break;
       case ON_LOW_RUNG:
-        break;
       case ON_MID_RUNG:
-        break;
       case RELEASED_INNER:
-        break;
       case DEPLOYED:
         break;
     }
@@ -271,9 +272,9 @@ public class Climber extends SubsystemBase {
     climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
   }
 
-  private void climbLowRungInAuto() {
-    climberIO.setOuterPosition(ClimberConstants.outerClimbL1PositionAuto);
-  }
+  // private void climbLowRungInAuto() {
+  //   climberIO.setOuterPosition(ClimberConstants.outerClimbL1PositionAuto);
+  // }
 
   private void climbMidRung() {
     climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
@@ -310,6 +311,17 @@ public class Climber extends SubsystemBase {
             ClimberConstants.atSetpointTolerance);
   }
 
+  public boolean isDeployed() {
+    return MathUtil.isNear(
+            ClimberConstants.innerDeployedPosition,
+            climberIO.getInnerPosition(),
+            ClimberConstants.atSetpointTolerance)
+        && MathUtil.isNear(
+            ClimberConstants.outerDeployedPosition,
+            climberIO.getOuterPosition(),
+            ClimberConstants.atSetpointTolerance);
+  }
+
   public boolean nearPosition(double position, String selectedMotor) {
     return MathUtil.isNear(
         position,
@@ -319,7 +331,7 @@ public class Climber extends SubsystemBase {
 
   public void updateClimberState(ClimberCurrentState newState) {
     currentState = newState;
-    Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+    // Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
   }
 
   public void resetClimbStep() {
@@ -366,7 +378,7 @@ public class Climber extends SubsystemBase {
         break;
     }
     manualClimbStep++;
-    Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
+    // Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
   }
 
   public void setAutoClimbing(boolean newValue) {
@@ -398,7 +410,11 @@ public class Climber extends SubsystemBase {
 
   public void TESTClimbL1() {
     // climberIO.setInnerPosition(ClimberConstants.innerDeployedPosition);
-    climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
+    climberIO.setOuterPosition(ClimberConstants.outerClimbL1PositionAuto);
+  }
+
+  public void TESTClimbL2() {
+    climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
   }
 
   public Command climberInnerSysIdQuasistatic(SysIdRoutine.Direction direction) {

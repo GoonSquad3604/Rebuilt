@@ -64,7 +64,7 @@ public class Spindexer extends SubsystemBase {
       applyStates();
     }
 
-    Logger.recordOutput("Subsystems/Spindexer/WantedState", wantedState);
+    // Logger.recordOutput("Subsystems/Spindexer/WantedState", wantedState);
 
     spindexerMotorDisconnected.set(!spindexerInputs.motorConnected);
   }

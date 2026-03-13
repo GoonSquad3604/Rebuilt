@@ -11,6 +11,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 public class VisionConstants {
   // AprilTag layout
@@ -24,13 +25,12 @@ public class VisionConstants {
   public static String camera3Name = "Camera3"; // bl
 
   // Robot to camera transforms
-  public static Transform3d robotToCamera0Retracted =
+  public static Transform3d robotToCamera0 =
       new Transform3d(
-          0.6429, 0.1016, 0.4096, new Rotation3d(0.0, Math.toRadians(0), Math.toRadians(0)));
-  public static Transform3d robotToCamera0Extended =
-      new Transform3d(
-          0.3381, 0.1016, 0.4096, new Rotation3d(0.0, Math.toRadians(0), Math.toRadians(0)));
-
+          Units.inchesToMeters(8),
+          Units.inchesToMeters(13.375),
+          Units.inchesToMeters(20.25),
+          new Rotation3d(0.0, Math.toRadians(-2), Math.toRadians(90)));
   public static Transform3d robotToCamera1 =
       new Transform3d(
           0.283, -0.2904, 0.1954, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(315)));

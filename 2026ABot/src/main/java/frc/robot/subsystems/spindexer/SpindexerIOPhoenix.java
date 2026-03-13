@@ -85,7 +85,7 @@ public class SpindexerIOPhoenix implements SpindexerIO {
     inputs.voltage = spindexerMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = spindexerMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = spindexerMotor.getVelocity().getValueAsDouble();
-    inputs.position = spindexerMotor.getPosition().getValueAsDouble();
+    // inputs.position = spindexerMotor.getPosition().getValueAsDouble();
   }
 
   @Override

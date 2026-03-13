@@ -105,8 +105,8 @@ public class HoodIOPhoenix implements HoodIO {
     inputs.encoderConnected = hoodEncoder.isConnected();
     inputs.voltage = hoodMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hoodMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = hoodEncoder.getVelocity().getValueAsDouble();
-    inputs.temperature = hoodMotor.getDeviceTemp().getValueAsDouble();
+    // inputs.velocity = hoodEncoder.getVelocity().getValueAsDouble();
+    // inputs.temperature = hoodMotor.getDeviceTemp().getValueAsDouble();
     inputs.position = hoodEncoder.getAbsolutePosition().getValueAsDouble();
   }
 

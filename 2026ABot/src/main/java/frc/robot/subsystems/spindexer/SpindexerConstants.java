@@ -12,5 +12,5 @@ public class SpindexerConstants {
   public static final double V = 0.099172;
   public static final double A = 0.0048033;
 
-  public static final double spinVelocity = 30;
+  public static final double spinVelocity = 28;
 }
