@@ -54,7 +54,7 @@ public class Kicker extends SubsystemBase {
     // This method will be called once per scheduler run
 
     kickerIO.updateInputs(kickerInputs);
-    // Logger.processInputs("Subsystems/Kicker", kickerInputs);
+    Logger.processInputs("Subsystems/Kicker", kickerInputs);
 
     KickerCurrentState newState = handleStateTransitions();
     if (newState != currentState) {

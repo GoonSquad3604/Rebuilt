@@ -20,6 +20,7 @@ import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.AllianceFlipUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -315,10 +316,10 @@ public class DriveCommands {
   private static double getTrenchY(Pose2d robotPose) {
     if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
       // left trench
-      return FieldConstants.LeftTrench.midPoint;
+      return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
     }
     // right trench
-    return FieldConstants.RightTrench.midPoint;
+    return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
   }
 
   public static Command alignToPose(Drive drive, Pose2d targetPose) {

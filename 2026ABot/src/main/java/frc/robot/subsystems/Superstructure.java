@@ -263,10 +263,11 @@ public class Superstructure extends SubsystemBase {
     spindexer.setWantedState(SpindexerWantedState.IDLE);
 
     if (climber.isStowed()) {
-      if (!hopper.isDeployed()) {
+      if (!hopper.isDeployed() && hopper.hopperCanMove()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {
+        hopper.setHopperCanMove(false);
         intake.setWantedState(IntakeWantedState.INTAKE);
       }
     }
@@ -287,6 +288,7 @@ public class Superstructure extends SubsystemBase {
       hopper.setWantedState(HopperWantedState.IDLE);
     } else {
       if (!hopper.isStowed()) {
+        hopper.setHopperCanMove(true);
         hopper.setWantedState(HopperWantedState.STOW);
       } else {
         wantedSuperState = WantedSuperState.STOPPED;
@@ -309,6 +311,7 @@ public class Superstructure extends SubsystemBase {
       hopper.setWantedState(HopperWantedState.IDLE);
     } else {
       if (!hopper.isStowed()) {
+        hopper.setHopperCanMove(true);
         hopper.setWantedState(HopperWantedState.FORCE_STOW);
       } else {
         wantedSuperState = WantedSuperState.STOPPED;
@@ -322,7 +325,7 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.REV);
 
     if (climber.isStowed()) {
-      if (!hopper.isDeployed()) {
+      if (!hopper.isDeployed() && hopper.hopperCanMove()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {
@@ -347,7 +350,7 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.REV);
 
     if (climber.isStowed()) {
-      if (!hopper.isDeployed()) {
+      if (!hopper.isDeployed() && hopper.hopperCanMove()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {

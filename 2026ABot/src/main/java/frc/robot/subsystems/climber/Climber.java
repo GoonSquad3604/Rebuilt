@@ -25,6 +25,7 @@ public class Climber extends SubsystemBase {
   private SysIdRoutine climberOuterSysId;
 
   private int manualClimbStep = 0;
+  private boolean beganClimbing;
   // private boolean declimbing = false;
 
   private boolean beganAutoClimb = false;
@@ -126,9 +127,11 @@ public class Climber extends SubsystemBase {
 
     ClimberCurrentState newState = handleStateTransitions();
     if (newState != currentState || currentState == ClimberCurrentState.DECLIMB) {
-      currentState = newState;
-      Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
-      applyStates();
+      if (!beganClimbing) {
+        currentState = newState;
+        Logger.recordOutput("Subsystems/Climber/CurrentState", currentState);
+        applyStates();
+      }
     }
 
     SmartDashboard.putBoolean("climber deployed", isDeployed());
@@ -356,9 +359,11 @@ public class Climber extends SubsystemBase {
 
   public void resetClimbStep() {
     manualClimbStep = 0;
+    beganClimbing = false;
   }
 
   public void progressManualClimb() {
+    beganClimbing = true;
     switch (manualClimbStep) {
       case 0:
         // climbers are stowed, deploy
@@ -377,11 +382,16 @@ public class Climber extends SubsystemBase {
         // ready to pull up on mid rung
         climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
         break;
+
       case 4:
+        // hook with outer rungs
+        climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+        break;
+      case 5:
         // outer should have attached, release inner
         climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
         break;
-      case 5:
+      case 6:
         // pull up on high rung
         climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
         climberIO.setInnerPower(0.0);

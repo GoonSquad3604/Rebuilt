@@ -13,12 +13,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RightCorralToClimbStart"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "RightClimb"
           }
         }

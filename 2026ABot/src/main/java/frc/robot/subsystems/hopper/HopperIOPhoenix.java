@@ -92,6 +92,8 @@ public class HopperIOPhoenix implements HopperIO {
 
     // optimize bus utilization
     PhoenixUtil.tryUntilOk(5, () -> hopperMotor.optimizeBusUtilization(0, 1.0));
+
+    hopperMotor.setPosition(0);
   }
 
   @Override

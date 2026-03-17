@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -210,31 +209,31 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    autoChooser.addOption(
-        "ClimberOuter SysId (Quasistatic Forward)",
-        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Quasistatic Reverse)",
-        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Dynamic Forward)",
-        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Dynamic Reverse)",
-        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "ClimberOuter SysId (Quasistatic Forward)",
+    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "ClimberOuter SysId (Quasistatic Reverse)",
+    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "ClimberOuter SysId (Dynamic Forward)",
+    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "ClimberOuter SysId (Dynamic Reverse)",
+    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    autoChooser.addOption(
-        "ClimberInner SysId (Quasistatic Forward)",
-        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberInner SysId (Quasistatic Reverse)",
-        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "ClimberInner SysId (Dynamic Forward)",
-        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberInner SysId (Dynamic Reverse)",
-        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "ClimberInner SysId (Quasistatic Forward)",
+    //     climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "ClimberInner SysId (Quasistatic Reverse)",
+    //     climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "ClimberInner SysId (Dynamic Forward)",
+    //     climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "ClimberInner SysId (Dynamic Reverse)",
+    //     climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Turret SysId (Quasistatic Forward)",
@@ -307,14 +306,17 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController.back().onTrue(superstructure.setWantedState(WantedSuperState.EJECT));
+    // driverController.back().onTrue(superstructure.setWantedState(WantedSuperState.EJECT));
 
-    driverController
-        .back()
-        .onFalse(
-            superstructure
-                .setWantedState(WantedSuperState.STOPPED)
-                .alongWith(Commands.runOnce(() -> hopper.setDeployed())));
+    // driverController
+    //     .back()
+    //     .onFalse(
+    //         superstructure
+    //             .setWantedState(WantedSuperState.STOPPED)
+    //             .alongWith(Commands.runOnce(() -> hopper.setDeployed())));
+
+    driverController.back().onTrue(Commands.runOnce(() -> hopper.setPower(-.2)));
+    driverController.back().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
 
     // climb
     // driverController.povLeft().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_LEFT));
@@ -408,7 +410,20 @@ public class RobotContainer {
 
     operatorButtonBox.button(9).onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB));
 
-    operatorButtonBox.button(10).onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
+    // operatorButtonBox
+    //     .button(10)
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 superstructure
+    //                     .setWantedState(WantedSuperState.STOW)
+    //                     .until(() -> hopper.isStowed())
+    //                     .andThen(Commands.runOnce(() -> climber.progressManualClimb()))));
+
+    operatorButtonBox
+        .button(10)
+        .and(() -> hopper.isStowed())
+        .onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
 
     // run shooter / set hood pos
     // operatorButtonBox

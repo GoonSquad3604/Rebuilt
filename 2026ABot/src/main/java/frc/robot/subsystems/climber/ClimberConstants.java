@@ -32,7 +32,7 @@ public final class ClimberConstants {
   public static final double outerDeployedPosition = 0.844;
 
   // step 1
-  public static final double outerClimbL1Position = 0.547;
+  public static final double outerClimbL1Position = 0.530;
   public static final double checkClimbL1Position = 0.547;
 
   // step 2
@@ -41,7 +41,7 @@ public final class ClimberConstants {
   // step 3: L1 to deployed position
 
   // step 4
-  public static final double innerClimbL2Position = 0.621;
+  public static final double innerClimbL2Position = 0.680;
   public static final double checkInnerClimbL2Position = 0.644;
 
   // step 5
@@ -53,7 +53,7 @@ public final class ClimberConstants {
   public static final double checkInnerReleaseL2Position = 0.569;
 
   // step 7 (and disable inner pid)
-  public static final double outerClimbL3Position = 0.536; // placeholder
+  public static final double outerClimbL3Position = 0.524; // placeholder
 
   public static final double atSetpointTolerance = 0.0075; // placeholder
 

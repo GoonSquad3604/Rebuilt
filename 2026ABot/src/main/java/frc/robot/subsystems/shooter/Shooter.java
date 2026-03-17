@@ -111,7 +111,7 @@ public class Shooter extends SubsystemBase {
     launcherIO.updateInputs(launcherInputs);
     turretIO.updateInputs(turretInputs);
 
-    // Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
     Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 

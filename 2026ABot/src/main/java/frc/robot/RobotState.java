@@ -176,7 +176,8 @@ public class RobotState {
     Translation2d hubPose =
         AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
     Pose2d turretPosition =
-        getPose().transformBy(GeomUtil.toTransform2d(ShooterConstants.robotToTurret));
+        AllianceFlipUtil.apply(getPose())
+            .transformBy(GeomUtil.toTransform2d(ShooterConstants.robotToTurret));
     return hubPose.getDistance(turretPosition.getTranslation());
   }
 }

@@ -26,9 +26,10 @@ public class AutoChooser extends SendableChooser<Autos> {
           // new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
           new AutoProgram(Autos.MIDDLE, "MIDDLE", AutoFactory::createMiddleAuto),
           new AutoProgram(Autos.LEFT, "Left", AutoFactory::createLeftAuto),
-          new AutoProgram(Autos.RIGHT, "Right", AutoFactory::createRightAuto));
-  // new AutoProgram(Autos.BORING_LEFT, "BoringLeft", AutoFactory::createBoringLeftAuto),
-  // new AutoProgram(Autos.BORING_RIGHT, "BoringRight", AutoFactory::createBoringRightAuto));
+          new AutoProgram(Autos.RIGHT, "Right", AutoFactory::createRightAuto),
+          new AutoProgram(Autos.LEFT_NO_CLIMB, "LeftNoClimb", AutoFactory::createLeftNoClimbAuto),
+          new AutoProgram(
+              Autos.RIGHT_NO_CLIMB, "RightNoClimb", AutoFactory::createRightNoClimbAuto));
 
   private final Map<Autos, AutoProgram> programs;
   private final Map<DriverStation.Alliance, Map<Autos, Pair<Pose2d, Command>>> commandCache;

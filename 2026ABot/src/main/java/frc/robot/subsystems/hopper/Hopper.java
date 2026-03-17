@@ -19,6 +19,8 @@ public class Hopper extends SubsystemBase {
 
   private SysIdRoutine sysID;
 
+  private boolean canMove = true;
+
   public enum HopperWantedState {
     IDLE,
     STOW,
@@ -173,6 +175,14 @@ public class Hopper extends SubsystemBase {
 
   public void setDeployed() {
     hopperIO.setEncoderPosition(HopperConstants.extendedPos);
+  }
+
+  public void setHopperCanMove(boolean canMove) {
+    this.canMove = canMove;
+  }
+
+  public boolean hopperCanMove() {
+    return canMove;
   }
 
   // testing only, remove later:
