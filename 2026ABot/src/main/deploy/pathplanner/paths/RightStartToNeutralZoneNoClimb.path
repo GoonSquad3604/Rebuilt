@@ -8,52 +8,52 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.409869513641757,
-        "y": 0.5866785290628707
+        "x": 8.56049822064057,
+        "y": 0.554400948991697
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.8366555555555575,
-        "y": 3.5815
+        "x": 7.81811387900356,
+        "y": 3.3302728351126927
       },
       "prevControl": {
-        "x": 7.878068723121583,
-        "y": 1.1933406703593494
+        "x": 8.832454764729142,
+        "y": 3.0467680901542105
       },
       "nextControl": {
-        "x": 7.806422222222222,
-        "y": 5.3249555555555546
+        "x": 7.159849267167617,
+        "y": 3.5142555016107
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.531144444444445,
+        "x": 4.16,
         "y": 0.6287111111111108
       },
       "prevControl": {
-        "x": 9.476838774858457,
-        "y": 0.47217827930464606
+        "x": 8.19963421846194,
+        "y": 0.3233841953940193
       },
       "nextControl": {
-        "x": 0.760083036773429,
-        "y": 0.7480664294187429
+        "x": 2.4385172004744966,
+        "y": 0.7588256227758008
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.245,
-        "y": 3.279
+        "x": 2.998,
+        "y": 1.846
       },
       "prevControl": {
-        "x": 2.051186239620404,
-        "y": 2.222075919335706
+        "x": 2.148023724792408,
+        "y": 1.189689205219455
       },
       "nextControl": null,
       "isLocked": false,
@@ -74,7 +74,7 @@
       "rotationDegrees": 119.99999999999999
     },
     {
-      "waypointRelativePos": 1.6385964912280775,
+      "waypointRelativePos": 1.3,
       "rotationDegrees": 180.0
     }
   ],
@@ -94,7 +94,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "RightMainAuto",
+  "folder": "RightNoClimbAuto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

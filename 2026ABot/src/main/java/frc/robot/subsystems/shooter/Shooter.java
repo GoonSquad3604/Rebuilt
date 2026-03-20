@@ -111,7 +111,7 @@ public class Shooter extends SubsystemBase {
     launcherIO.updateInputs(launcherInputs);
     turretIO.updateInputs(turretInputs);
 
-    // Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
+    Logger.processInputs("Subsystems/Shooter/Hood", hoodInputs);
     Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
@@ -257,6 +257,10 @@ public class Shooter extends SubsystemBase {
     turretIO.setAngle(shootingParameters.turretAngle());
     launcherIO.setPower(0);
     hoodIO.setPosition(shootingParameters.hoodPose());
+  }
+
+  public boolean validShootingLocation() {
+    return shootingParameters.isValid();
   }
 
   // testcontroller:

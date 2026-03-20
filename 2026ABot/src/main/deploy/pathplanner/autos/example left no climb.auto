@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MiddleGoToDepot"
+            "pathName": "LeftStartToNeutralZone"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftPickUpDepot"
+            "pathName": "LeftPickUpDepotNoClimb"
           }
         }
       ]

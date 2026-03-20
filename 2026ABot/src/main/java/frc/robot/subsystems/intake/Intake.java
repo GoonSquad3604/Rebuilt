@@ -195,7 +195,10 @@ public class Intake extends SubsystemBase {
         IntakeConstants.HingeConstants.nearPositionTolerance)) {
       // kick down
       hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
-    } else {
+    } else if (MathUtil.isNear(
+        IntakeConstants.HingeConstants.deployedPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance)) {
       // kick up
       hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
     }

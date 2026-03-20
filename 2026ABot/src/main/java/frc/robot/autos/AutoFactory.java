@@ -74,12 +74,15 @@ public class AutoFactory {
     return Pair.of(
         RobotState.getInstance().getPose(),
         Commands.sequence(
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
             runPath("MiddleGoToDepot"),
-            runPath("LeftPickUpDepot"),
-            Commands.waitSeconds(10),
-            // remove later
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)));
+            runPath("MiddlePickUpDepot"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            Commands.waitSeconds(8.5),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
+            Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
+            runPath("LeftClimb"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
   }
 
   public Pair<Pose2d, Command> createLeftAuto() {
@@ -88,22 +91,15 @@ public class AutoFactory {
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
             Commands.parallel(
-                runPath("LeftStartToNeutral"),
+                runPath("LeftStartToNeutralToClimb"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.2),
-                    robotContainer
-                        .getSuperstructure()
-                        .setWantedState(WantedSuperState.INTAKE_AND_SHOOT))),
-            runPath("LeftPickUpDepot"),
-            Commands.waitSeconds(5),
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
-            Commands.waitSeconds(5),
-            // remove later
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)
-
-            // robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_LEFT)
-
-            ));
+                    Commands.waitSeconds(5.6),
+                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
+            Commands.waitSeconds(10),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
+            Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
+            runPath("LeftClimb"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
   }
 
   public Pair<Pose2d, Command> createRightAuto() {
@@ -114,39 +110,43 @@ public class AutoFactory {
             Commands.parallel(
                 runPath("RightStartToNeutralZone"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.5),
+                    Commands.waitSeconds(5.0),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(10),
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED),
-            Commands.parallel(runPath("RightCorralToClimb"))));
+            Commands.waitSeconds(8),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
+            Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
+            runPath("RightClimb"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
   }
 
-  public Pair<Pose2d, Command> createBoringRightAuto() {
+  public Pair<Pose2d, Command> createRightNoClimbAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("RightStartToNeutralZoneNoClimb"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            Commands.waitSeconds(7),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("RightNoClimbPt2"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
+  }
+
+  public Pair<Pose2d, Command> createLeftNoClimbAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
             Commands.parallel(
-                runPath("BoringRightStartToNeutralZone"),
-                Commands.sequence(
-                    Commands.waitSeconds(6.4),
-                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(10),
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)));
-  }
-
-  public Pair<Pose2d, Command> createBoringLeftAuto() {
-    return Pair.of(
-        RobotState.getInstance().getPose(),
-        Commands.sequence(
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            Commands.parallel(
-                runPath("BoringLeftStartToNeutralZone"),
+                runPath("LeftStartToNeutralZone"),
                 Commands.sequence(
                     Commands.waitSeconds(6),
-                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(10),
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)));
+                    robotContainer
+                        .getSuperstructure()
+                        .setWantedState(WantedSuperState.INTAKE_AND_SHOOT))),
+            runPath("LeftPickUpDepotNoClimb"),
+            Commands.waitSeconds(6),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
   }
 
   private Command runPath(String pathName) {

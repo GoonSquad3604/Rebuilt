@@ -19,9 +19,13 @@ public class Hopper extends SubsystemBase {
 
   private SysIdRoutine sysID;
 
+  private boolean canMove = true;
+
   public enum HopperWantedState {
     IDLE,
     STOW,
+    FORCE_STOW,
+    RESET,
     DEPLOY
   }
 
@@ -29,7 +33,9 @@ public class Hopper extends SubsystemBase {
     IDLING,
     STOWING_FAST,
     STOWING_SLOW,
+    FORCEFULLY_STOWING,
     STOWED,
+    RESETTING,
     DEPLOYING,
   }
 
@@ -65,7 +71,9 @@ public class Hopper extends SubsystemBase {
     // Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
-    if (newState != currentState || (wantedState == HopperWantedState.STOW && !isStowed())) {
+    if (newState != currentState
+        || (wantedState == HopperWantedState.STOW && !isStowed())
+        || (wantedState == HopperWantedState.FORCE_STOW && !isStowed())) {
       currentState = newState;
       // Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
@@ -85,17 +93,16 @@ public class Hopper extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> HopperCurrentState.IDLING;
       case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW ->
-      // is hopper stowed?
-      isStowed()
-          ?
-          // if so, current state is idle
-          HopperCurrentState.IDLING
-          :
-          // if not, current state is stowing slow if higher than target position
-          hopperIO.getPosition() > HopperConstants.stowTargetPosition
+      case STOW -> isStowed()
+          ? HopperCurrentState.IDLING
+          : hopperIO.getPosition() > HopperConstants.stowTargetPosition
               ? HopperCurrentState.STOWING_SLOW
               : HopperCurrentState.STOWING_FAST;
+
+      case FORCE_STOW -> isStowed()
+          ? HopperCurrentState.IDLING
+          : HopperCurrentState.FORCEFULLY_STOWING;
+      case RESET -> HopperCurrentState.RESETTING;
     };
   }
 
@@ -116,6 +123,12 @@ public class Hopper extends SubsystemBase {
       case STOWED:
         stowed();
         break;
+      case FORCEFULLY_STOWING:
+        forceStow();
+        break;
+      case RESETTING:
+        reset();
+        break;
     }
   }
 
@@ -131,6 +144,10 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPower(HopperConstants.slowStowingPower);
   }
 
+  private void forceStow() {
+    hopperIO.setPower(HopperConstants.forceStowPower);
+  }
+
   private void idling() {
     hopperIO.setPower(0);
   }
@@ -139,18 +156,33 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPower(0);
   }
 
+  private void reset() {
+    hopperIO.setPower(-.2);
+  }
+
   public boolean isDeployed() {
     return MathUtil.isNear(
         HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
   }
 
   public boolean isStowed() {
-    // return MathUtil.isNear(0, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
     return hopperIO.stowedDetectorTriggered();
   }
 
   public void zeroEncoder() {
     hopperIO.resetPosition();
+  }
+
+  public void setDeployed() {
+    hopperIO.setEncoderPosition(HopperConstants.extendedPos);
+  }
+
+  public void setHopperCanMove(boolean canMove) {
+    this.canMove = canMove;
+  }
+
+  public boolean hopperCanMove() {
+    return canMove;
   }
 
   // testing only, remove later:

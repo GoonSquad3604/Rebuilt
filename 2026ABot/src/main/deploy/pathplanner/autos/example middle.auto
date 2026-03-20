@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MiddleGoToDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MiddlePickUpDepot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftClimb"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

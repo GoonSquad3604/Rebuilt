@@ -5,6 +5,6 @@ public enum Autos {
   MIDDLE,
   LEFT,
   RIGHT,
-  BORING_LEFT,
-  BORING_RIGHT
+  LEFT_NO_CLIMB,
+  RIGHT_NO_CLIMB
 }

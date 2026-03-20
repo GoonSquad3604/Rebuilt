@@ -7,7 +7,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -29,7 +29,9 @@ public class TurretIOPhoenix implements TurretIO {
 
   // motor
   private final TalonFX turretMotor;
-  private final PositionVoltage turretRequest;
+  // private final PositionVoltage turretRequest;
+  private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0.0);
+
   private final TalonFXConfiguration turretMotorConfig;
 
   // encoder
@@ -49,7 +51,7 @@ public class TurretIOPhoenix implements TurretIO {
   public TurretIOPhoenix() {
 
     turretMotor = new TalonFX(ShooterConstants.TurretConstants.turretID, Constants.CANBusName);
-    turretRequest = new PositionVoltage(0);
+    // turretRequest = new PositionVoltage(0);
 
     turretEncoder =
         new CANcoder(ShooterConstants.TurretConstants.turretEncoderID, Constants.CANBusName);
@@ -58,15 +60,14 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     turretEncoderConfig.MagnetSensor.MagnetOffset = 0.025;
     turretEncoderConfig.MagnetSensor.SensorDirection =
-        SensorDirectionValue.CounterClockwise_Positive; // was ccw pos when workin
+        SensorDirectionValue.CounterClockwise_Positive;
 
     turretEncoder.getConfigurator().apply(turretEncoderConfig);
 
     turretMotorConfig = new TalonFXConfiguration();
 
     turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
-    turretMotorConfig.MotorOutput.Inverted =
-        InvertedValue.CounterClockwise_Positive; // ccw positive when working last
+    turretMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     turretMotorConfig.Feedback.FeedbackRemoteSensorID =
@@ -77,6 +78,12 @@ public class TurretIOPhoenix implements TurretIO {
     // turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     // turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 
+    // motion magic
+    turretMotorConfig.MotionMagic.MotionMagicAcceleration =
+        ShooterConstants.TurretConstants.turretAcceleration;
+    turretMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
+        ShooterConstants.TurretConstants.turretVelocity;
+
     turretMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.TurretConstants.turretP)
@@ -84,7 +91,7 @@ public class TurretIOPhoenix implements TurretIO {
             .withKD(ShooterConstants.TurretConstants.turretD)
             .withKS(ShooterConstants.TurretConstants.turretS)
             .withKV(ShooterConstants.TurretConstants.turretV);
-    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1;
+    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .25;
     PhoenixUtil.tryUntilOk(5, () -> turretEncoder.getConfigurator().apply(turretEncoderConfig));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
@@ -130,11 +137,16 @@ public class TurretIOPhoenix implements TurretIO {
   @Override
   public void setPosition(double position) {
     turretMotor.setControl(
-        turretRequest.withPosition(
-            MathUtil.clamp(
-                position,
-                ShooterConstants.TurretConstants.minEncoderPosition,
-                ShooterConstants.TurretConstants.maxEncoderPosition)));
+        turretRequest
+            .withPosition(
+                MathUtil.clamp(
+                    position,
+                    ShooterConstants.TurretConstants.minEncoderPosition,
+                    ShooterConstants.TurretConstants.maxEncoderPosition))
+            .withEnableFOC(true));
+    // turretMotor.setControl(
+    //     turretRequest.withPosition(
+    //         ));
   }
 
   @Override

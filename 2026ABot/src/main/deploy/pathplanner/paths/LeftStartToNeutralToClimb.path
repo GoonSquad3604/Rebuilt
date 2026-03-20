@@ -64,12 +64,12 @@
     },
     {
       "anchor": {
-        "x": 2.040427046263346,
-        "y": 4.09417556346382
+        "x": 2.492,
+        "y": 4.128
       },
       "prevControl": {
-        "x": 3.019513641755635,
-        "y": 6.127663107947805
+        "x": 2.6106642941874263,
+        "y": 4.728967971530249
       },
       "nextControl": null,
       "isLocked": false,
@@ -87,11 +87,7 @@
     },
     {
       "waypointRelativePos": 0.7842105263157877,
-      "rotationDegrees": -119.99999999999999
-    },
-    {
-      "waypointRelativePos": 1.3357015985790408,
-      "rotationDegrees": 119.99999999999999
+      "rotationDegrees": -135.0
     },
     {
       "waypointRelativePos": 1.9842105263157896,
@@ -102,21 +98,7 @@
       "rotationDegrees": 180.0
     }
   ],
-  "constraintZones": [
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 2.418604651162811,
-      "maxWaypointRelativePos": 4.0,
-      "constraints": {
-        "maxVelocity": 1.5,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -132,7 +114,7 @@
     "rotation": -90.0
   },
   "reversed": false,
-  "folder": "LeftBoringAuto",
+  "folder": "LeftMainAuto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
