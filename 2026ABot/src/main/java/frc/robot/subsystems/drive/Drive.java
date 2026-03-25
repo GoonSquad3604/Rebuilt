@@ -399,14 +399,9 @@ public class Drive extends SubsystemBase {
 
   public Command pathfindToClimb(boolean isLeft) {
     Pose2d targetPose;
-    if (isLeft)
-      targetPose =
-          AllianceFlipUtil.apply(
-              new Pose2d(1.677, 4.128, new Rotation2d(Units.degreesToRadians(-90))));
-    else
-      targetPose =
-          AllianceFlipUtil.apply(
-              new Pose2d(1.667, 3.268, new Rotation2d(Units.degreesToRadians(-90))));
+    if (isLeft) targetPose = AllianceFlipUtil.apply(DriveConstants.leftClimbFirstPose);
+    else targetPose = AllianceFlipUtil.apply(DriveConstants.rightClimbFirstPose);
+
     RobotState.getInstance().setTargetPathfindPose(targetPose);
     PathConstraints constraints =
         new PathConstraints(

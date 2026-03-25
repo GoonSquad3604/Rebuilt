@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
+import frc.robot.subsystems.drive.DriveConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
@@ -20,12 +21,17 @@ public class Climber extends SubsystemBase {
   private final Alert climberInnerMotorDisconnected;
   private final Alert climberOuterEncoderDisconnected;
   private final Alert climberInnerEncoderDisconnected;
+  private final Alert leftRangeDisconnected;
+  private final Alert rightRangeDisconnected;
+  private final Alert centerRangeDisconnected;
 
   private SysIdRoutine climberInnerSysId;
   private SysIdRoutine climberOuterSysId;
 
   private int manualClimbStep = 0;
   private boolean beganClimbing;
+  private boolean proceedClimb;
+  private int climbStep = 0;
   // private boolean declimbing = false;
 
   private boolean beganAutoClimb = false;
@@ -89,6 +95,9 @@ public class Climber extends SubsystemBase {
         new Alert("Climber Outer Encoder Disconnected", Alert.AlertType.kWarning);
     climberInnerEncoderDisconnected =
         new Alert("Climber Inner Encoder Disconnected", Alert.AlertType.kWarning);
+    leftRangeDisconnected = new Alert("Left CANRange Disconnected", Alert.AlertType.kWarning);
+    rightRangeDisconnected = new Alert("Right CANRange Disconnected", Alert.AlertType.kWarning);
+    centerRangeDisconnected = new Alert("Center CANRange Disconnected", Alert.AlertType.kWarning);
 
     climberInnerSysId =
         new SysIdRoutine(
@@ -123,9 +132,13 @@ public class Climber extends SubsystemBase {
     Logger.processInputs("Subsystems/Climber", climberInputs);
     // Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
 
-    SmartDashboard.putBoolean("away from tower?", RobotState.getInstance().isAwayFromTower());
+    SmartDashboard.putBoolean("climber stowed", isStowed());
+
+    // SmartDashboard.putBoolean("away from tower?", RobotState.getInstance().isAwayFromTower());
 
     ClimberCurrentState newState = handleStateTransitions();
+    updateCanProceed();
+
     if (newState != currentState || currentState == ClimberCurrentState.DECLIMB) {
       if (!beganClimbing) {
         currentState = newState;
@@ -134,13 +147,23 @@ public class Climber extends SubsystemBase {
       }
     }
 
-    SmartDashboard.putBoolean("climber deployed", isDeployed());
+    // SmartDashboard.putBoolean("climber deployed", isDeployed());
+    // SmartDashboard.putBoolean("climb can proceed", canProceed());
 
-    Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
+    // SmartDashboard.putBoolean("left Climb detected", climberIO.leftClimbDetected());
+    // SmartDashboard.putBoolean("right Climb detected", climberIO.rightClimbDetected());
+    // SmartDashboard.putBoolean("center Climb detected", climberIO.centerClimbDetected());
+    // SmartDashboard.putBoolean("climber sensors valid", sensorsValid());
+
+    // Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
+
     climberOuterMotorDisconnected.set(!climberInputs.outerMotorConnected);
     climberInnerMotorDisconnected.set(!climberInputs.innerMotorConnected);
     climberOuterEncoderDisconnected.set(!climberInputs.outerEncoderConnected);
     climberInnerEncoderDisconnected.set(!climberInputs.innerEncoderConnected);
+    leftRangeDisconnected.set(!climberInputs.leftClimbRangeConnected);
+    rightRangeDisconnected.set(!climberInputs.rightClimbRangeConnected);
+    centerRangeDisconnected.set(!climberInputs.centerClimbRangeConnected);
   }
 
   public void setWantedState(ClimberWantedState wantedState) {
@@ -179,6 +202,7 @@ public class Climber extends SubsystemBase {
 
         // if near inner's mid rung climb position, update state from climbing mid to climbed mid
       case CLIMB_MID_RUNG -> nearPosition(ClimberConstants.checkInnerClimbL2Position, "inner")
+              && nearPosition(ClimberConstants.outerDeployedPosition, "outer")
           ? ClimberCurrentState.ON_MID_RUNG
           : ClimberCurrentState.CLIMBING_MID_RUNG;
 
@@ -294,6 +318,7 @@ public class Climber extends SubsystemBase {
 
   private void climbMidRung() {
     climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
+    climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
   }
 
   private void climbHighRung() {
@@ -374,24 +399,27 @@ public class Climber extends SubsystemBase {
         // climbers are deployed (assuming aligned), climb L1
         climberIO.setOuterPosition(ClimberConstants.outerClimbL1Position);
         break;
+        // case 2:
+        //   climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+        //   break;
+        // case 2:
+        //   // inner hooks hooked low rung, deploy outer
+        //   climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
+        //   break;
       case 2:
-        // inner hooks hooked low rung, deploy outer
-        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
-        break;
-      case 3:
         // ready to pull up on mid rung
+        climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
         climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
         break;
-
-      case 4:
+      case 3:
         // hook with outer rungs
         climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
         break;
-      case 5:
+      case 4:
         // outer should have attached, release inner
         climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
         break;
-      case 6:
+      case 5:
         // pull up on high rung
         climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
         climberIO.setInnerPower(0.0);
@@ -400,12 +428,51 @@ public class Climber extends SubsystemBase {
     manualClimbStep++;
   }
 
-  public void setAutoClimbing(boolean newValue) {
-    beganAutoClimb = newValue;
+  public void updateCanProceed() {
+    switch (climbStep) {
+      case 0:
+        proceedClimb = currentState == ClimberCurrentState.DEPLOYED;
+        break;
+      case 1:
+        proceedClimb =
+            (RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbPos)
+                    || RobotState.getInstance().atDrivePosition(DriveConstants.rightClimbPos))
+                && !climberIO.leftClimbDetected()
+                && !climberIO.rightClimbDetected()
+                && climberIO.centerClimbDetected();
+        break;
+      case 2:
+        proceedClimb = currentState == ClimberCurrentState.ON_LOW_RUNG;
+        break;
+      case 3:
+        proceedClimb = currentState == ClimberCurrentState.ON_MID_RUNG;
+        break;
+      case 4:
+        proceedClimb = currentState == ClimberCurrentState.GRABBED_HIGH_RUNG;
+        break;
+      case 5:
+        proceedClimb = currentState == ClimberCurrentState.RELEASED_INNER;
+        break;
+    }
   }
 
-  public boolean isAutoClimbing() {
-    return beganAutoClimb;
+  public void addClimbStep() {
+    climbStep++;
+  }
+
+  public boolean canProceed() {
+    return proceedClimb;
+  }
+
+  public void resetAutoClimbStep() {
+    climbStep = 0;
+  }
+
+  // returns true if center laser is detected and not right or left
+  public boolean sensorsValid() {
+    return climberIO.centerClimbDetected()
+        && !climberIO.leftClimbDetected()
+        && !climberIO.rightClimbDetected();
   }
 
   // testing only, remove later:

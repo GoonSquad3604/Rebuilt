@@ -313,6 +313,100 @@ public class DriveCommands {
                 Commands.runOnce(() -> driveYController.reset(drive.getPose().getY()))));
   }
 
+  public static Command alignToClimbX(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier,
+      BooleanSupplier slowMode) {
+
+    // Create drive PID controller
+    ProfiledPIDController driveXController =
+        new ProfiledPIDController(
+            DriveConstants.DRIVE_KP,
+            0.0,
+            DriveConstants.DRIVE_KD,
+            new TrapezoidProfile.Constraints(
+                DriveConstants.CLIMB_DRIVE_MAX_VELOCITY,
+                DriveConstants.CLIMB_DRIVE_MAX_ACCELERATION));
+
+    // create angle PID controller
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            DriveConstants.ANGLE_KP,
+            0.0,
+            DriveConstants.ANGLE_KD,
+            new TrapezoidProfile.Constraints(
+                DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return Commands.run(
+            () -> {
+
+              // Get linear velocity
+              double xVel =
+                  driveXController.calculate(
+                      drive.getPose().getX(), AllianceFlipUtil.applyX(DriveConstants.checkClimbX));
+              if (driveXController.atSetpoint()) {
+                xVel = 0;
+              }
+
+              Translation2d linearVelocity =
+                  new Translation2d(
+                      xVel,
+                      getLinearVelocityFromJoysticks(
+                              xSupplier.getAsDouble(), ySupplier.getAsDouble())
+                          .getY());
+
+              // Logger.recordOutput("RobotState/AutoDriveCalculatedVelocityY", yVel);
+
+              // calculate desired angle to lock to for trench
+              Supplier<Rotation2d> rotationSupplier = () -> Rotation2d.fromDegrees(-90);
+
+              // RobotState.getInstance()
+              //     .setTargetPathfindPose(
+              //         new Pose2d(
+              //             drive.getPose().getX(),
+              //             getTrenchY(drive.getPose()),
+              //             rotationSupplier.get()));
+
+              // calcualte angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+
+              // Apply rotation deadband
+              // double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+
+              // Square rotation value for more precise control
+              // omega = Math.copySign(omega * omega, omega);
+
+              // is slowmode?
+              double multiplier = slowMode.getAsBoolean() ? 0.4 : 1;
+
+              // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec() * multiplier,
+                      omega /* * drive.getMaxAngularSpeedRadPerSec()*/);
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            },
+            drive)
+        .beforeStarting(
+            new SequentialCommandGroup(
+                Commands.runOnce(() -> angleController.reset(drive.getRotation().getRadians())),
+                Commands.runOnce(() -> driveXController.reset(drive.getPose().getX()))));
+  }
+
   private static double getTrenchY(Pose2d robotPose) {
     if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
       // left trench
@@ -331,7 +425,8 @@ public class DriveCommands {
             0.0,
             DriveConstants.DRIVE_KD,
             new TrapezoidProfile.Constraints(
-                DriveConstants.DRIVE_MAX_VELOCITY, DriveConstants.DRIVE_MAX_ACCELERATION));
+                DriveConstants.CLIMB_DRIVE_MAX_VELOCITY,
+                DriveConstants.CLIMB_DRIVE_MAX_ACCELERATION));
 
     ProfiledPIDController driveXController =
         new ProfiledPIDController(

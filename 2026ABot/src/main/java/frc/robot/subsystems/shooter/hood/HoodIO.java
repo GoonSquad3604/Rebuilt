@@ -32,4 +32,6 @@ public interface HoodIO {
   }
 
   default void setVoltage(double volts) {}
+
+  // default void setHoodOpenLoop(double output) {}
 }

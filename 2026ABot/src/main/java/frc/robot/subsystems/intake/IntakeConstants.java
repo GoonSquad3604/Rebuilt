@@ -24,7 +24,7 @@ public class IntakeConstants {
     public static final double stowedPosition = 0.310;
     public static final double kickPosition = 0.265;
 
-    public static final double kickInterval = 3;
+    public static final double kickInterval = 5;
     public static final double nearPositionTolerance = 0.015;
   }
 

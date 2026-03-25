@@ -58,7 +58,7 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = 0.025;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = -0.617;
     turretEncoderConfig.MagnetSensor.SensorDirection =
         SensorDirectionValue.CounterClockwise_Positive;
 
@@ -91,7 +91,7 @@ public class TurretIOPhoenix implements TurretIO {
             .withKD(ShooterConstants.TurretConstants.turretD)
             .withKS(ShooterConstants.TurretConstants.turretS)
             .withKV(ShooterConstants.TurretConstants.turretV);
-    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = .25;
+    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.20; // 0.25
     PhoenixUtil.tryUntilOk(5, () -> turretEncoder.getConfigurator().apply(turretEncoderConfig));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
@@ -144,10 +144,18 @@ public class TurretIOPhoenix implements TurretIO {
                     ShooterConstants.TurretConstants.minEncoderPosition,
                     ShooterConstants.TurretConstants.maxEncoderPosition))
             .withEnableFOC(true));
-    // turretMotor.setControl(
-    //     turretRequest.withPosition(
-    //         ));
   }
+
+  // @Override
+  // public void setPosition(double position, double velocity) {
+  //   turretMotor.setControl(
+  //       turretRequest
+  //           .withPosition(
+  //               MathUtil.clamp(
+  //                   position,
+  //                   ShooterConstants.TurretConstants.minEncoderPosition,
+  //                   ShooterConstants.TurretConstants.maxEncoderPosition)));
+  // }
 
   @Override
   public void setAngle(double angle) {

@@ -7,11 +7,13 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -28,6 +30,8 @@ public class HoodIOPhoenix implements HoodIO {
   private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
   private final PositionVoltage hoodPositionRequest = new PositionVoltage(0);
   private final TalonFXConfiguration hoodMotorConfig;
+
+  private final VoltageOut voltageRequest = new VoltageOut(0);
 
   // encoder
   private final CANcoder hoodEncoder;
@@ -49,7 +53,7 @@ public class HoodIOPhoenix implements HoodIO {
     hoodEncoderConfig = new CANcoderConfiguration();
 
     hoodEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    hoodEncoderConfig.MagnetSensor.MagnetOffset = 0.5;
+    hoodEncoderConfig.MagnetSensor.MagnetOffset = ShooterConstants.HoodConstants.offset;
 
     hoodEncoder.getConfigurator().apply(hoodEncoderConfig);
 
@@ -117,6 +121,11 @@ public class HoodIOPhoenix implements HoodIO {
 
   @Override
   public void setPosition(double position) {
+    position =
+        MathUtil.clamp(
+            position,
+            ShooterConstants.HoodConstants.hoodMinPos,
+            ShooterConstants.HoodConstants.hoodMaxPos);
     hoodMotor.setControl(hoodPositionRequest.withPosition(position).withEnableFOC(true));
   }
 
@@ -147,4 +156,9 @@ public class HoodIOPhoenix implements HoodIO {
   private double convertRotationsToAngle(double rotations) {
     return 0.0;
   }
+
+  // @Override
+  // public void setHoodOpenLoop(double output) {
+  //   hoodMotor.setControl(voltageRequest.withOutput(output));
+  // }
 }
