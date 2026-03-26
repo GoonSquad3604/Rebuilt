@@ -21,6 +21,8 @@ public interface HoodIO {
 
   default void setPosition(double position) {}
 
+  default void setPositionMotionMagic(double position) {}
+
   default void setAngle(double position) {}
 
   default double getPosition() {

@@ -278,7 +278,9 @@ public class Superstructure extends SubsystemBase {
 
     if (shooter.validShootingLocation() && shooter.reachedSetpoints()) {
       shooter.setBeganFiring(true);
-      spindexer.setWantedState(SpindexerWantedState.SPIN);
+      if (shooter.getShooterIsReady()) {
+        spindexer.setWantedState(SpindexerWantedState.SPIN);
+      }
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
     }
@@ -377,7 +379,9 @@ public class Superstructure extends SubsystemBase {
   private void testShoot() {
     shooter.setWantedState(ShooterWantedState.TEST_SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
-    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    if (shooter.getShooterIsReady()) {
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    }
 
     if (climber.isStowed()) {
       if (!hopper.isDeployed()) {

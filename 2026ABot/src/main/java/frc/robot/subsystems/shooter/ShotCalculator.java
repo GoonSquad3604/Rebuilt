@@ -21,6 +21,7 @@ public class ShotCalculator {
 
   // private double isValid;
   private Rotation2d lastTurretAngle;
+  private double adjustment;
   // private double lastHoodPose;
   // private Rotation2d turretAngleRotation2d;
   private double turretAngle;
@@ -48,8 +49,8 @@ public class ShotCalculator {
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
-  // private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
-  //     new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
+      new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap shotFlywheelSpeedMap =
       new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap timeOfFlightMap =
@@ -64,6 +65,7 @@ public class ShotCalculator {
     shotFlywheelSpeedMap.put(2.23, 48.0);
     shotFlywheelSpeedMap.put(2.60, 50.0);
     shotFlywheelSpeedMap.put(2.80, 53.0);
+    shotFlywheelSpeedMap.put(2.83, 50.0);
     shotFlywheelSpeedMap.put(2.95, 50.0); // ok
     shotFlywheelSpeedMap.put(3.04, 55.0);
     shotFlywheelSpeedMap.put(3.2, 57.0);
@@ -85,6 +87,8 @@ public class ShotCalculator {
     timeOfFlightMap.put(3.61, 1.35);
     timeOfFlightMap.put(3.8, 1.37);
     timeOfFlightMap.put(4.0, 1.4);
+
+    shotHoodAngleMap.put(2.30, 0.1);
   }
 
   public ShootingParameters getParameters() {
@@ -175,6 +179,20 @@ public class ShotCalculator {
     // turretVelocity =
     //     turretAngleFilter.calculate(
     //         Rotation2d.fromDegrees(turretAngle).minus(lastTurretAngle).getRadians() / 0.02);
+
+    // if(turretAngle >= 180){
+    //   adjustment = turretAngle/270;
+    //   if(adjustment > 1){
+    //     adjustment -= 1.0;
+    //   }
+    // }
+    // else{
+    //   adjustment = turretAngle/90;
+    //   if(adjustment > 1){
+    //     adjustment -= 1.0;
+    //   }
+    // }
+    // turretAngle = turretAngle + ShooterConstants.maxAngleAdjustment * adjustment;
     latestParameters =
         new ShootingParameters(
             (lookaheadTurretToTargetDistance >= minDistance

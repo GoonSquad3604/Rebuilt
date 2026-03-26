@@ -14,7 +14,7 @@ public class DriveConstants {
 
   public static final double ANGLE_KP = 4.0;
   public static final double ANGLE_KD = 0.0;
-  public static final double ANGLE_MAX_VELOCITY = 8.0;
+  public static final double ANGLE_MAX_VELOCITY = 12.0;
   public static final double ANGLE_MAX_ACCELERATION = 20.0;
 
   public static final double DRIVE_KP = 0.9;

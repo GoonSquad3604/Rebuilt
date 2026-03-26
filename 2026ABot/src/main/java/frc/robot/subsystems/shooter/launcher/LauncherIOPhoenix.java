@@ -43,6 +43,7 @@ public class LauncherIOPhoenix implements LauncherIO {
     launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
     launcherMotorConfig.CurrentLimits.StatorCurrentLimit = 100;
+    launcherMotorConfig.MotorOutput.PeakReverseDutyCycle = 0;
     launcherMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ShooterConstants.LauncherConstants.launcherP)

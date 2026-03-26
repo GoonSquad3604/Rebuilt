@@ -47,6 +47,7 @@ public class Shooter extends SubsystemBase {
   private boolean launcherAtSetpoint = false;
 
   private boolean beganFiring = false;
+  private boolean shooterIsReady = false;
 
   private double wantedHoodPosition;
   private double dashboardHoodPosition;
@@ -234,39 +235,63 @@ public class Shooter extends SubsystemBase {
   }
 
   private void idling() {
+    shooterIsReady = false;
     hoodIO.setPower(0);
     launcherIO.setPower(0);
     turretIO.setPower(0);
   }
 
   private void shootForward() {
+    if (MathUtil.isNear(
+        ShooterConstants.LauncherConstants.forwardVelocity,
+        launcherIO.getVelocity(),
+        ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
+      shooterIsReady = true;
+    }
     turretIO.setPosition(ShooterConstants.TurretConstants.forwardPosition);
     hoodIO.setPosition(ShooterConstants.HoodConstants.forwardPosition);
     launcherIO.setVelocity(ShooterConstants.LauncherConstants.forwardVelocity);
   }
 
   private void shoot() {
+    if (MathUtil.isNear(
+        shootingParameters.flywheelSpeed(),
+        launcherIO.getVelocity(),
+        ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
+      shooterIsReady = true;
+    }
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPose());
     launcherIO.setVelocity(shootingParameters.flywheelSpeed());
   }
 
   private void testShoot() {
+    if (MathUtil.isNear(
+        dashboardLauncherVelocity,
+        launcherIO.getVelocity(),
+        ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
+      shooterIsReady = true;
+    }
     launcherIO.setVelocity(dashboardLauncherVelocity);
-    hoodIO.setPosition(shootingParameters.hoodPose());
+    hoodIO.setPosition(dashboardHoodPosition);
     turretIO.setAngle(shootingParameters.turretAngle());
   }
 
   private void trackTarget() {
+    shooterIsReady = false;
     turretIO.setAngle(shootingParameters.turretAngle());
     launcherIO.setPower(0);
-    hoodIO.setPosition(shootingParameters.hoodPose());
+    // hoodIO.setPosition(shootingParameters.hoodPose());
   }
 
   private void trench() {
     turretIO.setAngle(shootingParameters.turretAngle());
     launcherIO.setPower(0.0);
     hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);
+  }
+
+  public boolean getShooterIsReady() {
+    return shooterIsReady;
   }
 
   public boolean validShootingLocation() {
@@ -292,6 +317,10 @@ public class Shooter extends SubsystemBase {
 
   public void setHoodPosition(double position) {
     hoodIO.setPosition(position);
+  }
+
+  public void setMagicHoodPosition(double position) {
+    hoodIO.setPositionMotionMagic(position);
   }
 
   public void setLauncherPower(double power) {

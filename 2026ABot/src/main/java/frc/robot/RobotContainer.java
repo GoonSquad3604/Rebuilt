@@ -302,10 +302,16 @@ public class RobotContainer {
         .onFalse(superstructure.setWantedState(superstructure.getStateBeforeTrenchAlign()));
 
     // Lock to 45° when B button is held
+    // driverController
+    //     .b()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtClosest45(
+    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+
     driverController
         .b()
         .whileTrue(
-            DriveCommands.joystickDriveAtClosest45(
+            DriveCommands.joystickDriveAtAngleHub(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // Switch to X pattern when X button is pressed
@@ -509,8 +515,17 @@ public class RobotContainer {
     testController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.2)));
     testController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
 
+    testController.x().onTrue(Commands.runOnce(() -> shooter.setMagicHoodPosition(0.3)));
+    testController.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
     testController.b().onTrue(superstructure.setWantedState(WantedSuperState.TEST_SHOOT));
     testController.b().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+
+    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
+    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    testController.a().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
+    testController.a().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
     // run kicker/spindexer/shooter
     // testController

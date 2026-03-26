@@ -19,27 +19,29 @@ public final class ShooterConstants {
 
   public static final double shootingDistanceDeadzones = 0.0;
 
+  public static final double maxAngleAdjustment = 5;
+
   public static final class HoodConstants {
 
     public static final int hoodID = 9;
     public static final int hoodEncoderID = 25;
 
-    public static final double hoodP = 6;
+    public static final double hoodP = 25;
     public static final double hoodI = 0;
     public static final double hoodD = 0.0;
-    public static final double hoodS = 0.0;
-    public static final double hoodV = 0.0;
+    public static final double hoodS = 0.1;
+    public static final double hoodV = 0.25;
     public static final double hoodG = 0.0;
 
-    public static final double acceleration = 2;
-    public static final double velocity = 1;
+    public static final double acceleration = 16;
+    public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.785;
-    public static final double hoodMinPos = 0.01;
+    public static final double hoodMaxPos = 0.75;
+    public static final double hoodMinPos = 0.055;
 
     // ensure it is 0.01 above 0 when at minimum
-    public static final double offset = -.206;
+    public static final double offset = -0.45;
   }
 
   public static final class LauncherConstants {
@@ -55,7 +57,7 @@ public final class ShooterConstants {
 
     public static final double forwardVelocity = 50;
 
-    public static final double launcherAtSetpointTolerance = 20;
+    public static final double launcherAtSetpointTolerance = 3;
   }
 
   public static final class TurretConstants {
@@ -69,8 +71,8 @@ public final class ShooterConstants {
     public static final double turretS = 0.4;
     public static final double turretV = 0;
 
-    public static final double maxEncoderPosition = 0.93;
-    public static final double minEncoderPosition = 0.035;
+    public static final double maxEncoderPosition = 0.75;
+    public static final double minEncoderPosition = 0.25;
 
     public static final double forwardPosition = 0;
     public static final double angleAtSetpointTolerance = 3;

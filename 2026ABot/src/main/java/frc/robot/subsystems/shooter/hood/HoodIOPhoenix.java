@@ -60,10 +60,12 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotorConfig = new TalonFXConfiguration();
 
     hoodMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    // hoodMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
+
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
-    hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
     // hoodMotorConfig.MotorOutput.PeakForwardDutyCycle = .2;
     // hoodMotorConfig.MotorOutput.PeakReverseDutyCycle = -.2;
 
@@ -82,7 +84,7 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     PhoenixUtil.tryUntilOk(5, () -> hoodMotor.getConfigurator().apply(hoodMotorConfig));
 
-    position = hoodEncoder.getPosition();
+    position = hoodEncoder.getAbsolutePosition();
     velocity = hoodEncoder.getVelocity();
     appliedVoltage = hoodMotor.getMotorVoltage();
     supplyCurrent = hoodMotor.getSupplyCurrent();
@@ -127,6 +129,15 @@ public class HoodIOPhoenix implements HoodIO {
             ShooterConstants.HoodConstants.hoodMinPos,
             ShooterConstants.HoodConstants.hoodMaxPos);
     hoodMotor.setControl(hoodPositionRequest.withPosition(position).withEnableFOC(true));
+  }
+
+  public void setPositionMotionMagic(double position) {
+    position =
+        MathUtil.clamp(
+            position,
+            ShooterConstants.HoodConstants.hoodMinPos,
+            ShooterConstants.HoodConstants.hoodMaxPos);
+    hoodMotor.setControl(hoodRequest.withPosition(position).withEnableFOC(true));
   }
 
   @Override
