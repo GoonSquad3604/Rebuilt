@@ -4,6 +4,9 @@ package frc.robot.subsystems.climber;
 public final class ClimberConstants {
   public static final int outerMotorID = 4;
   public static final int innerMotorID = 15;
+  public static final int leftClimberRangeID = 30;
+  public static final int rightClimberRangeID = 31;
+  public static final int centerClimberRangeID = 32;
 
   public static final int outerEncoderID = 28;
   public static final int innerEncoderID = 26;
@@ -36,7 +39,7 @@ public final class ClimberConstants {
   public static final double checkClimbL1Position = 0.547;
 
   // step 2
-  public static final double innerGrabL2Position = 0.348;
+  public static final double innerGrabL2Position = 0.747;
 
   // step 3: L1 to deployed position
 

@@ -94,7 +94,7 @@ public class Intake extends SubsystemBase {
     // This method will be called once per scheduler run
     rollerSystemIO.updateInputs(rollerSystemInputs);
     hingeIO.updateInputs(hingeInputs);
-    // Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
+    Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
     Logger.processInputs("Subsystems/Intake/Hinge", hingeInputs);
     // Logger.recordOutput("Subsystems/Intake/Hinge/isDeployed", isDeployed());
     // Logger.recordOutput("Subsystems/Intake/Hinge/isStowed", isStowed());
@@ -189,6 +189,7 @@ public class Intake extends SubsystemBase {
 
   private void kick() {
     rollerSystemIO.setPower(IntakeConstants.RollerConstants.kickIntakeSpeed);
+    rollerSystemIO.setPower(0);
     if (MathUtil.isNear(
         IntakeConstants.HingeConstants.kickPosition,
         hingeIO.getPosition(),
@@ -200,6 +201,8 @@ public class Intake extends SubsystemBase {
         hingeIO.getPosition(),
         IntakeConstants.HingeConstants.nearPositionTolerance)) {
       // kick up
+      hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
+    } else {
       hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
     }
   }

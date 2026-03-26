@@ -15,28 +15,28 @@ public class Hopper extends SubsystemBase {
   private HopperIOInputsAutoLogged hopperInputs = new HopperIOInputsAutoLogged();
 
   private final Alert hopperMotorDisconnected;
+  // private final Alert joeCoderDisconnected;
   private final Alert stowedDetectorDisconnected;
 
   private SysIdRoutine sysID;
 
-  private boolean canMove = true;
+  private boolean recentlyStowed = true;
+  private boolean wasDeployed = false;
 
   public enum HopperWantedState {
     IDLE,
     STOW,
-    FORCE_STOW,
-    RESET,
     DEPLOY
   }
 
   private enum HopperCurrentState {
     IDLING,
-    STOWING_FAST,
-    STOWING_SLOW,
-    FORCEFULLY_STOWING,
+    HOLDING_IN,
+    STOWING_PID,
+    STOWING_POWER,
     STOWED,
-    RESETTING,
     DEPLOYING,
+    DEPLOYED
   }
 
   private HopperCurrentState currentState = HopperCurrentState.IDLING;
@@ -47,6 +47,7 @@ public class Hopper extends SubsystemBase {
     this.hopperIO = io;
 
     hopperMotorDisconnected = new Alert("Hopper Motor Disconnected", Alert.AlertType.kWarning);
+    // joeCoderDisconnected = new Alert("JoeCoder Disconnected", Alert.AlertType.kWarning);
     stowedDetectorDisconnected =
         new Alert("Stowed Detector Disconnected", Alert.AlertType.kWarning);
 
@@ -64,24 +65,28 @@ public class Hopper extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
     hopperIO.updateInputs(hopperInputs);
     Logger.processInputs("Subsystems/Hopper", hopperInputs);
     // Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
     // Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
-    if (newState != currentState
-        || (wantedState == HopperWantedState.STOW && !isStowed())
-        || (wantedState == HopperWantedState.FORCE_STOW && !isStowed())) {
+    if (newState != currentState || (wantedState == HopperWantedState.STOW && !isStowed())) {
       currentState = newState;
-      // Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
+      Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
     }
 
     // Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
 
+    // recently stowed logic
+    if (recentlyStowed && isStowed()) {
+      recentlyStowed = false;
+    }
+
+    // alerts
     hopperMotorDisconnected.set(!hopperInputs.motorConnected);
+    // joeCoderDisconnected.set(!hopperInputs.joeCoderConnected);
     stowedDetectorDisconnected.set(!hopperInputs.stowedDetectorConnected);
   }
 
@@ -90,44 +95,48 @@ public class Hopper extends SubsystemBase {
   }
 
   private HopperCurrentState handleStateTransitions() {
-    return switch (wantedState) {
-      case IDLE -> HopperCurrentState.IDLING;
-      case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW -> isStowed()
-          ? HopperCurrentState.IDLING
-          : hopperIO.getPosition() > HopperConstants.stowTargetPosition
-              ? HopperCurrentState.STOWING_SLOW
-              : HopperCurrentState.STOWING_FAST;
-
-      case FORCE_STOW -> isStowed()
-          ? HopperCurrentState.IDLING
-          : HopperCurrentState.FORCEFULLY_STOWING;
-      case RESET -> HopperCurrentState.RESETTING;
-    };
+    switch (wantedState) {
+      case IDLE:
+        return HopperCurrentState.IDLING;
+      case DEPLOY:
+        return isDeployed() ? HopperCurrentState.DEPLOYED : HopperCurrentState.DEPLOYING;
+      case STOW:
+        if (isStowed()) {
+          // wantedState = HopperWantedState.IDLE;
+          return HopperCurrentState.HOLDING_IN;
+        } else {
+          if (hopperIO.getPosition() < HopperConstants.stowTargetPosition) {
+            return HopperCurrentState.STOWING_POWER;
+          } else {
+            return HopperCurrentState.STOWING_PID;
+          }
+        }
+    }
+    return HopperCurrentState.IDLING;
   }
 
   private void applyStates() {
     switch (currentState) {
-      case DEPLOYING:
-        deploy();
-        break;
       case IDLING:
         idling();
         break;
-      case STOWING_FAST:
+      case HOLDING_IN:
+        holdIn();
+        break;
+      case DEPLOYING:
+        deploy();
+        break;
+      case DEPLOYED:
+        deployed();
+        break;
+      case STOWING_PID:
         stowFast();
         break;
-      case STOWING_SLOW:
+      case STOWING_POWER:
         stowSlow();
         break;
       case STOWED:
         stowed();
-        break;
-      case FORCEFULLY_STOWING:
-        forceStow();
-        break;
-      case RESETTING:
-        reset();
         break;
     }
   }
@@ -136,16 +145,23 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPosition(HopperConstants.extendedPos);
   }
 
+  private void holdIn() {
+    hopperIO.setPower(HopperConstants.holdHopperInPower);
+  }
+
+  private void deployed() {
+    wasDeployed = true;
+    hopperIO.setPower(0.0);
+  }
+
   private void stowFast() {
+    wasDeployed = false;
     hopperIO.setPosition(HopperConstants.stowTargetPosition);
   }
 
   private void stowSlow() {
+    wasDeployed = false;
     hopperIO.setPower(HopperConstants.slowStowingPower);
-  }
-
-  private void forceStow() {
-    hopperIO.setPower(HopperConstants.forceStowPower);
   }
 
   private void idling() {
@@ -153,36 +169,24 @@ public class Hopper extends SubsystemBase {
   }
 
   private void stowed() {
+    wasDeployed = false;
     hopperIO.setPower(0);
-  }
-
-  private void reset() {
-    hopperIO.setPower(-.2);
   }
 
   public boolean isDeployed() {
     return MathUtil.isNear(
-        HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+            HopperConstants.extendedPos,
+            hopperIO.getPosition(),
+            HopperConstants.atSetpointTolerance)
+        || wasDeployed;
   }
 
   public boolean isStowed() {
+    if (!recentlyStowed) {
+      recentlyStowed = true;
+      hopperIO.setEncoderPosition(0.0);
+    }
     return hopperIO.stowedDetectorTriggered();
-  }
-
-  public void zeroEncoder() {
-    hopperIO.resetPosition();
-  }
-
-  public void setDeployed() {
-    hopperIO.setEncoderPosition(HopperConstants.extendedPos);
-  }
-
-  public void setHopperCanMove(boolean canMove) {
-    this.canMove = canMove;
-  }
-
-  public boolean hopperCanMove() {
-    return canMove;
   }
 
   // testing only, remove later:

@@ -6,7 +6,7 @@ import edu.wpi.first.math.util.Units;
 
 public final class ShooterConstants {
 
-  public static final double loopPeriodSecs = 0.02;
+  // public static final double loopPeriodSecs = 0.02;
 
   public static Transform3d robotToTurret =
       new Transform3d(
@@ -15,26 +15,33 @@ public final class ShooterConstants {
           Units.inchesToMeters(18),
           Rotation3d.kZero);
 
+  public static double robotToTurretLinear = 6.3245553203;
+
   public static final double shootingDistanceDeadzones = 0.0;
+
+  public static final double maxAngleAdjustment = 5;
 
   public static final class HoodConstants {
 
     public static final int hoodID = 9;
     public static final int hoodEncoderID = 25;
 
-    public static final double hoodP = 10;
+    public static final double hoodP = 25;
     public static final double hoodI = 0;
-    public static final double hoodD = 0.1;
+    public static final double hoodD = 0.0;
     public static final double hoodS = 0.1;
-    public static final double hoodV = 0.0;
+    public static final double hoodV = 0.25;
     public static final double hoodG = 0.0;
 
-    public static final double acceleration = 4;
-    public static final double velocity = 2;
+    public static final double acceleration = 16;
+    public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.78;
-    public static final double hoodMinPos = 0.37;
+    public static final double hoodMaxPos = 0.75;
+    public static final double hoodMinPos = 0.055;
+
+    // ensure it is 0.01 above 0 when at minimum
+    public static final double offset = -0.45;
   }
 
   public static final class LauncherConstants {
@@ -50,7 +57,7 @@ public final class ShooterConstants {
 
     public static final double forwardVelocity = 50;
 
-    public static final double launcherAtSetpointTolerance = 20;
+    public static final double launcherAtSetpointTolerance = 3;
   }
 
   public static final class TurretConstants {
@@ -58,30 +65,19 @@ public final class ShooterConstants {
     public static final int turretID = 5;
     public static final int turretEncoderID = 30;
 
-    public static final double turretP = 30;
+    public static final double turretP = 32;
     public static final double turretI = 0;
     public static final double turretD = 0.25;
     public static final double turretS = 0.4;
     public static final double turretV = 0;
 
-    public static final double maxEncoderPosition = 0.85;
-    public static final double minEncoderPosition = 0.05;
+    public static final double maxEncoderPosition = 0.75;
+    public static final double minEncoderPosition = 0.25;
 
     public static final double forwardPosition = 0;
-    public static final double angleAtSetpointTolerance = 1;
+    public static final double angleAtSetpointTolerance = 3;
 
-    public static final double turretAcceleration = 12;
-    public static final double turretVelocity = 6;
-  }
-
-  public static final class KickerConstants {
-    public static final int kickerID = 6;
-
-    public static final double kickerP = 1.6687E-07;
-    public static final double kickerI = 0;
-    public static final double kickerD = 0;
-    public static final double kickerS = 0.38727;
-    public static final double kickerV = 0.0018981;
-    public static final double kickerA = 0.00017089;
+    public static final double turretAcceleration = 50;
+    public static final double turretVelocity = 25;
   }
 }

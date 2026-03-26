@@ -8,14 +8,15 @@ public interface HopperIO {
   @AutoLog
   class HopperIOInputs {
     public boolean motorConnected = false;
+    // public boolean joeCoderConnected = false;
     public boolean stowedDetectorConnected = false;
-    // public double stowedDetectorDistance;
     public boolean stowedDetectorTriggered = false;
     public double voltage;
     public double current;
     // public double velocity;
     // public double temperature;
-    public double position;
+    // public double joeCoderPosition;
+    public double motorPosition;
   }
 
   default void updateInputs(HopperIOInputs inputs) {}
@@ -25,8 +26,6 @@ public interface HopperIO {
   default double getPosition() {
     return 0.0;
   }
-
-  default void resetPosition() {}
 
   default void setEncoderPosition(double position) {}
 

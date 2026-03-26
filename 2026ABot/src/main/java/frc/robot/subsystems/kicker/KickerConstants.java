@@ -10,6 +10,6 @@ public class KickerConstants {
   public static final double V = 0.10976;
   public static final double A = 0.01112;
 
-  public static final double shootingVelocity = 60;
+  public static final double shootingVelocity = 20;
   public static final double shootingVelocityTolerance = 10;
 }

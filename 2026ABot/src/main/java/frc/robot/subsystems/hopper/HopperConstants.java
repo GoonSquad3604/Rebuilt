@@ -4,20 +4,24 @@ package frc.robot.subsystems.hopper;
 public class HopperConstants {
 
   public static final int motorID = 7;
+  public static final int joeCoderID = 33;
   public static final int stowedDetectorID = 47;
 
-  public static final double P = 0.6;
+  public static final double P = 10;
   public static final double I = 0;
   public static final double D = 0;
-  public static final double S = 0;
+  public static final double S = 0.0;
   public static final double V = 0;
   public static final double A = 0;
 
-  public static final double stowedDetectorTriggerDistance = 7000;
+  public static final double extendedPos = 44.6;
+  public static final double stowTargetPosition = 5;
+  public static final double slowStowingPower = -.25;
+  public static final double atSetpointTolerance = 0.10;
+  public static final double rampRate = 0.25;
 
-  public static final double extendedPos = -22;
-  public static final double stowTargetPosition = -1.5;
-  public static final double slowStowingPower = .35;
-  public static final double forceStowPower = .425;
-  public static final double atSetpointTolerance = 0.5;
+  public static final double holdHopperInPower = -0.05;
+
+  public static final double acceleration = 50;
+  public static final double velocity = 50;
 }
