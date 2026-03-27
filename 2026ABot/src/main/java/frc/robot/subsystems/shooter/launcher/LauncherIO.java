@@ -11,7 +11,7 @@ public interface LauncherIO {
     public double current;
     public double velocity;
     // public double temperature;
-    // public double position;
+    public double position;
   }
 
   default void updateInputs(LauncherIOInputs inputs) {}

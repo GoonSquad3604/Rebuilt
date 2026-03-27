@@ -189,7 +189,8 @@ public class Intake extends SubsystemBase {
 
   private void kick() {
     rollerSystemIO.setPower(IntakeConstants.RollerConstants.kickIntakeSpeed);
-    rollerSystemIO.setPower(0);
+    // rollerSystemIO.setPower(0);
+    lastTimestamp = Timer.getFPGATimestamp();
     if (MathUtil.isNear(
         IntakeConstants.HingeConstants.kickPosition,
         hingeIO.getPosition(),

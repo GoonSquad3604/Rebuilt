@@ -49,7 +49,7 @@ public class ShotCalculator {
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
-  private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
+  private static final InterpolatingDoubleTreeMap shotHoodPositionMap =
       new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap shotFlywheelSpeedMap =
       new InterpolatingDoubleTreeMap();
@@ -57,38 +57,36 @@ public class ShotCalculator {
       new InterpolatingDoubleTreeMap();
 
   static {
-    minDistance = 2;
-    maxDistance = 4;
+    minDistance = 0;
+    maxDistance = 999999;
     phaseDelay = 0.05;
 
-    shotFlywheelSpeedMap.put(2.02, 43.0);
-    shotFlywheelSpeedMap.put(2.23, 48.0);
-    shotFlywheelSpeedMap.put(2.60, 50.0);
-    shotFlywheelSpeedMap.put(2.80, 53.0);
-    shotFlywheelSpeedMap.put(2.83, 50.0);
-    shotFlywheelSpeedMap.put(2.95, 50.0); // ok
-    shotFlywheelSpeedMap.put(3.04, 55.0);
-    shotFlywheelSpeedMap.put(3.2, 57.0);
-    shotFlywheelSpeedMap.put(3.32, 60.0); // ok
-    shotFlywheelSpeedMap.put(3.4, 59.0);
-    shotFlywheelSpeedMap.put(3.61, 65.0);
-    shotFlywheelSpeedMap.put(3.8, 67.0);
-    shotFlywheelSpeedMap.put(4.0, 70.0);
+    shotFlywheelSpeedMap.put(0.94, 47.0); // min
+    shotFlywheelSpeedMap.put(1.34, 47.0);
+    shotFlywheelSpeedMap.put(1.67, 50.0);
+    shotFlywheelSpeedMap.put(1.8, 52.0);
+    shotFlywheelSpeedMap.put(2.29, 56.0);
+    shotFlywheelSpeedMap.put(2.84, 75.0);
+    shotFlywheelSpeedMap.put(3.15, 85.0);
+    shotFlywheelSpeedMap.put(3.66, 95.0); // max
 
-    timeOfFlightMap.put(2.02, 0.92);
-    timeOfFlightMap.put(2.23, 1.09);
-    timeOfFlightMap.put(2.6, 1.0);
-    timeOfFlightMap.put(2.8, 1.18);
-    timeOfFlightMap.put(2.95, 0.97); // ok
-    timeOfFlightMap.put(3.04, 1.19);
-    timeOfFlightMap.put(3.2, 1.2);
-    timeOfFlightMap.put(3.32, 1.08); // ok
-    timeOfFlightMap.put(3.4, 1.3);
-    timeOfFlightMap.put(3.61, 1.35);
-    timeOfFlightMap.put(3.8, 1.37);
-    timeOfFlightMap.put(4.0, 1.4);
+    timeOfFlightMap.put(0.94, 1.07); // min
+    timeOfFlightMap.put(1.34, 0.98);
+    timeOfFlightMap.put(1.67, 1.05);
+    timeOfFlightMap.put(1.8, 1.12);
+    timeOfFlightMap.put(2.29, 1.16);
+    timeOfFlightMap.put(2.84, 1.16);
+    timeOfFlightMap.put(3.15, 1.07);
+    timeOfFlightMap.put(3.66, 1.05); // max
 
-    shotHoodAngleMap.put(2.30, 0.1);
+    shotHoodPositionMap.put(0.94, 0.1); // min
+    shotHoodPositionMap.put(1.34, 0.3);
+    shotHoodPositionMap.put(1.67, 0.3);
+    shotHoodPositionMap.put(1.8, 0.3);
+    shotHoodPositionMap.put(2.29, 0.35);
+    shotHoodPositionMap.put(2.84, 0.5);
+    shotHoodPositionMap.put(3.15, 0.6);
+    shotHoodPositionMap.put(3.66, 0.725); // max
   }
 
   public ShootingParameters getParameters() {
@@ -198,11 +196,8 @@ public class ShotCalculator {
             (lookaheadTurretToTargetDistance >= minDistance
                     && lookaheadTurretToTargetDistance <= maxDistance)
                 || RobotState.getInstance().getTarget() != ShooterTarget.HUB,
-            // turretAngleRotation2d,
             360 - turretAngle,
-            // turretVelocity,
-            hoodPose,
-            // hoodVelocity,
+            shotHoodPositionMap.get(lookaheadTurretToTargetDistance),
             shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values
