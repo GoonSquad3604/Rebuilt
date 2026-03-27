@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -173,18 +174,18 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // autoChooser.addOption(
-    //     "Launcher SysId (Quasistatic Forward)",
-    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Launcher SysId (Quasistatic Reverse)",
-    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Launcher SysId (Dynamic Forward)",
-    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Launcher SysId (Dynamic Reverse)",
-    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Launcher SysId (Quasistatic Forward)",
+        shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Launcher SysId (Quasistatic Reverse)",
+        shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Launcher SysId (Dynamic Forward)",
+        shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Launcher SysId (Dynamic Reverse)",
+        shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Spindexer SysId (Quasistatic Forward)",
@@ -236,32 +237,6 @@ public class RobotContainer {
     //     "ClimberInner SysId (Dynamic Reverse)",
     //     climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // autoChooser.addOption(
-    //     "Turret SysId (Quasistatic Forward)",
-    //     shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Turret SysId (Quasistatic Reverse)",
-    //     shooter.turretSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Turret SysId (Dynamic Forward)",
-    //     shooter.turretSysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Turret SysId (Dynamic Reverse)",
-    // shooter.turretSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    // autoChooser.addOption(
-    //     "Hood SysId (Quasistatic Forward)",
-    //     shooter.hoodSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Hood SysId (Quasistatic Reverse)",
-    //     shooter.hoodSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Hood SysId (Dynamic Forward)",
-    // shooter.hoodSysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Hood SysId (Dynamic Reverse)",
-    // shooter.hoodSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -302,14 +277,15 @@ public class RobotContainer {
         .onFalse(superstructure.setWantedState(superstructure.getStateBeforeTrenchAlign()));
 
     // Lock to 45° when B button is held
-    // driverController
-    //     .b()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtClosest45(
-    //             drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
-
     driverController
         .b()
+        .whileTrue(
+            DriveCommands.joystickDriveAtClosest45(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+
+    // angle shooter side to hub when start is held
+    driverController
+        .start()
         .whileTrue(
             DriveCommands.joystickDriveAtAngleHub(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
@@ -317,9 +293,9 @@ public class RobotContainer {
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when start button is pressed
+    // Reset gyro to 0° when back button is pressed
     driverController
-        .start()
+        .back()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -328,8 +304,22 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController.back().onTrue(Commands.runOnce(() -> hopper.setPower(-.2)));
-    driverController.back().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
+    // driverController.povRight().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.075)));
+    // driverController.povRight().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    // driverController.povLeft().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.075)));
+    // driverController.povLeft().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+
+    driverController
+        .rightStick()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.TESTING_SHOOTING));
+
+    // driverController.rightStick().onTrue(Commands.runOnce(() ->
+    // shooter.setDashboardSetpoints()));
 
     // climb
     // driverController.povLeft().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_LEFT));

@@ -59,7 +59,7 @@ public class HoodIOPhoenix implements HoodIO {
 
     hoodMotorConfig = new TalonFXConfiguration();
 
-    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    hoodMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     // hoodMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
 
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;

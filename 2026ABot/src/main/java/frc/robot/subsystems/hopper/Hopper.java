@@ -105,11 +105,12 @@ public class Hopper extends SubsystemBase {
           // wantedState = HopperWantedState.IDLE;
           return HopperCurrentState.HOLDING_IN;
         } else {
-          if (hopperIO.getPosition() < HopperConstants.stowTargetPosition) {
-            return HopperCurrentState.STOWING_POWER;
-          } else {
-            return HopperCurrentState.STOWING_PID;
-          }
+          return HopperCurrentState.STOWING_POWER;
+          // if (hopperIO.getPosition() < HopperConstants.stowTargetPosition) {
+          //   return HopperCurrentState.STOWING_POWER;
+          // } else {
+          //   return HopperCurrentState.STOWING_PID;
+          // }
         }
     }
     return HopperCurrentState.IDLING;
@@ -146,7 +147,8 @@ public class Hopper extends SubsystemBase {
   }
 
   private void holdIn() {
-    hopperIO.setPower(HopperConstants.holdHopperInPower);
+    // hopperIO.setPower(HopperConstants.holdHopperInPower);
+    hopperIO.setPower(0.0);
   }
 
   private void deployed() {

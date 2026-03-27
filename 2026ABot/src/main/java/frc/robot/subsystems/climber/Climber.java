@@ -147,7 +147,7 @@ public class Climber extends SubsystemBase {
       }
     }
 
-    // SmartDashboard.putBoolean("climber deployed", isDeployed());
+    SmartDashboard.putBoolean("climber deployed", isDeployed());
     // SmartDashboard.putBoolean("climb can proceed", canProceed());
 
     // SmartDashboard.putBoolean("left Climb detected", climberIO.leftClimbDetected());
@@ -353,6 +353,12 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isDeployed() {
+    if (wantedState == ClimberWantedState.DEPLOY_OUTER) {
+      return MathUtil.isNear(
+          ClimberConstants.outerDeployedPosition,
+          climberIO.getOuterPosition(),
+          ClimberConstants.atSetpointTolerance);
+    }
     return MathUtil.isNear(
             ClimberConstants.innerDeployedPosition,
             climberIO.getInnerPosition(),

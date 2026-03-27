@@ -47,7 +47,7 @@ public class Shooter extends SubsystemBase {
   private boolean launcherAtSetpoint = false;
 
   private boolean beganFiring = false;
-  private boolean shooterIsReady = false;
+  // private boolean shooterIsReady = false;
 
   private double wantedHoodPosition;
   private double dashboardHoodPosition;
@@ -198,7 +198,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean reachedSetpoints() {
-    if (shootingParameters != null && wantedState == ShooterWantedState.SHOOT) {
+    if (shootingParameters != null
+        && (wantedState == ShooterWantedState.SHOOT
+            || wantedState == ShooterWantedState.TEST_SHOOT)) {
 
       // if override and shooting is forwards
       if (RobotState.getInstance().isOverride()
@@ -223,7 +225,7 @@ public class Shooter extends SubsystemBase {
                     ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)
                 || beganFiring;
 
-        return turretAtSetpoint && launcherAtSetpoint;
+        return turretAtSetpoint && launcherAtSetpoint && shootingParameters.isValid();
       }
     } else {
       return false;
@@ -235,7 +237,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void idling() {
-    shooterIsReady = false;
+    // shooterIsReady = false;
     hoodIO.setPower(0);
     launcherIO.setPower(0);
     turretIO.setPower(0);
@@ -246,7 +248,7 @@ public class Shooter extends SubsystemBase {
         ShooterConstants.LauncherConstants.forwardVelocity,
         launcherIO.getVelocity(),
         ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
-      shooterIsReady = true;
+      // shooterIsReady = true;
     }
     turretIO.setPosition(ShooterConstants.TurretConstants.forwardPosition);
     hoodIO.setPosition(ShooterConstants.HoodConstants.forwardPosition);
@@ -258,7 +260,7 @@ public class Shooter extends SubsystemBase {
         shootingParameters.flywheelSpeed(),
         launcherIO.getVelocity(),
         ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
-      shooterIsReady = true;
+      // shooterIsReady = true;
     }
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPose());
@@ -270,7 +272,7 @@ public class Shooter extends SubsystemBase {
         dashboardLauncherVelocity,
         launcherIO.getVelocity(),
         ShooterConstants.LauncherConstants.launcherAtSetpointTolerance)) {
-      shooterIsReady = true;
+      // shooterIsReady = true;
     }
     launcherIO.setVelocity(dashboardLauncherVelocity);
     hoodIO.setPosition(dashboardHoodPosition);
@@ -278,7 +280,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void trackTarget() {
-    shooterIsReady = false;
+    // shooterIsReady = false;
     turretIO.setAngle(shootingParameters.turretAngle());
     launcherIO.setPower(0);
     // hoodIO.setPosition(shootingParameters.hoodPose());
@@ -290,13 +292,13 @@ public class Shooter extends SubsystemBase {
     hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);
   }
 
-  public boolean getShooterIsReady() {
-    return shooterIsReady;
-  }
+  // public boolean getShooterIsReady() {
+  //   return shooterIsReady;
+  // }
 
-  public boolean validShootingLocation() {
-    return shootingParameters.isValid();
-  }
+  // public boolean validShootingLocation() {
+  //   return shootingParameters.isValid();
+  // }
 
   public void setBeganFiring(boolean newValue) {
     beganFiring = newValue;

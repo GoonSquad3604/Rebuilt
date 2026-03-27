@@ -90,12 +90,13 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            Commands.waitSeconds(0.5),
             Commands.parallel(
                 runPath("LeftStartToNeutralToClimb"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.6),
+                    Commands.waitSeconds(5.75),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(10),
+            Commands.waitSeconds(1.75),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("LeftClimb"),
@@ -107,12 +108,13 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            Commands.waitSeconds(0.5),
             Commands.parallel(
-                runPath("RightStartToNeutralZone"),
+                runPath("RightStartToNeutralToClimb"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.0),
+                    Commands.waitSeconds(5.8),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(8),
+            Commands.waitSeconds(2.3604),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("RightClimb"),
@@ -152,6 +154,20 @@ public class AutoFactory {
   private Command runPath(String pathName) {
     try {
       PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+      return AutoBuilder.followPath(path);
+    } catch (Exception e) {
+      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+      return Commands.none();
+    }
+  }
+
+  // if sent true, mirror path
+  private Command runPath(String pathName, boolean truE) {
+    try {
+      PathPlannerPath path =
+          truE
+              ? PathPlannerPath.fromPathFile(pathName).mirrorPath()
+              : PathPlannerPath.fromPathFile(pathName);
       return AutoBuilder.followPath(path);
     } catch (Exception e) {
       DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());

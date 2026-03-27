@@ -20,7 +20,7 @@
         "y": 6.665622775800712
       },
       "prevControl": {
-        "x": 0.47756605707923055,
+        "x": 0.4775660570792306,
         "y": 6.189647495476127
       },
       "nextControl": {
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -88.8982938843864
+    "rotation": -119.99999999999999
   },
   "reversed": false,
   "folder": "MiddleMainAuto",
