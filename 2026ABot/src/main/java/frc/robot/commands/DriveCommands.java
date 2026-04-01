@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
+import frc.robot.RobotState.ShooterTarget;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.AllianceFlipUtil;
@@ -174,19 +175,21 @@ public class DriveCommands {
               // calculate desired angle
               Supplier<Rotation2d> rotationSupplier;
 
+              Translation2d target;
+              if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
+                target =
+                    AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+              } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
+                target = AllianceFlipUtil.apply(new Translation2d(2.203, 6.125));
+              } else {
+                target = AllianceFlipUtil.apply(new Translation2d(2.203, 2.125));
+              }
+
               rotationSupplier =
                   () -> {
                     Pose2d pose = drive.getPose();
                     double rads =
-                        Math.atan2(
-                                AllianceFlipUtil.apply(
-                                            FieldConstants.Hub.topCenterPoint.toTranslation2d())
-                                        .getY()
-                                    - pose.getY(),
-                                AllianceFlipUtil.apply(
-                                            FieldConstants.Hub.topCenterPoint.toTranslation2d())
-                                        .getX()
-                                    - pose.getX())
+                        Math.atan2(target.getY() - pose.getY(), target.getX() - pose.getX())
                             + Math.PI;
                     return Rotation2d.fromRadians(rads);
                   };
@@ -474,12 +477,29 @@ public class DriveCommands {
   }
 
   private static double getTrenchY(Pose2d robotPose) {
-    if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
-      // left trench
-      return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+    if (DriverStation.getAlliance().get() == Alliance.Blue) {
+      if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
+        return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+      } else {
+        return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+      }
+    } else {
+      if (robotPose.getY() <= (FieldConstants.fieldWidth / 2.0)) {
+        return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+      } else {
+        return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+      }
     }
-    // right trench
-    return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+
+    //   // left trench
+    //   return DriverStation.getAlliance().get() == Alliance.Blue
+    //       ? AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint)
+    //       : AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+    // }
+    // // right trench
+    // return DriverStation.getAlliance().get() == Alliance.Blue
+    //     ? AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint)
+    //     : AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
   }
 
   public static Command alignToPose(Drive drive, Pose2d targetPose) {

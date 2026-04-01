@@ -5,12 +5,14 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.commands.DriveCommands;
@@ -62,7 +64,7 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
-  private final CommandXboxController testController = new CommandXboxController(2);
+//   private final CommandXboxController testController = new CommandXboxController(2);
   //   private final CommandJoystick pitBox = new CommandJoystick(3);
 
   // Dashboard inputs
@@ -249,7 +251,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    /* driver */
+    /* DRIVER */
 
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -260,7 +262,7 @@ public class RobotContainer {
             () -> -driverController.getRightX(),
             () -> driverController.getLeftTriggerAxis() > 0.05));
 
-    // align to trench when right bumper is held
+    // Align to trench when right bumper is held
     driverController
         .rightBumper()
         .whileTrue(
@@ -274,7 +276,7 @@ public class RobotContainer {
 
     driverController
         .rightBumper()
-        .onFalse(superstructure.setWantedState(superstructure.getStateBeforeTrenchAlign()));
+        .onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
 
     // Lock to 45° when B button is held
     driverController
@@ -283,19 +285,12 @@ public class RobotContainer {
             DriveCommands.joystickDriveAtClosest45(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
-    // angle shooter side to hub when start is held
-    driverController
-        .start()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngleHub(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
-
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when back button is pressed
+    // Reset gyro to 0° when start button is pressed
     driverController
-        .back()
+        .start()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -304,80 +299,8 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // driverController.povRight().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.075)));
-    // driverController.povRight().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    // driverController.povLeft().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.075)));
-    // driverController.povLeft().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    driverController
-        .rightStick()
-        .onTrue(
-            Commands.either(
-                superstructure.setWantedState(WantedSuperState.STOPPED),
-                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
-                () -> superstructure.getCurrentSuperState() == CurrentSuperState.TESTING_SHOOTING));
-
-    // driverController.rightStick().onTrue(Commands.runOnce(() ->
-    // shooter.setDashboardSetpoints()));
-
-    // climb
-    // driverController.povLeft().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_LEFT));
-    // driverController.povLeft().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
-
-    // driverController.povRight().onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_RIGHT));
-    // driverController.povRight().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
-
-    // driverController
-    //     .povLeft()
-    //     .whileTrue(
-    //         Commands.defer(() -> drive.pathfindToClimb(true), Set.of(drive))
-    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbFirstPose))
-    //             .until(
-    //                 () ->
-    //
-    // RobotState.getInstance().atDrivePosition(DriveConstants.leftClimbFirstPose))
-    //             .andThen(DriveCommands.alignToPose(drive, DriveConstants.leftClimbPos)));
-
-    // driverController
-    //     .povLeft()
-    //     .whileTrue(
-    //         DriveCommands.alignToClimbX(
-    //                 drive,
-    //                 () -> -driverController.getLeftY(),
-    //                 () -> -driverController.getLeftX(),
-    //                 () -> -driverController.getRightX(),
-    //                 () -> driverController.getLeftTriggerAxis() > 0.05)
-    //             .until(() -> climber.sensorsValid())
-    //             .andThen(
-    //                 DriveCommands.alignToPose(
-    //                     drive,
-    //                     AllianceFlipUtil.apply(
-    //                         new Pose2d(
-    //                             DriveConstants.climbX,
-    //                             DriveConstants.climbLeftY,
-    //                             Rotation2d.fromDegrees(-90))))));
-
-    // driverController
-    //     .povRight()
-    //     .whileTrue(
-    //         DriveCommands.alignToClimbX(
-    //                 drive,
-    //                 () -> -driverController.getLeftY(),
-    //                 () -> -driverController.getLeftX(),
-    //                 () -> -driverController.getRightX(),
-    //                 () -> driverController.getLeftTriggerAxis() > 0.05)
-    //             .until(() -> climber.sensorsValid())
-    //             .andThen(
-    //                 DriveCommands.alignToPose(
-    //                     drive,
-    //                     AllianceFlipUtil.apply(
-    //                         new Pose2d(
-    //                             DriveConstants.climbX,
-    //                             DriveConstants.climbRightY,
-    //                             Rotation2d.fromDegrees(-90))))));
-
-    // toggle intake mode
+    // Toggle intake mode
     driverController
         .rightTrigger()
         .onTrue(
@@ -394,7 +317,7 @@ public class RobotContainer {
                     () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
-    // climber testing
+    // Climber testing
     driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-.8)));
     driverController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
@@ -407,14 +330,21 @@ public class RobotContainer {
     driverController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-.8)));
     driverController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
-    /* operator */
+    /* OPERATOR */
 
-    // manual target
+    // Toggle manual targeting
     operatorButtonBox.button(1).onTrue(RobotState.getInstance().toggleManualShooting());
     operatorButtonBox
         .button(2)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
-    operatorButtonBox.button(3).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
+    // operatorButtonBox.button(3).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
+    operatorButtonBox
+        .button(3)
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                superstructure.setWantedState(WantedSuperState.EJECT),
+                () -> superstructure.getCurrentSuperState() == CurrentSuperState.EJECTING));
     operatorButtonBox
         .button(4)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
@@ -422,18 +352,15 @@ public class RobotContainer {
         .button(5)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
 
-    // force stow intake/hopper
-    // operatorButtonBox.button(6).onTrue(superstructure.setWantedState(WantedSuperState.FORCE_STOW));
-
-    // stow intake/hopper
+    // Stow intake/hopper
     operatorButtonBox.button(6).onTrue(superstructure.setWantedState(WantedSuperState.STOW));
 
-    // stop tracking
+    // Toggle tracking
     operatorButtonBox
         .button(7)
-        .onTrue(superstructure.setWantedState(WantedSuperState.STOP_TRACKING));
+        .onTrue(superstructure.toggleTracking());
 
-    // reset
+    // Reset
     operatorButtonBox
         .button(8)
         .onTrue(
@@ -441,41 +368,14 @@ public class RobotContainer {
                 .setWantedState(WantedSuperState.STOPPED)
                 .andThen(Commands.runOnce(() -> climber.resetClimbStep())));
 
+    // Declimb
     operatorButtonBox.button(9).onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB));
 
-    // operatorButtonBox
-    //     .button(10)
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () ->
-    //                 superstructure
-    //                     .setWantedState(WantedSuperState.STOW)
-    //                     .until(() -> hopper.isStowed())
-    //                     .andThen(Commands.runOnce(() -> climber.progressManualClimb()))));
-
+    // Progress manual climb
     operatorButtonBox
         .button(10)
         .and(() -> hopper.isStowed())
         .onTrue(Commands.runOnce(() -> climber.progressManualClimb()));
-
-    // run shooter / set hood pos
-    // operatorButtonBox
-    //     .button(9)
-    //     .onTrue(
-    //         Commands.either(
-    //             superstructure.setWantedState(WantedSuperState.STOPPED),
-    //             superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
-    //             () -> superstructure.getCurrentSuperState() ==
-    // CurrentSuperState.TESTING_SHOOTING));
-
-    // operatorButtonBox
-    //     .button(9)
-    //     .onFalse(
-    //         Commands.runOnce(() -> shooter.setLauncherPower(0))
-    //             .alongWith(Commands.runOnce(() -> kicker.setPower(0))));
-
-    // set climb mode
-    // operatorButtonBox.button(10).onTrue(superstructure.setWantedState(WantedSuperState.CLIMB));
 
     // toggle shoot mode
     operatorButtonBox
@@ -498,24 +398,24 @@ public class RobotContainer {
     /* test controller */
 
     // hopper in
-    testController.leftBumper().onTrue(Commands.runOnce(() -> hopper.setPower(0.2)));
-    testController.leftBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
+    // testController.leftBumper().onTrue(Commands.runOnce(() -> hopper.setPower(0.2)));
+    // testController.leftBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
 
     // hopper out
-    testController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.2)));
-    testController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
+    // testController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.2)));
+    // testController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
 
-    testController.x().onTrue(Commands.runOnce(() -> shooter.setMagicHoodPosition(0.3)));
-    testController.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // testController.x().onTrue(Commands.runOnce(() -> shooter.setMagicHoodPosition(0.3)));
+    // testController.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController.b().onTrue(superstructure.setWantedState(WantedSuperState.TEST_SHOOT));
-    testController.b().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+    // testController.b().onTrue(superstructure.setWantedState(WantedSuperState.TEST_SHOOT));
+    // testController.b().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
 
-    testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
-    testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
+    // testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
-    testController.a().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
-    testController.a().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
+    // testController.a().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
+    // testController.a().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
 
     // run kicker/spindexer/shooter
     // testController

@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -37,7 +33,7 @@ public class Superstructure extends SubsystemBase {
   private final Spindexer spindexer;
 
   private boolean tracking = true;
-  private WantedSuperState stateBeforeTrenchAlign;
+  private boolean beganFiring = false;
 
   public enum WantedSuperState {
     STOPPED,
@@ -51,8 +47,8 @@ public class Superstructure extends SubsystemBase {
     DECLIMB,
     EJECT,
     TEST_SHOOT,
-    STOP_TRACKING,
-    ALIGN_TO_TRENCH
+    ALIGN_TO_TRENCH,
+    CLEAN
   }
 
   public enum CurrentSuperState {
@@ -67,8 +63,8 @@ public class Superstructure extends SubsystemBase {
     DECLIMBING,
     EJECTING,
     TESTING_SHOOTING,
-    QUITTING_TRACKING,
-    ALIGNING_TO_TRENCH
+    ALIGNING_TO_TRENCH,
+    CLEANING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -130,10 +126,6 @@ public class Superstructure extends SubsystemBase {
   }
 
   public Command setWantedState(WantedSuperState state) {
-    if (state == WantedSuperState.ALIGN_TO_TRENCH
-        && stateBeforeTrenchAlign != WantedSuperState.ALIGN_TO_TRENCH) {
-      stateBeforeTrenchAlign = wantedSuperState;
-    }
     return Commands.runOnce(() -> wantedSuperState = state);
   }
 
@@ -154,8 +146,8 @@ public class Superstructure extends SubsystemBase {
       case STOW -> CurrentSuperState.STOWING;
       case EJECT -> CurrentSuperState.EJECTING;
       case TEST_SHOOT -> CurrentSuperState.TESTING_SHOOTING;
-      case STOP_TRACKING -> CurrentSuperState.QUITTING_TRACKING;
       case ALIGN_TO_TRENCH -> CurrentSuperState.ALIGNING_TO_TRENCH;
+      case CLEAN -> CurrentSuperState.CLEANING;
     };
   }
 
@@ -169,6 +161,9 @@ public class Superstructure extends SubsystemBase {
         break;
       case SHOOTING:
         shoot();
+        break;
+      case STOWING:
+        stow();
         break;
       case INTAKING_AND_SHOOTING:
         intakeAndShoot();
@@ -185,42 +180,38 @@ public class Superstructure extends SubsystemBase {
       case DECLIMBING:
         declimb();
         break;
-      case STOWING:
-        stow();
-        break;
+      
       case EJECTING:
         eject();
         break;
       case TESTING_SHOOTING:
         testShoot();
         break;
-      case QUITTING_TRACKING:
-        quitTracking();
-        break;
       case ALIGNING_TO_TRENCH:
         alignToTrench();
+        break;
+      case CLEANING:
+        clean();
         break;
     }
   }
 
   private void stopped() {
-    shooter.setBeganFiring(false);
-    // climber.setWantedState(ClimberWantedState.IDLE);
+    beganFiring = false;
+    climber.setWantedState(ClimberWantedState.STOW);
     // hopper.setWantedState(HopperWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
-    if (tracking) {
-      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
-    } else {
+    if(tracking)
+      shooter.setWantedState(ShooterWantedState.TRENCH);
+    else
       shooter.setWantedState(ShooterWantedState.IDLE);
-    }
     spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
   private void intake() {
-    shooter.setBeganFiring(false);
+    beganFiring = false;
 
-    // climber.setWantedState(ClimberWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
     if (tracking) {
       shooter.setWantedState(ShooterWantedState.TRENCH);
@@ -230,25 +221,23 @@ public class Superstructure extends SubsystemBase {
     spindexer.setWantedState(SpindexerWantedState.IDLE);
 
     if (climber.isStowed()) {
+      climber.setWantedState(ClimberWantedState.IDLE);
       if (!hopper.isDeployed()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {
         intake.setWantedState(IntakeWantedState.INTAKE);
       }
+    }else {
+      climber.setWantedState(ClimberWantedState.STOW);
     }
   }
 
   private void stow() {
-    // climber.setWantedState(ClimberWantedState.IDLE);
-    shooter.setBeganFiring(false);
-    kicker.setWantedState(KickerWantedState.IDLE);
-    if (tracking) {
-      shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
-    } else {
-      shooter.setWantedState(ShooterWantedState.IDLE);
-    }
-    spindexer.setWantedState(SpindexerWantedState.IDLE);
+    beganFiring = false;
+    kicker.setWantedState(KickerWantedState.REV);
+    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    shooter.setWantedState(ShooterWantedState.EJECT);
 
     if (!intake.isStowed()) {
       intake.setWantedState(IntakeWantedState.STOW);
@@ -263,21 +252,23 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void shoot() {
-    // climber.setWantedState(ClimberWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
     if (climber.isStowed()) {
+      climber.setWantedState(ClimberWantedState.IDLE);
       if (!hopper.isDeployed()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {
         intake.setWantedState(IntakeWantedState.KICK);
       }
+    }else {
+      climber.setWantedState(ClimberWantedState.STOW);
     }
 
-    if (shooter.reachedSetpoints()) {
-      shooter.setBeganFiring(true);
+    if (shooter.reachedSetpoints() || beganFiring) {
+      beganFiring = false;
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
@@ -285,21 +276,23 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void intakeAndShoot() {
-    // climber.setWantedState(ClimberWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
     if (climber.isStowed()) {
+      climber.setWantedState(ClimberWantedState.IDLE);
       if (!hopper.isDeployed()) {
         hopper.setWantedState(HopperWantedState.DEPLOY);
         intake.setWantedState(IntakeWantedState.STOW);
       } else {
         intake.setWantedState(IntakeWantedState.INTAKE);
       }
+    }else {
+      climber.setWantedState(ClimberWantedState.STOW);
     }
 
-    if (shooter.reachedSetpoints()) {
-      shooter.setBeganFiring(true);
+    if (shooter.reachedSetpoints() || beganFiring) {
+      beganFiring = true;
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
@@ -308,7 +301,7 @@ public class Superstructure extends SubsystemBase {
 
   private void climb() {
     shooter.setWantedState(ShooterWantedState.IDLE);
-    shooter.setBeganFiring(false);
+    beganFiring = false;
     spindexer.setWantedState(SpindexerWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
 
@@ -330,7 +323,8 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void setUpAutoClimb() {
-    shooter.setBeganFiring(false);
+    beganFiring = false;
+
     shooter.setWantedState(ShooterWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
@@ -368,19 +362,18 @@ public class Superstructure extends SubsystemBase {
 
   private void eject() {
     shooter.setWantedState(ShooterWantedState.SHOOT);
-    // hopper.setWantedState(HopperWantedState.RESET);
+    hopper.setWantedState(HopperWantedState.DEPLOY);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
     kicker.setWantedState(KickerWantedState.REV);
     intake.setWantedState(IntakeWantedState.VOMIT);
   }
 
   private void testShoot() {
-
     shooter.setWantedState(ShooterWantedState.TEST_SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
-    if (shooter.reachedSetpoints()) {
-      shooter.setBeganFiring(true);
+    if (shooter.reachedSetpoints() || beganFiring) {
+      beganFiring = true;
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
@@ -396,22 +389,32 @@ public class Superstructure extends SubsystemBase {
     }
   }
 
-  private void quitTracking() {
-    shooter.setWantedState(ShooterWantedState.IDLE);
-    tracking = !tracking;
-    wantedSuperState = WantedSuperState.STOPPED;
+  private void clean() {
+    shooter.setWantedState(ShooterWantedState.CLEAN);
+    kicker.setWantedState(KickerWantedState.CLEAN);
+    spindexer.setWantedState(SpindexerWantedState.CLEAN);
+    if (!hopper.isDeployed()) {
+      hopper.setWantedState(HopperWantedState.DEPLOY);
+      intake.setWantedState(IntakeWantedState.STOW);
+    } else {
+      intake.setWantedState(IntakeWantedState.CLEAN);
+    }
   }
 
   private void alignToTrench() {
-    shooter.setBeganFiring(false);
+    beganFiring = false;
     shooter.setWantedState(ShooterWantedState.TRENCH);
+  }
+
+
+  // helper methods
+
+  public Command toggleTracking() {
+    return Commands.runOnce(() -> tracking = !tracking);
   }
 
   public boolean climberDeployed() {
     return climber.isDeployed();
   }
 
-  public WantedSuperState getStateBeforeTrenchAlign() {
-    return stateBeforeTrenchAlign;
-  }
 }

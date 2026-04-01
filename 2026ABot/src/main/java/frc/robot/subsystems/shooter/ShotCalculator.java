@@ -20,12 +20,12 @@ public class ShotCalculator {
   // private final LinearFilter turretAngleFilter = LinearFilter.movingAverage((int) (0.1 / .02));
 
   // private double isValid;
-  private Rotation2d lastTurretAngle;
-  private double adjustment;
+  // private Rotation2d lastTurretAngle;
+  // private double adjustment;
   // private double lastHoodPose;
   // private Rotation2d turretAngleRotation2d;
   private double turretAngle;
-  private double hoodPose = Double.NaN;
+  // private double hoodPose = Double.NaN;
   // private double turretVelocity;
   // private double hoodVelocity;
 
@@ -35,7 +35,7 @@ public class ShotCalculator {
   }
 
   public record ShootingParameters(
-      boolean isValid,
+      boolean validShootingLocation,
       // Rotation2d turretAngleRotation2d,
       double turretAngle,
       // double turretVelocity,
@@ -58,7 +58,7 @@ public class ShotCalculator {
 
   static {
     minDistance = 0;
-    maxDistance = 999999;
+    maxDistance = 3.85;
     phaseDelay = 0.05;
 
     shotFlywheelSpeedMap.put(0.94, 47.0); // min
@@ -171,9 +171,9 @@ public class ShotCalculator {
     } else if (turretAngle < 0) {
       turretAngle += 360;
     }
-    if (lastTurretAngle == null) lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
-    lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
-    hoodPose = ShooterConstants.HoodConstants.hoodMaxPos;
+    // if (lastTurretAngle == null) lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
+    // lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
+    // hoodPose = ShooterConstants.HoodConstants.hoodMaxPos;
     // turretVelocity =
     //     turretAngleFilter.calculate(
     //         Rotation2d.fromDegrees(turretAngle).minus(lastTurretAngle).getRadians() / 0.02);

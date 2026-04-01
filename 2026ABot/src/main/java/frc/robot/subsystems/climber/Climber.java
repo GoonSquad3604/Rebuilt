@@ -408,24 +408,23 @@ public class Climber extends SubsystemBase {
         // case 2:
         //   climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
         //   break;
-        // case 2:
-        //   // inner hooks hooked low rung, deploy outer
-        //   climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
-        //   break;
       case 2:
-        // ready to pull up on mid rung
+        // preparing to pull up on mid rung
         climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
-        climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
         break;
       case 3:
+        // ready to pull up on mid rung
+        climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
+        break;
+      case 4:
         // hook with outer rungs
         climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
         break;
-      case 4:
+      case 5:
         // outer should have attached, release inner
         climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
         break;
-      case 5:
+      case 6:
         // pull up on high rung
         climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
         climberIO.setInnerPower(0.0);

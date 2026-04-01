@@ -41,7 +41,7 @@ public final class ShooterConstants {
     public static final double hoodMinPos = 0.05;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.035;
+    public static final double offset = -.072;
   }
 
   public static final class LauncherConstants {
@@ -56,6 +56,7 @@ public final class ShooterConstants {
     public static final double launcherA = 0.041093;
 
     public static final double forwardVelocity = 50;
+    public static final double cleanSpeed = 0.1;
 
     public static final double launcherAtSetpointTolerance = 3;
   }
@@ -75,7 +76,7 @@ public final class ShooterConstants {
     public static final double minEncoderPosition = 0.25;
 
     public static final double forwardPosition = 0;
-    public static final double angleAtSetpointTolerance = 3;
+    public static final double angleAtSetpointTolerance = 30;
 
     public static final double turretAcceleration = 50;
     public static final double turretVelocity = 25;

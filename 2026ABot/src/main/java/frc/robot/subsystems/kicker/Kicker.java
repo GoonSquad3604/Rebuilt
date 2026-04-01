@@ -21,12 +21,14 @@ public class Kicker extends SubsystemBase {
 
   public enum KickerWantedState {
     IDLE,
-    REV
+    REV,
+    CLEAN
   }
 
   public enum KickerCurrentState {
     IDLING,
     REVVING,
+    CLEANING
   }
 
   private KickerCurrentState currentState = KickerCurrentState.IDLING;
@@ -76,6 +78,7 @@ public class Kicker extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> KickerCurrentState.IDLING;
       case REV -> KickerCurrentState.REVVING;
+      case CLEAN -> KickerCurrentState.CLEANING;
     };
   }
 
@@ -87,6 +90,9 @@ public class Kicker extends SubsystemBase {
       case REVVING:
         rev();
         break;
+      case CLEANING:
+        clean();
+        break;
     }
   }
 
@@ -96,6 +102,10 @@ public class Kicker extends SubsystemBase {
 
   private void rev() {
     kickerIO.setVelocity(KickerConstants.shootingVelocity);
+  }
+
+  private void clean() {
+    kickerIO.setPower(KickerConstants.cleanSpeed);
   }
 
   public boolean atVelocity() {

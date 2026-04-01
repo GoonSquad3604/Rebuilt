@@ -39,7 +39,7 @@ public final class ClimberConstants {
   public static final double checkClimbL1Position = 0.547;
 
   // step 2
-  public static final double innerGrabL2Position = 0.747;
+  public static final double innerGrabL2Position = 0.360;
 
   // step 3: L1 to deployed position
 

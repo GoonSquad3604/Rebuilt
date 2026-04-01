@@ -29,7 +29,10 @@ public class AutoChooser extends SendableChooser<Autos> {
           new AutoProgram(Autos.RIGHT, "Right", AutoFactory::createRightAuto),
           new AutoProgram(Autos.LEFT_NO_CLIMB, "LeftNoClimb", AutoFactory::createLeftNoClimbAuto),
           new AutoProgram(
-              Autos.RIGHT_NO_CLIMB, "RightNoClimb", AutoFactory::createRightNoClimbAuto));
+              Autos.RIGHT_NO_CLIMB, "RightNoClimb", AutoFactory::createRightNoClimbAuto),
+          new AutoProgram(
+              Autos.LEFT_DOUBLE_SWIPE, "LeftDoubleSwipe", AutoFactory::createLeftDoubleSwipeAuto),
+          new AutoProgram(Autos.CHAOS, "chaos", AutoFactory::createChaosAuto));
 
   private final Map<Autos, AutoProgram> programs;
   private final Map<DriverStation.Alliance, Map<Autos, Pair<Pose2d, Command>>> commandCache;

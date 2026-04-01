@@ -16,12 +16,12 @@ public class HopperConstants {
 
   public static final double extendedPos = 101.9;
   public static final double stowTargetPosition = 5;
-  public static final double slowStowingPower = -.45;
+  public static final double slowStowingPower = -.6;
   public static final double atSetpointTolerance = 0.10;
   public static final double rampRate = 0.25;
 
   public static final double holdHopperInPower = -0.05;
 
-  public static final double acceleration = 50;
-  public static final double velocity = 50;
+  public static final double acceleration = 200;
+  public static final double velocity = 100;
 }

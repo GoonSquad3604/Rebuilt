@@ -20,12 +20,14 @@ public class Spindexer extends SubsystemBase {
 
   public enum SpindexerWantedState {
     IDLE,
-    SPIN
+    SPIN,
+    CLEAN
   }
 
   private enum SpindexerCurrentState {
     IDLING,
-    SPINNING
+    SPINNING,
+    CLEANING
   }
 
   private SpindexerCurrentState currentState = SpindexerCurrentState.IDLING;
@@ -77,6 +79,7 @@ public class Spindexer extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> SpindexerCurrentState.IDLING;
       case SPIN -> SpindexerCurrentState.SPINNING;
+      case CLEAN -> SpindexerCurrentState.CLEANING;
     };
   }
 
@@ -88,6 +91,9 @@ public class Spindexer extends SubsystemBase {
       case SPINNING:
         spin();
         break;
+      case CLEANING:
+        clean();
+        break;
     }
   }
 
@@ -97,6 +103,10 @@ public class Spindexer extends SubsystemBase {
 
   private void spin() {
     spindexerIO.setVelocity(SpindexerConstants.spinVelocity);
+  }
+
+  private void clean() {
+    spindexerIO.setPower(SpindexerConstants.cleanSpeed);
   }
 
   // testing only, remove later:
