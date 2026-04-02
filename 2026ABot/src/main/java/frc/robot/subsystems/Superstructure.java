@@ -180,7 +180,7 @@ public class Superstructure extends SubsystemBase {
       case DECLIMBING:
         declimb();
         break;
-      
+
       case EJECTING:
         eject();
         break;
@@ -202,10 +202,8 @@ public class Superstructure extends SubsystemBase {
     // hopper.setWantedState(HopperWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
-    if(tracking)
-      shooter.setWantedState(ShooterWantedState.TRENCH);
-    else
-      shooter.setWantedState(ShooterWantedState.IDLE);
+    if (tracking) shooter.setWantedState(ShooterWantedState.TRENCH);
+    else shooter.setWantedState(ShooterWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
   }
 
@@ -228,7 +226,7 @@ public class Superstructure extends SubsystemBase {
       } else {
         intake.setWantedState(IntakeWantedState.INTAKE);
       }
-    }else {
+    } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
   }
@@ -263,7 +261,7 @@ public class Superstructure extends SubsystemBase {
       } else {
         intake.setWantedState(IntakeWantedState.KICK);
       }
-    }else {
+    } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
 
@@ -287,7 +285,7 @@ public class Superstructure extends SubsystemBase {
       } else {
         intake.setWantedState(IntakeWantedState.INTAKE);
       }
-    }else {
+    } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
 
@@ -372,12 +370,12 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.TEST_SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
 
-    if (shooter.reachedSetpoints() || beganFiring) {
-      beganFiring = true;
-      spindexer.setWantedState(SpindexerWantedState.SPIN);
-    } else {
-      spindexer.setWantedState(SpindexerWantedState.IDLE);
-    }
+    // if (shooter.reachedSetpoints() || beganFiring) {
+    //   beganFiring = true;
+    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    // } else {
+    //   spindexer.setWantedState(SpindexerWantedState.IDLE);
+    // }
 
     if (climber.isStowed()) {
       if (!hopper.isDeployed()) {
@@ -406,7 +404,6 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.TRENCH);
   }
 
-
   // helper methods
 
   public Command toggleTracking() {
@@ -416,5 +413,4 @@ public class Superstructure extends SubsystemBase {
   public boolean climberDeployed() {
     return climber.isDeployed();
   }
-
 }

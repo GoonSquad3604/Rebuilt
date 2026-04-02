@@ -44,7 +44,7 @@ public final class ShooterConstants {
     public static final double offset = -.072;
   }
 
-  public static final class LauncherConstants {
+  public static final class PrimaryLauncherConstants {
 
     public static final int launcherID = 14;
 
@@ -61,6 +61,23 @@ public final class ShooterConstants {
     public static final double launcherAtSetpointTolerance = 3;
   }
 
+  public static final class SecondaryLauncherConstants {
+
+    public static final int motorID = 9;
+
+    public static final double P = 0.010244;
+    public static final double I = 0;
+    public static final double D = 0;
+    public static final double S = 0.36956;
+    public static final double V = 0.1017;
+    public static final double A = 0.0032915;
+
+    public static final double forwardVelocity = 50;
+    public static final double cleanSpeed = 0.1;
+
+    public static final double atSetpointTolerance = 3;
+  }
+
   public static final class TurretConstants {
 
     public static final int turretID = 5;
@@ -72,8 +89,8 @@ public final class ShooterConstants {
     public static final double turretS = 0.4;
     public static final double turretV = 0;
 
-    public static final double maxEncoderPosition = 0.75;
-    public static final double minEncoderPosition = 0.25;
+    public static final double maxEncoderPosition = 0.927; // .75 for 180
+    public static final double minEncoderPosition = 0.06; // .25 for 180
 
     public static final double forwardPosition = 0;
     public static final double angleAtSetpointTolerance = 30;

@@ -5,14 +5,12 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.commands.DriveCommands;
@@ -33,8 +31,8 @@ import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIOPhoenix;
 import frc.robot.subsystems.shooter.*;
-import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
-import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
+import frc.robot.subsystems.shooter.primaryLauncher.PrimaryLauncherIOPhoenix;
+import frc.robot.subsystems.shooter.secondaryLauncher.SecondaryLauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIOPhoenix;
@@ -64,7 +62,7 @@ public class RobotContainer {
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandJoystick operatorButtonBox = new CommandJoystick(1);
-//   private final CommandXboxController testController = new CommandXboxController(2);
+  private final CommandXboxController testController = new CommandXboxController(2);
   //   private final CommandJoystick pitBox = new CommandJoystick(3);
 
   // Dashboard inputs
@@ -93,7 +91,11 @@ public class RobotContainer {
     climber = new Climber(new ClimberIOPhoenix());
     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
     kicker = new Kicker(new KickerIOPhoenix());
-    shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
+    shooter =
+        new Shooter(
+            /*new HoodIOPhoenix(),*/ new PrimaryLauncherIOPhoenix(),
+            new SecondaryLauncherIOPhoenix(),
+            new TurretIOPhoenix());
     spindexer = new Spindexer(new SpindexerIOPhoenix());
     superstructure = new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
 
@@ -177,17 +179,30 @@ public class RobotContainer {
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     autoChooser.addOption(
-        "Launcher SysId (Quasistatic Forward)",
-        shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        "Primary Launcher SysId (Quasistatic Forward)",
+        shooter.primaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Launcher SysId (Quasistatic Reverse)",
-        shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        "Primary Launcher SysId (Quasistatic Reverse)",
+        shooter.primaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-        "Launcher SysId (Dynamic Forward)",
-        shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kForward));
+        "Primary Launcher SysId (Dynamic Forward)",
+        shooter.primaryLauncherSysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
-        "Launcher SysId (Dynamic Reverse)",
-        shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
+        "Primary Launcher SysId (Dynamic Reverse)",
+        shooter.primaryLauncherSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    autoChooser.addOption(
+        "Secondary Launcher SysId (Quasistatic Forward)",
+        shooter.secondaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Secondary Launcher SysId (Quasistatic Reverse)",
+        shooter.secondaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Secondary Launcher SysId (Dynamic Forward)",
+        shooter.secondaryLauncherSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Secondary Launcher SysId (Dynamic Reverse)",
+        shooter.secondaryLauncherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Spindexer SysId (Quasistatic Forward)",
@@ -274,9 +289,7 @@ public class RobotContainer {
                     () -> driverController.getLeftTriggerAxis() > 0.05)
                 .alongWith(superstructure.setWantedState(WantedSuperState.ALIGN_TO_TRENCH)));
 
-    driverController
-        .rightBumper()
-        .onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+    driverController.rightBumper().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
 
     // Lock to 45° when B button is held
     driverController
@@ -298,7 +311,6 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
-
 
     // Toggle intake mode
     driverController
@@ -356,9 +368,7 @@ public class RobotContainer {
     operatorButtonBox.button(6).onTrue(superstructure.setWantedState(WantedSuperState.STOW));
 
     // Toggle tracking
-    operatorButtonBox
-        .button(7)
-        .onTrue(superstructure.toggleTracking());
+    operatorButtonBox.button(7).onTrue(superstructure.toggleTracking());
 
     // Reset
     operatorButtonBox
@@ -397,40 +407,17 @@ public class RobotContainer {
 
     /* test controller */
 
-    // hopper in
-    // testController.leftBumper().onTrue(Commands.runOnce(() -> hopper.setPower(0.2)));
-    // testController.leftBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
-
-    // hopper out
-    // testController.rightBumper().onTrue(Commands.runOnce(() -> hopper.setPower(-0.2)));
-    // testController.rightBumper().onFalse(Commands.runOnce(() -> hopper.setPower(0.0)));
-
-    // testController.x().onTrue(Commands.runOnce(() -> shooter.setMagicHoodPosition(0.3)));
-    // testController.x().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // testController.b().onTrue(superstructure.setWantedState(WantedSuperState.TEST_SHOOT));
-    // testController.b().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
-
-    // testController.y().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.05)));
-    // testController.y().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // testController.a().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.05)));
-    // testController.a().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // run kicker/spindexer/shooter
-    // testController
-    //     .b()
-    //     .onTrue(
-    //         Commands.runOnce(() -> spindexer.setVelocity(SpindexerConstants.spinVelocity))
-    //             .andThen(
-    //                 Commands.runOnce(() ->
-    // kicker.setVelocity(KickerConstants.shootingVelocity))));
-
-    // testController
-    //     .b()
-    //     .onFalse(
-    //         Commands.runOnce(() -> spindexer.setPower(0))
-    //             .andThen(Commands.runOnce(() -> kicker.setPower(0))));
+    // run secondary shooter
+    driverController
+        .back()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.TESTING_SHOOTING));
+    // testController.a().onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
+    // testController.b().onTrue(Commands.runOnce(() -> shooter.setSecondaryLauncherPower(0.3)));
+    // testController.b().onFalse(Commands.runOnce(() -> shooter.setSecondaryLauncherPower(0.0)));
   }
 
   /**

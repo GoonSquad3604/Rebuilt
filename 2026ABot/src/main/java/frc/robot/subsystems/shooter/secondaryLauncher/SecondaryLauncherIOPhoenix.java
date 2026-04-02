@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.launcher;
+package frc.robot.subsystems.shooter.secondaryLauncher;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -17,7 +17,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.PhoenixUtil;
 
-public class LauncherIOPhoenix implements LauncherIO {
+public class SecondaryLauncherIOPhoenix implements SecondaryLauncherIO {
 
   // motor
   private final TalonFX launcherMotor;
@@ -32,25 +32,25 @@ public class LauncherIOPhoenix implements LauncherIO {
   private final StatusSignal<Current> torqueCurrent;
   private final StatusSignal<Temperature> tempCelsius;
 
-  public LauncherIOPhoenix() {
+  public SecondaryLauncherIOPhoenix() {
 
     launcherMotor =
-        new TalonFX(ShooterConstants.LauncherConstants.launcherID, Constants.CANBusName);
+        new TalonFX(ShooterConstants.SecondaryLauncherConstants.motorID, Constants.CANBusName);
     launcherMotorConfig = new TalonFXConfiguration();
     launcherRequest = new VelocityVoltage(0).withSlot(0);
 
-    launcherMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    launcherMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     launcherMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     launcherMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
     launcherMotorConfig.CurrentLimits.StatorCurrentLimit = 100;
     launcherMotorConfig.MotorOutput.PeakReverseDutyCycle = 0;
     launcherMotorConfig.Slot0 =
         new Slot0Configs()
-            .withKP(ShooterConstants.LauncherConstants.launcherP)
-            .withKI(ShooterConstants.LauncherConstants.launcherI)
-            .withKD(ShooterConstants.LauncherConstants.launcherD)
-            .withKS(ShooterConstants.LauncherConstants.launcherS)
-            .withKV(ShooterConstants.LauncherConstants.launcherV);
+            .withKP(ShooterConstants.SecondaryLauncherConstants.P)
+            .withKI(ShooterConstants.SecondaryLauncherConstants.I)
+            .withKD(ShooterConstants.SecondaryLauncherConstants.D)
+            .withKS(ShooterConstants.SecondaryLauncherConstants.S)
+            .withKV(ShooterConstants.SecondaryLauncherConstants.V);
     launcherMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
     PhoenixUtil.tryUntilOk(5, () -> launcherMotor.getConfigurator().apply(launcherMotorConfig));
 
@@ -67,19 +67,19 @@ public class LauncherIOPhoenix implements LauncherIO {
                 50.0, velocity, appliedVoltage, supplyCurrent, torqueCurrent, tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> launcherMotor.optimizeBusUtilization(0, 1.0));
 
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kP = ShooterConstants.LauncherConstants.launcherP;
-    slot0Configs.kI = ShooterConstants.LauncherConstants.launcherI;
-    slot0Configs.kD = ShooterConstants.LauncherConstants.launcherD;
-    slot0Configs.kS = ShooterConstants.LauncherConstants.launcherS;
-    slot0Configs.kV = ShooterConstants.LauncherConstants.launcherV;
-    slot0Configs.kA = ShooterConstants.LauncherConstants.launcherA;
+    // var slot0Configs = new Slot0Configs();
+    // slot0Configs.kP = ShooterConstants.SecondaryLauncherConstants.launcherP;
+    // slot0Configs.kI = ShooterConstants.LauncherConstants.launcherI;
+    // slot0Configs.kD = ShooterConstants.LauncherConstants.launcherD;
+    // slot0Configs.kS = ShooterConstants.LauncherConstants.launcherS;
+    // slot0Configs.kV = ShooterConstants.LauncherConstants.launcherV;
+    // slot0Configs.kA = ShooterConstants.LauncherConstants.launcherA;
 
-    launcherMotor.getConfigurator().apply(slot0Configs);
+    // launcherMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
-  public void updateInputs(LauncherIOInputs inputs) {
+  public void updateInputs(SecondaryLauncherIOInputs inputs) {
     inputs.motorConnected = launcherMotor.isConnected();
     inputs.voltage = launcherMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = launcherMotor.getSupplyCurrent().getValueAsDouble();
@@ -99,7 +99,7 @@ public class LauncherIOPhoenix implements LauncherIO {
   }
 
   @Override
-  public void setLauncherOpenLoop(double output) {
+  public void setOpenLoop(double output) {
     launcherMotor.setControl(voltageRequest.withOutput(output));
   }
 
