@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftStartToNeutralToClimb"
+            "pathName": "LeftDoubleSwipePt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftClimb"
+            "pathName": "LeftDoubleSwipePt2"
           }
         }
       ]

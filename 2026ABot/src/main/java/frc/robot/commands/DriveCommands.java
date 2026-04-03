@@ -299,6 +299,7 @@ public class DriveCommands {
             DriveConstants.DRIVE_KD,
             new TrapezoidProfile.Constraints(
                 DriveConstants.DRIVE_MAX_VELOCITY, DriveConstants.DRIVE_MAX_ACCELERATION));
+
     // create angle PID controller
     ProfiledPIDController angleController =
         new ProfiledPIDController(
@@ -311,12 +312,19 @@ public class DriveCommands {
 
     return Commands.run(
             () -> {
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
 
               // Get linear velocity
               double yVel =
                   driveYController.calculate(drive.getPose().getY(), getTrenchY(drive.getPose()));
               if (driveYController.atSetpoint()) {
                 yVel = 0;
+              }
+
+              if (isFlipped) {
+                yVel = yVel * -1;
               }
 
               Translation2d linearVelocity =
@@ -365,9 +373,7 @@ public class DriveCommands {
                       linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec() * multiplier,
                       linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                       omega /* * drive.getMaxAngularSpeedRadPerSec()*/);
-              boolean isFlipped =
-                  DriverStation.getAlliance().isPresent()
-                      && DriverStation.getAlliance().get() == Alliance.Red;
+
               drive.runVelocity(
                   ChassisSpeeds.fromFieldRelativeSpeeds(
                       speeds,
@@ -477,29 +483,27 @@ public class DriveCommands {
   }
 
   private static double getTrenchY(Pose2d robotPose) {
-    if (DriverStation.getAlliance().get() == Alliance.Blue) {
-      if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
-        return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
-      } else {
-        return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
-      }
-    } else {
-      if (robotPose.getY() <= (FieldConstants.fieldWidth / 2.0)) {
-        return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
-      } else {
-        return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
-      }
-    }
-
-    //   // left trench
-    //   return DriverStation.getAlliance().get() == Alliance.Blue
-    //       ? AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint)
-    //       : AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+    // if (DriverStation.getAlliance().get() == Alliance.Blue) {
+    //   if (robotPose.getY() >= (FieldConstants.fieldWidth / 2.0)) {
+    //     return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+    //   } else {
+    //     return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+    //   }
+    // } else {
+    //   if (robotPose.getY() <= (FieldConstants.fieldWidth / 2.0)) {
+    //     return AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint);
+    //   } else {
+    //     return AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+    //   }
     // }
-    // // right trench
-    // return DriverStation.getAlliance().get() == Alliance.Blue
-    //     ? AllianceFlipUtil.applyY(FieldConstants.RightTrench.midPoint)
-    //     : AllianceFlipUtil.applyY(FieldConstants.LeftTrench.midPoint);
+
+    if (robotPose.getY() >= FieldConstants.fieldWidth / 2.0) {
+      // left trench
+      return FieldConstants.LeftTrench.midPoint;
+    } else {
+      // right trench
+      return FieldConstants.RightTrench.midPoint;
+    }
   }
 
   public static Command alignToPose(Drive drive, Pose2d targetPose) {

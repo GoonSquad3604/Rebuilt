@@ -23,16 +23,21 @@ public class AutoChooser extends SendableChooser<Autos> {
 
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
-          // new AutoProgram(Autos.MAIN, "MAIN", AutoFactory::createMainAuto),
-          new AutoProgram(Autos.MIDDLE, "MIDDLE", AutoFactory::createMiddleAuto),
-          new AutoProgram(Autos.LEFT, "Left", AutoFactory::createLeftAuto),
-          new AutoProgram(Autos.RIGHT, "Right", AutoFactory::createRightAuto),
-          new AutoProgram(Autos.LEFT_NO_CLIMB, "LeftNoClimb", AutoFactory::createLeftNoClimbAuto),
+          // new AutoProgram(Autos.MAIN, "Main", AutoFactory::createMainAuto),
+          new AutoProgram(Autos.LEFT_CLIMB, "Left Climb", AutoFactory::createLeftClimbAuto),
+          new AutoProgram(Autos.LEFT_DEPOT, "Left Depot", AutoFactory::createLeftDepotAuto),
           new AutoProgram(
-              Autos.RIGHT_NO_CLIMB, "RightNoClimb", AutoFactory::createRightNoClimbAuto),
+              Autos.LEFT_DOUBLE_SWIPE, "Left Double Swipe", AutoFactory::createLeftDoubleSwipeAuto),
+          new AutoProgram(Autos.RIGHT_CLIMB, "Right Climb", AutoFactory::createRightClimbAuto),
           new AutoProgram(
-              Autos.LEFT_DOUBLE_SWIPE, "LeftDoubleSwipe", AutoFactory::createLeftDoubleSwipeAuto),
-          new AutoProgram(Autos.CHAOS, "chaos", AutoFactory::createChaosAuto));
+              Autos.RIGHT_DOUBLE_SWIPE,
+              "Right Double Swipe",
+              AutoFactory::createRightDoubleSwipeAuto),
+          new AutoProgram(
+              Autos.MIDDLE_DEPOT_CLIMB,
+              "Middle Depot Climb",
+              AutoFactory::createMiddleDepotClimbAuto),
+          new AutoProgram(Autos.CHAOS, "Chaos", AutoFactory::createChaos_hehe));
 
   private final Map<Autos, AutoProgram> programs;
   private final Map<DriverStation.Alliance, Map<Autos, Pair<Pose2d, Command>>> commandCache;

@@ -1,5 +1,7 @@
 package frc.robot.subsystems.intake.rollers;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -7,6 +9,11 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.util.PhoenixUtil;
@@ -19,12 +26,12 @@ public class RollerSystemIOPhoenix implements RollerSystemIO {
   private final VelocityVoltage rollerSystemRequest;
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
-  // private final StatusSignal<Angle> position;
-  // private final StatusSignal<AngularVelocity> velocity;
-  // private final StatusSignal<Voltage> appliedVoltage;
-  // private final StatusSignal<Current> supplyCurrent;
-  // private final StatusSignal<Current> torqueCurrent;
-  // private final StatusSignal<Temperature> tempCelsius;
+  private final StatusSignal<Angle> position;
+  private final StatusSignal<AngularVelocity> velocity;
+  private final StatusSignal<Voltage> appliedVoltage;
+  private final StatusSignal<Current> supplyCurrent;
+  private final StatusSignal<Current> torqueCurrent;
+  private final StatusSignal<Temperature> tempCelsius;
 
   public RollerSystemIOPhoenix() {
 
@@ -49,23 +56,23 @@ public class RollerSystemIOPhoenix implements RollerSystemIO {
     PhoenixUtil.tryUntilOk(5, () -> rollerSystemMotor.getConfigurator().apply(motorConfig));
 
     // base status signal
-    // position = rollerSystemMotor.getPosition();
-    // velocity = rollerSystemMotor.getVelocity();
-    // appliedVoltage = rollerSystemMotor.getMotorVoltage();
-    // supplyCurrent = rollerSystemMotor.getSupplyCurrent();
-    // torqueCurrent = rollerSystemMotor.getTorqueCurrent();
-    // tempCelsius = rollerSystemMotor.getDeviceTemp();
-    // PhoenixUtil.tryUntilOk(
-    //     5,
-    //     () ->
-    //         BaseStatusSignal.setUpdateFrequencyForAll(
-    //             50.0,
-    //             position,
-    //             velocity,
-    //             appliedVoltage,
-    //             supplyCurrent,
-    //             torqueCurrent,
-    //             tempCelsius));
+    position = rollerSystemMotor.getPosition();
+    velocity = rollerSystemMotor.getVelocity();
+    appliedVoltage = rollerSystemMotor.getMotorVoltage();
+    supplyCurrent = rollerSystemMotor.getSupplyCurrent();
+    torqueCurrent = rollerSystemMotor.getTorqueCurrent();
+    tempCelsius = rollerSystemMotor.getDeviceTemp();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                position,
+                velocity,
+                appliedVoltage,
+                supplyCurrent,
+                torqueCurrent,
+                tempCelsius));
 
     // optimize bus utilization
     PhoenixUtil.tryUntilOk(5, () -> rollerSystemMotor.optimizeBusUtilization(0, 1.0));

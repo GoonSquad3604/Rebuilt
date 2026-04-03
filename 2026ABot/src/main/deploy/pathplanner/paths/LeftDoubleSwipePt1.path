@@ -98,7 +98,7 @@
     "rotation": 156.0005257458058
   },
   "reversed": false,
-  "folder": "LeftMainAuto",
+  "folder": "LeftDoubleSwipe",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

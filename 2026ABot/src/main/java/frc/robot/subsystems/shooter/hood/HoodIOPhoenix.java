@@ -58,14 +58,11 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotorConfig = new TalonFXConfiguration();
 
     hoodMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    // hoodMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
 
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
     hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-    // hoodMotorConfig.MotorOutput.PeakForwardDutyCycle = .2;
-    // hoodMotorConfig.MotorOutput.PeakReverseDutyCycle = -.2;
 
     hoodMotorConfig.MotionMagic.MotionMagicAcceleration =
         ShooterConstants.HoodConstants.acceleration;
@@ -129,45 +126,13 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotor.setControl(hoodPositionRequest.withPosition(position).withEnableFOC(true));
   }
 
-  // public void setPositionMotionMagic(double position) {
-  //   position =
-  //       MathUtil.clamp(
-  //           position,
-  //           ShooterConstants.HoodConstants.hoodMinPos,
-  //           ShooterConstants.HoodConstants.hoodMaxPos);
-  //   hoodMotor.setControl(hoodRequest.withPosition(position).withEnableFOC(true));
-  // }
-
-  // @Override
-  // public void setAngle(double angle) {
-  //   hoodMotor.setControl(hoodRequest.withPosition(convertAngleToRotations(angle)));
-  // }
-
   @Override
   public double getPosition() {
     return hoodMotor.getPosition().getValueAsDouble();
   }
 
-  // @Override
-  // public double getAngle() {
-  //   return convertRotationsToAngle(hoodMotor.getPosition().getValueAsDouble());
-  // }
-
   @Override
   public void setVoltage(double voltage) {
     hoodMotor.setVoltage(voltage);
   }
-
-  // private double convertAngleToRotations(double angle) {
-  //   return 0.0;
-  // }
-
-  // private double convertRotationsToAngle(double rotations) {
-  //   return 0.0;
-  // }
-
-  // @Override
-  // public void setHoodOpenLoop(double output) {
-  //   hoodMotor.setControl(voltageRequest.withOutput(output));
-  // }
 }

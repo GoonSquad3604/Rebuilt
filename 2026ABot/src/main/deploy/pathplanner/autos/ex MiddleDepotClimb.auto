@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftStartToNeutralZone"
+            "pathName": "MiddleDepotClimbPt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftPickUpDepotNoClimb"
+            "pathName": "MiddleDepotClimbPt2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MiddleDepotClimbPt3"
           }
         }
       ]

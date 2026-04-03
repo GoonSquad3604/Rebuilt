@@ -371,8 +371,8 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.REV);
 
     // if (shooter.reachedSetpoints() || beganFiring) {
-    //   beganFiring = true;
-    spindexer.setWantedState(SpindexerWantedState.SPIN);
+    beganFiring = true;
+    // spindexer.setWantedState(SpindexerWantedState.SPIN);
     // } else {
     //   spindexer.setWantedState(SpindexerWantedState.IDLE);
     // }

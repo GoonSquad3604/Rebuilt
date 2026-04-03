@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeomUtil;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
 
@@ -147,7 +148,7 @@ public class RobotState {
 
   public void setTargetPathfindPose(Pose2d newPose) {
     targetPose = newPose;
-    // Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
+    Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
   }
 
   public Pose2d getTargetPathfindPose() {

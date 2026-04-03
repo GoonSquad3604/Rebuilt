@@ -21,19 +21,9 @@ public interface HoodIO {
 
   default void setPosition(double position) {}
 
-  // default void setPositionMotionMagic(double position) {}
-
-  // default void setAngle(double position) {}
-
   default double getPosition() {
     return 0.0;
   }
 
-  // default double getAngle() {
-  //   return 0.0;
-  // }
-
   default void setVoltage(double volts) {}
-
-  // default void setHoodOpenLoop(double output) {}
 }

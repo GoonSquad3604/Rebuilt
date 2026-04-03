@@ -31,8 +31,8 @@ import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIOPhoenix;
 import frc.robot.subsystems.shooter.*;
-import frc.robot.subsystems.shooter.primaryLauncher.PrimaryLauncherIOPhoenix;
-import frc.robot.subsystems.shooter.secondaryLauncher.SecondaryLauncherIOPhoenix;
+import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
+import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
 import frc.robot.subsystems.shooter.turret.TurretIOPhoenix;
 import frc.robot.subsystems.spindexer.Spindexer;
 import frc.robot.subsystems.spindexer.SpindexerIOPhoenix;
@@ -70,9 +70,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // switch (Constants.currentMode) {
-    //   case REAL:
-    //     // Real robot, instantiate hardware IO implementations
+
     drive =
         new Drive(
             new GyroIOPigeon2(),
@@ -91,73 +89,9 @@ public class RobotContainer {
     climber = new Climber(new ClimberIOPhoenix());
     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
     kicker = new Kicker(new KickerIOPhoenix());
-    shooter =
-        new Shooter(
-            /*new HoodIOPhoenix(),*/ new PrimaryLauncherIOPhoenix(),
-            new SecondaryLauncherIOPhoenix(),
-            new TurretIOPhoenix());
+    shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
     spindexer = new Spindexer(new SpindexerIOPhoenix());
     superstructure = new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
-
-    // break;
-
-    //   case SIM:
-    //     // Sim robot, instantiate physics sim IO implementations
-    //     drive =
-    //         new Drive(
-    //             new GyroIO() {},
-    //             new ModuleIOSim(TunerConstants.FrontLeft),
-    //             new ModuleIOSim(TunerConstants.FrontRight),
-    //             new ModuleIOSim(TunerConstants.BackLeft),
-    //             new ModuleIOSim(TunerConstants.BackRight));
-
-    //     hopper = new Hopper(new HopperIOPhoenix());
-    //     vision =
-    //         new Vision(
-    //             drive::addVisionMeasurement,
-    //             new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted,
-    // drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
-    //     climber = new Climber(new ClimberIOPhoenix());
-    //     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-    //     kicker = new Kicker(new KickerIOPhoenix());
-    //     shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new
-    // TurretIOPhoenix());
-    //     spindexer = new Spindexer(new SpindexerIOPhoenix());
-    //     superstructure =
-    //         new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
-    //     break;
-
-    //   default:
-    //     // Replayed robot, disable IO implementations
-    //     drive =
-    //         new Drive(
-    //             new GyroIO() {},
-    //             new ModuleIO() {},
-    //             new ModuleIO() {},
-    //             new ModuleIO() {},
-    //             new ModuleIO() {});
-    //     hopper = new Hopper(new HopperIOPhoenix());
-    //     vision =
-    //         new Vision(
-    //             drive::addVisionMeasurement,
-    //             new VisionIOPhotonVisionSim(camera0Name, robotToCamera0Retracted,
-    // drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
-    //             new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
-
-    //     climber = new Climber(new ClimberIOPhoenix());
-    //     intake = new Intake(new RollerSystemIOPhoenix(), new HingeIOPhoenix());
-    //     kicker = new Kicker(new KickerIOPhoenix());
-    //     shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new
-    // TurretIOPhoenix());
-    //     spindexer = new Spindexer(new SpindexerIOPhoenix());
-    //     superstructure =
-    //         new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
-    //     break;
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -178,31 +112,18 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    autoChooser.addOption(
-        "Primary Launcher SysId (Quasistatic Forward)",
-        shooter.primaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Primary Launcher SysId (Quasistatic Reverse)",
-        shooter.primaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Primary Launcher SysId (Dynamic Forward)",
-        shooter.primaryLauncherSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Primary Launcher SysId (Dynamic Reverse)",
-        shooter.primaryLauncherSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "Secondary Launcher SysId (Quasistatic Forward)",
-        shooter.secondaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Secondary Launcher SysId (Quasistatic Reverse)",
-        shooter.secondaryLauncherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Secondary Launcher SysId (Dynamic Forward)",
-        shooter.secondaryLauncherSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Secondary Launcher SysId (Dynamic Reverse)",
-        shooter.secondaryLauncherSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Quasistatic Forward)",
+    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Quasistatic Reverse)",
+    //     shooter.launcherSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Dynamic Forward)",
+    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Launcher SysId (Dynamic Reverse)",
+    //     shooter.launcherSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Spindexer SysId (Quasistatic Forward)",
@@ -228,31 +149,31 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // autoChooser.addOption(
-    //     "ClimberOuter SysId (Quasistatic Forward)",
-    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "ClimberOuter SysId (Quasistatic Reverse)",
-    //     climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "ClimberOuter SysId (Dynamic Forward)",
-    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "ClimberOuter SysId (Dynamic Reverse)",
-    //     climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Quasistatic Forward)",
+        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Quasistatic Reverse)",
+        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Dynamic Forward)",
+        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberOuter SysId (Dynamic Reverse)",
+        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // autoChooser.addOption(
-    //     "ClimberInner SysId (Quasistatic Forward)",
-    //     climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "ClimberInner SysId (Quasistatic Reverse)",
-    //     climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "ClimberInner SysId (Dynamic Forward)",
-    //     climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "ClimberInner SysId (Dynamic Reverse)",
-    //     climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Forward)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Quasistatic Reverse)",
+        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Forward)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "ClimberInner SysId (Dynamic Reverse)",
+        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -407,17 +328,13 @@ public class RobotContainer {
 
     /* test controller */
 
-    // run secondary shooter
     driverController
         .back()
         .onTrue(
             Commands.either(
-                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                superstructure.setWantedState(WantedSuperState.CLEAN),
                 superstructure.setWantedState(WantedSuperState.STOPPED),
-                () -> superstructure.getCurrentSuperState() != CurrentSuperState.TESTING_SHOOTING));
-    // testController.a().onTrue(superstructure.setWantedState(WantedSuperState.STOPPED));
-    // testController.b().onTrue(Commands.runOnce(() -> shooter.setSecondaryLauncherPower(0.3)));
-    // testController.b().onFalse(Commands.runOnce(() -> shooter.setSecondaryLauncherPower(0.0)));
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.CLEANING));
   }
 
   /**

@@ -1,20 +1,20 @@
-package frc.robot.subsystems.shooter.primaryLauncher;
+package frc.robot.subsystems.shooter.launcher;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface PrimaryLauncherIO {
+public interface LauncherIO {
 
   @AutoLog
-  public static class PrimaryLauncherIOInputs {
+  public static class LauncherIOInputs {
     public boolean motorConnected = false;
     public double voltage;
     public double current;
     public double velocity;
-    // public double primaryTemperature;
+    // public double temperature;
     public double position;
   }
 
-  default void updateInputs(PrimaryLauncherIOInputs inputs) {}
+  default void updateInputs(LauncherIOInputs inputs) {}
 
   default void setOpenLoop(double output) {}
 
