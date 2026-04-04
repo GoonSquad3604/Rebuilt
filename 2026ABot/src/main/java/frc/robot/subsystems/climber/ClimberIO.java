@@ -12,7 +12,7 @@ public interface ClimberIO {
     public double outerVoltage;
     public double outerCurrent;
     public double outerVelocity;
-    public double outerTemperature;
+    // public double outerTemperature;
     public double outerPosition;
 
     public boolean innerMotorConnected = false;
@@ -20,7 +20,7 @@ public interface ClimberIO {
     public double innerVoltage;
     public double innerCurrent;
     public double innerVelocity;
-    public double innerTemperature;
+    // public double innerTemperature;
     public double innerPosition;
 
     public boolean leftClimbRangeConnected;

@@ -188,15 +188,16 @@ public class ClimberIOPhoenix implements ClimberIO {
     inputs.outerEncoderConnected = outerEncoder.isConnected();
     inputs.outerVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
     inputs.outerCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
-    // inputs.outerVelocity = outerEncoder.getVelocity().getValueAsDouble();
+    inputs.outerVelocity = outerEncoder.getVelocity().getValueAsDouble();
     inputs.outerPosition = outerEncoder.getPosition().getValueAsDouble();
 
     inputs.innerMotorConnected = innerMotor.isConnected();
     inputs.innerEncoderConnected = innerEncoder.isConnected();
     inputs.innerVoltage = innerMotor.getMotorVoltage().getValueAsDouble();
     inputs.innerCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
-    // inputs.innerVelocity = innerEncoder.getVelocity().getValueAsDouble();
+    inputs.innerVelocity = innerEncoder.getVelocity().getValueAsDouble();
     inputs.innerPosition = innerEncoder.getAbsolutePosition().getValueAsDouble();
+
     inputs.leftClimbRangeConnected = leftClimbRange.isConnected();
     inputs.rightClimbRangeConnected = rightClimbRange.isConnected();
     inputs.centerClimbRangeConnected = centerClimbRange.isConnected();

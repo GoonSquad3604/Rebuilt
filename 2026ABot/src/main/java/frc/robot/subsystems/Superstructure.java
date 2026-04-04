@@ -34,6 +34,7 @@ public class Superstructure extends SubsystemBase {
 
   private boolean tracking = true;
   private boolean beganFiring = false;
+  private boolean readyToClimb = false;
 
   public enum WantedSuperState {
     STOPPED,
@@ -180,7 +181,6 @@ public class Superstructure extends SubsystemBase {
       case DECLIMBING:
         declimb();
         break;
-
       case EJECTING:
         eject();
         break;
@@ -198,7 +198,7 @@ public class Superstructure extends SubsystemBase {
 
   private void stopped() {
     beganFiring = false;
-    climber.setWantedState(ClimberWantedState.STOW);
+    // climber.setWantedState(ClimberWantedState.STOW);
     // hopper.setWantedState(HopperWantedState.IDLE);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
@@ -236,6 +236,11 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.REV);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
     shooter.setWantedState(ShooterWantedState.EJECT);
+
+    if (hopper.isStowed()) {
+      wantedSuperState = WantedSuperState.STOPPED;
+      return;
+    }
 
     if (!intake.isStowed()) {
       intake.setWantedState(IntakeWantedState.STOW);
@@ -303,21 +308,23 @@ public class Superstructure extends SubsystemBase {
     spindexer.setWantedState(SpindexerWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
 
-    if (!intake.isStowed()) {
-      intake.setWantedState(IntakeWantedState.STOW);
-      hopper.setWantedState(HopperWantedState.IDLE);
-    } else {
-      if (!hopper.isStowed()) {
-        hopper.setWantedState(HopperWantedState.STOW);
-      } else {
-        // ready to climb
-        climber.setWantedState(ClimberWantedState.DEPLOY);
-        if (climber.isDeployed() && climber.sensorsValid()) {
-          // climb!!
-
-        }
-      }
+    // please uncomment this:
+    // if (!intake.isStowed()) {
+    //   intake.setWantedState(IntakeWantedState.STOW);
+    //   hopper.setWantedState(HopperWantedState.IDLE);
+    // } else {
+    //   if (!hopper.isStowed()) {
+    //     hopper.setWantedState(HopperWantedState.STOW);
+    // } else {
+    // ready to climb
+    climber.setWantedState(ClimberWantedState.DEPLOY);
+    if ((climber.sensorsValid() && climber.isDeployed() && readyToClimb)
+        || climber.beganAutoClimbing()) {
+      climber.setWantedState(ClimberWantedState.CLIMB);
     }
+    // and this -->
+    // }
+    // }
   }
 
   private void setUpAutoClimb() {
@@ -408,6 +415,10 @@ public class Superstructure extends SubsystemBase {
 
   public Command toggleTracking() {
     return Commands.runOnce(() -> tracking = !tracking);
+  }
+
+  public Command toggleReadyToClimb() {
+    return Commands.runOnce(() -> readyToClimb = !readyToClimb);
   }
 
   public boolean climberDeployed() {
