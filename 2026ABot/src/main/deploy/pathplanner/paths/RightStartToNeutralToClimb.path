@@ -112,7 +112,7 @@
     "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "RightMainAuto",
+  "folder": "RightClimb",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

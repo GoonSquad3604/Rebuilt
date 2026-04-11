@@ -15,19 +15,10 @@ import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeomUtil;
 
 public class ShotCalculator {
+
   private static ShotCalculator instance;
 
-  // private final LinearFilter turretAngleFilter = LinearFilter.movingAverage((int) (0.1 / .02));
-
-  // private double isValid;
-  private Rotation2d lastTurretAngle;
-  private double adjustment;
-  // private double lastHoodPose;
-  // private Rotation2d turretAngleRotation2d;
   private double turretAngle;
-  private double hoodPose = Double.NaN;
-  // private double turretVelocity;
-  // private double hoodVelocity;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -35,13 +26,11 @@ public class ShotCalculator {
   }
 
   public record ShootingParameters(
-      boolean isValid,
-      // Rotation2d turretAngleRotation2d,
+      boolean validShootingLocation,
       double turretAngle,
-      // double turretVelocity,
       double hoodPose,
-      // double hoodVelocity,
-      double flywheelSpeed) {}
+      double primaryFlywheelSpeed) {}
+  // double secondaryFlywheelSpeed) {}
 
   // Cache parameters
   private static ShootingParameters latestParameters = null;
@@ -51,24 +40,26 @@ public class ShotCalculator {
   private static double phaseDelay;
   private static final InterpolatingDoubleTreeMap shotHoodPositionMap =
       new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap shotFlywheelSpeedMap =
+  private static final InterpolatingDoubleTreeMap shotPrimaryFlywheelSpeedMap =
       new InterpolatingDoubleTreeMap();
+  // private static final InterpolatingDoubleTreeMap shotSecondaryFlywheelSpeedMap =
+  //     new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap timeOfFlightMap =
       new InterpolatingDoubleTreeMap();
 
   static {
     minDistance = 0;
-    maxDistance = 999999;
+    maxDistance = 3.85;
     phaseDelay = 0.05;
 
-    shotFlywheelSpeedMap.put(0.94, 47.0); // min
-    shotFlywheelSpeedMap.put(1.34, 47.0);
-    shotFlywheelSpeedMap.put(1.67, 50.0);
-    shotFlywheelSpeedMap.put(1.8, 52.0);
-    shotFlywheelSpeedMap.put(2.29, 56.0);
-    shotFlywheelSpeedMap.put(2.84, 75.0);
-    shotFlywheelSpeedMap.put(3.15, 85.0);
-    shotFlywheelSpeedMap.put(3.66, 95.0); // max
+    shotPrimaryFlywheelSpeedMap.put(0.94, 47.0); // min
+    shotPrimaryFlywheelSpeedMap.put(1.34, 47.0);
+    shotPrimaryFlywheelSpeedMap.put(1.67, 50.0);
+    shotPrimaryFlywheelSpeedMap.put(1.8, 52.0);
+    shotPrimaryFlywheelSpeedMap.put(2.29, 56.0);
+    shotPrimaryFlywheelSpeedMap.put(2.84, 75.0);
+    shotPrimaryFlywheelSpeedMap.put(3.15, 85.0);
+    shotPrimaryFlywheelSpeedMap.put(3.66, 95.0); // max
 
     timeOfFlightMap.put(0.94, 1.07); // min
     timeOfFlightMap.put(1.34, 0.98);
@@ -95,9 +86,9 @@ public class ShotCalculator {
     if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
       targetPose = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
     } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
-      targetPose = AllianceFlipUtil.apply(new Translation2d(2.203, 6.125));
+      targetPose = AllianceFlipUtil.apply(ShooterConstants.leftPassPosition);
     } else {
-      targetPose = AllianceFlipUtil.apply(new Translation2d(2.203, 2.125));
+      targetPose = AllianceFlipUtil.apply(ShooterConstants.rightPassPosition);
     }
 
     Pose2d estimatedPose = RobotState.getInstance().getPose();
@@ -155,12 +146,6 @@ public class ShotCalculator {
     }
 
     // Calculate parameters accounted for imparted velocity
-    // hoodPose = shotHoodAngleMap.get(lookaheadTurretToTargetDistance);
-    // if (lastTurretAngle == null) lastTurretAngle = turretAngleRotation2d;
-    // if (Double.isNaN(lastHoodPose)) lastHoodPose = hoodPose;
-
-    // lastTurretAngle = turretAngleRotation2d;
-    // lastHoodPose = hoodPose;
     turretAngle =
         lookaheadPose
             .getRotation()
@@ -171,26 +156,7 @@ public class ShotCalculator {
     } else if (turretAngle < 0) {
       turretAngle += 360;
     }
-    if (lastTurretAngle == null) lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
-    lastTurretAngle = Rotation2d.fromDegrees(turretAngle);
-    hoodPose = ShooterConstants.HoodConstants.hoodMaxPos;
-    // turretVelocity =
-    //     turretAngleFilter.calculate(
-    //         Rotation2d.fromDegrees(turretAngle).minus(lastTurretAngle).getRadians() / 0.02);
 
-    // if(turretAngle >= 180){
-    //   adjustment = turretAngle/270;
-    //   if(adjustment > 1){
-    //     adjustment -= 1.0;
-    //   }
-    // }
-    // else{
-    //   adjustment = turretAngle/90;
-    //   if(adjustment > 1){
-    //     adjustment -= 1.0;
-    //   }
-    // }
-    // turretAngle = turretAngle + ShooterConstants.maxAngleAdjustment * adjustment;
     latestParameters =
         new ShootingParameters(
             (lookaheadTurretToTargetDistance >= minDistance
@@ -198,7 +164,7 @@ public class ShotCalculator {
                 || RobotState.getInstance().getTarget() != ShooterTarget.HUB,
             360 - turretAngle,
             shotHoodPositionMap.get(lookaheadTurretToTargetDistance),
-            shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
+            shotPrimaryFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values
     // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);

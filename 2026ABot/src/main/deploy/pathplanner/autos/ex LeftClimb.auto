@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RightStartToNeutralZoneNoClimb"
+            "pathName": "LeftClimbPt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "RightNoClimbPt2"
+            "pathName": "LeftClimbPt2"
           }
         }
       ]

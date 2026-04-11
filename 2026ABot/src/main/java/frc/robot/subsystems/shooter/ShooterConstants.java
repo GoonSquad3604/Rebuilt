@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 public final class ShooterConstants {
@@ -17,9 +18,8 @@ public final class ShooterConstants {
 
   public static double robotToTurretLinear = 6.3245553203;
 
-  public static final double shootingDistanceDeadzones = 0.0;
-
-  public static final double maxAngleAdjustment = 5;
+  public static Translation2d leftPassPosition = new Translation2d(3.5, 6.125);
+  public static Translation2d rightPassPosition = new Translation2d(3.5, 2.125);
 
   public static final class HoodConstants {
 
@@ -41,7 +41,7 @@ public final class ShooterConstants {
     public static final double hoodMinPos = 0.05;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.035;
+    public static final double offset = -0.377;
   }
 
   public static final class LauncherConstants {
@@ -56,9 +56,27 @@ public final class ShooterConstants {
     public static final double launcherA = 0.041093;
 
     public static final double forwardVelocity = 50;
+    public static final double cleanSpeed = 0.1;
 
     public static final double launcherAtSetpointTolerance = 3;
   }
+
+  // public static final class SecondaryLauncherConstants {
+
+  //   public static final int motorID = 9;
+
+  //   public static final double P = 0.010244;
+  //   public static final double I = 0;
+  //   public static final double D = 0;
+  //   public static final double S = 0.36956;
+  //   public static final double V = 0.1017;
+  //   public static final double A = 0.0032915;
+
+  //   public static final double forwardVelocity = 50;
+  //   public static final double cleanSpeed = 0.1;
+
+  //   public static final double atSetpointTolerance = 3;
+  // }
 
   public static final class TurretConstants {
 
@@ -71,11 +89,11 @@ public final class ShooterConstants {
     public static final double turretS = 0.4;
     public static final double turretV = 0;
 
-    public static final double maxEncoderPosition = 0.75;
-    public static final double minEncoderPosition = 0.25;
+    public static final double maxEncoderPosition = 0.927; // .75 for 180
+    public static final double minEncoderPosition = 0.06; // .25 for 180
 
     public static final double forwardPosition = 0;
-    public static final double angleAtSetpointTolerance = 3;
+    public static final double angleAtSetpointTolerance = 30;
 
     public static final double turretAcceleration = 50;
     public static final double turretVelocity = 25;

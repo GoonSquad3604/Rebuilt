@@ -5,9 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -27,11 +25,11 @@ public class HoodIOPhoenix implements HoodIO {
 
   // motor
   private final TalonFX hoodMotor;
-  private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
+  // private final MotionMagicVoltage hoodRequest = new MotionMagicVoltage(0);
   private final PositionVoltage hoodPositionRequest = new PositionVoltage(0);
   private final TalonFXConfiguration hoodMotorConfig;
 
-  private final VoltageOut voltageRequest = new VoltageOut(0);
+  // private final VoltageOut voltageRequest = new VoltageOut(0);
 
   // encoder
   private final CANcoder hoodEncoder;
@@ -60,14 +58,11 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotorConfig = new TalonFXConfiguration();
 
     hoodMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    // hoodMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
 
     hoodMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     hoodMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
     hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-    // hoodMotorConfig.MotorOutput.PeakForwardDutyCycle = .2;
-    // hoodMotorConfig.MotorOutput.PeakReverseDutyCycle = -.2;
 
     hoodMotorConfig.MotionMagic.MotionMagicAcceleration =
         ShooterConstants.HoodConstants.acceleration;
@@ -131,45 +126,13 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotor.setControl(hoodPositionRequest.withPosition(position).withEnableFOC(true));
   }
 
-  public void setPositionMotionMagic(double position) {
-    position =
-        MathUtil.clamp(
-            position,
-            ShooterConstants.HoodConstants.hoodMinPos,
-            ShooterConstants.HoodConstants.hoodMaxPos);
-    hoodMotor.setControl(hoodRequest.withPosition(position).withEnableFOC(true));
-  }
-
-  @Override
-  public void setAngle(double angle) {
-    hoodMotor.setControl(hoodRequest.withPosition(convertAngleToRotations(angle)));
-  }
-
   @Override
   public double getPosition() {
     return hoodMotor.getPosition().getValueAsDouble();
   }
 
   @Override
-  public double getAngle() {
-    return convertRotationsToAngle(hoodMotor.getPosition().getValueAsDouble());
-  }
-
-  @Override
   public void setVoltage(double voltage) {
     hoodMotor.setVoltage(voltage);
   }
-
-  private double convertAngleToRotations(double angle) {
-    return 0.0;
-  }
-
-  private double convertRotationsToAngle(double rotations) {
-    return 0.0;
-  }
-
-  // @Override
-  // public void setHoodOpenLoop(double output) {
-  //   hoodMotor.setControl(voltageRequest.withOutput(output));
-  // }
 }

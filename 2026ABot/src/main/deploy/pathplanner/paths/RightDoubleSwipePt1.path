@@ -94,7 +94,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "RightNoClimbAuto",
+  "folder": "RightDoubleSwipe",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

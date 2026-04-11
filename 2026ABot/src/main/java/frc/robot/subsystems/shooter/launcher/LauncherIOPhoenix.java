@@ -67,15 +67,15 @@ public class LauncherIOPhoenix implements LauncherIO {
                 50.0, velocity, appliedVoltage, supplyCurrent, torqueCurrent, tempCelsius));
     PhoenixUtil.tryUntilOk(5, () -> launcherMotor.optimizeBusUtilization(0, 1.0));
 
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kP = ShooterConstants.LauncherConstants.launcherP;
-    slot0Configs.kI = ShooterConstants.LauncherConstants.launcherI;
-    slot0Configs.kD = ShooterConstants.LauncherConstants.launcherD;
-    slot0Configs.kS = ShooterConstants.LauncherConstants.launcherS;
-    slot0Configs.kV = ShooterConstants.LauncherConstants.launcherV;
-    slot0Configs.kA = ShooterConstants.LauncherConstants.launcherA;
+    // var slot0Configs = new Slot0Configs();
+    // slot0Configs.kP = ShooterConstants.LauncherConstants.launcherP;
+    // slot0Configs.kI = ShooterConstants.LauncherConstants.launcherI;
+    // slot0Configs.kD = ShooterConstants.LauncherConstants.launcherD;
+    // slot0Configs.kS = ShooterConstants.LauncherConstants.launcherS;
+    // slot0Configs.kV = ShooterConstants.LauncherConstants.launcherV;
+    // slot0Configs.kA = ShooterConstants.LauncherConstants.launcherA;
 
-    launcherMotor.getConfigurator().apply(slot0Configs);
+    // launcherMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
@@ -99,7 +99,7 @@ public class LauncherIOPhoenix implements LauncherIO {
   }
 
   @Override
-  public void setLauncherOpenLoop(double output) {
+  public void setOpenLoop(double output) {
     launcherMotor.setControl(voltageRequest.withOutput(output));
   }
 

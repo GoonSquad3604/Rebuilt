@@ -16,7 +16,7 @@ public interface LauncherIO {
 
   default void updateInputs(LauncherIOInputs inputs) {}
 
-  default void setLauncherOpenLoop(double output) {}
+  default void setOpenLoop(double output) {}
 
   default void setPower(double power) {}
 

@@ -31,6 +31,7 @@ public class Intake extends SubsystemBase {
   private SysIdRoutine rollerSysID;
 
   private double lastTimestamp = 0.0;
+  private boolean vomitReverse = false;
 
   public enum IntakeWantedState {
     IDLE,
@@ -38,7 +39,8 @@ public class Intake extends SubsystemBase {
     // STOP_WHEELS,
     STOW,
     KICK,
-    VOMIT
+    VOMIT,
+    CLEAN
   }
 
   private enum IntakeCurrentState {
@@ -50,6 +52,7 @@ public class Intake extends SubsystemBase {
     IDLE_DEPLOYED,
     KICKING,
     VOMITING,
+    CLEANING
   }
 
   private IntakeWantedState wantedState = IntakeWantedState.IDLE;
@@ -104,11 +107,12 @@ public class Intake extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
-      applyStates();
+      // applyStates();
     } else {
-      if (currentState == IntakeCurrentState.KICKING
+      if ((currentState == IntakeCurrentState.KICKING
+              || currentState == IntakeCurrentState.VOMITING)
           && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
-        applyStates();
+        // applyStates();
       }
     }
     // Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
@@ -131,7 +135,7 @@ public class Intake extends SubsystemBase {
           : IntakeCurrentState.INTAKING_DEPLOYED;
       case KICK -> IntakeCurrentState.KICKING;
       case VOMIT -> IntakeCurrentState.VOMITING;
-        // case STOP_WHEELS -> IntakeCurrentState.IDLE_WHEELS_HOLD_POSITION;
+      case CLEAN -> IntakeCurrentState.CLEANING;
     };
   }
 
@@ -158,7 +162,10 @@ public class Intake extends SubsystemBase {
         kick();
         break;
       case VOMITING:
-        vomitRollers();
+        vomit();
+        break;
+      case CLEANING:
+        clean();
         break;
     }
   }
@@ -208,8 +215,22 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  private void vomitRollers() {
-    rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
+  private void vomit() {
+    hingeIO.setPosition(IntakeConstants.HingeConstants.stowedPosition);
+
+    lastTimestamp = Timer.getFPGATimestamp();
+    vomitReverse = !vomitReverse;
+
+    if (vomitReverse) {
+      rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
+    } else {
+      rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
+    }
+  }
+
+  private void clean() {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.cleanSpeed);
+    hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
   public boolean isDeployed() {
