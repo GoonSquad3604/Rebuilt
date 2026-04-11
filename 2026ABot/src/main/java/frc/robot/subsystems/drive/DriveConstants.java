@@ -40,4 +40,6 @@ public class DriveConstants {
 
   public static final double climbLeftY = 4.183;
   public static final double climbRightY = 3.319;
+
+  public static final Pose2d towerDeadzonePos = new Pose2d(0.527, 3.749, new Rotation2d());
 }

@@ -24,14 +24,11 @@ import frc.robot.util.PhoenixUtil;
 public class HopperIOPhoenix implements HopperIO {
 
   private final TalonFX hopperMotor;
-  // private final CANcoder joeCoder;
   private final CANdi stowedDetector;
 
   private final TalonFXConfiguration motorConfig;
-  // private final CANcoderConfiguration joeCoderConfig;
   private final CANdiConfiguration stowedDetectorConfig;
 
-  // private final PositionVoltage hopperRequest;
   private final MotionMagicVoltage hopperRequest = new MotionMagicVoltage(0.0);
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
@@ -52,8 +49,6 @@ public class HopperIOPhoenix implements HopperIO {
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    // motorConfig.Feedback.FeedbackRemoteSensorID = HopperConstants.joeCoderID;
-    // motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     motorConfig.Slot0 =
         new Slot0Configs()
             .withKP(HopperConstants.P)
@@ -68,11 +63,6 @@ public class HopperIOPhoenix implements HopperIO {
     motorConfig.MotionMagic.MotionMagicAcceleration = HopperConstants.acceleration;
     motorConfig.MotionMagic.MotionMagicCruiseVelocity = HopperConstants.velocity;
 
-    // joecoder config
-    // joeCoder = new CANcoder(HopperConstants.joeCoderID, Constants.CANBusName);
-    // joeCoderConfig = new CANcoderConfiguration();
-    // joeCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-
     // CANdi config (stowed detector)
     stowedDetector = new CANdi(HopperConstants.stowedDetectorID, Constants.CANBusName);
     stowedDetectorConfig = new CANdiConfiguration();
@@ -80,7 +70,6 @@ public class HopperIOPhoenix implements HopperIO {
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> hopperMotor.getConfigurator().apply(motorConfig));
-    // PhoenixUtil.tryUntilOk(5, () -> joeCoder.getConfigurator().apply(joeCoderConfig));
     PhoenixUtil.tryUntilOk(5, () -> stowedDetector.getConfigurator().apply(stowedDetectorConfig));
 
     // base status signals
@@ -112,13 +101,11 @@ public class HopperIOPhoenix implements HopperIO {
   public void updateInputs(HopperIOInputs inputs) {
     inputs.motorConnected = hopperMotor.isConnected();
     inputs.stowedDetectorConnected = stowedDetector.isConnected();
-    // inputs.joeCoderConnected = joeCoder.isConnected();
     inputs.stowedDetectorTriggered = stowedDetector.getS1Closed().getValue();
     inputs.voltage = hopperMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hopperMotor.getSupplyCurrent().getValueAsDouble();
     // inputs.velocity = hopperMotor.getVelocity().getValueAsDouble();
     // inputs.temperature = hopperMotor.getDeviceTemp().getValueAsDouble();
-    // inputs.joeCoderPosition = joeCoder.getPosition().getValueAsDouble();
     inputs.motorPosition = hopperMotor.getPosition().getValueAsDouble();
   }
 
@@ -134,7 +121,6 @@ public class HopperIOPhoenix implements HopperIO {
 
   @Override
   public void setEncoderPosition(double position) {
-    // joeCoder.setPosition(position);
     hopperMotor.setPosition(position);
   }
 

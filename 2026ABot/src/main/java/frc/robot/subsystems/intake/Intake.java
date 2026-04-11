@@ -107,12 +107,12 @@ public class Intake extends SubsystemBase {
     if (newState != currentState) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
-      // applyStates();
+      applyStates();
     } else {
       if ((currentState == IntakeCurrentState.KICKING
               || currentState == IntakeCurrentState.VOMITING)
           && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
-        // applyStates();
+        applyStates();
       }
     }
     // Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);

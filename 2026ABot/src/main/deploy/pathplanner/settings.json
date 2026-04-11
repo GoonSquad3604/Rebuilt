@@ -7,9 +7,13 @@
     "LeftClimb",
     "LeftDepot",
     "LeftDoubleSwipe",
+    "LeftDoubleSwipeBump",
     "MiddleDepotClimb",
+    "MiddleDepotNeutral",
     "RightClimb",
-    "RightDoubleSwipe"
+    "RightDoubleSwipe",
+    "RightDoubleSwipeBump",
+    "RightPass"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,
@@ -36,5 +40,7 @@
   "brModuleY": -0.273,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": []
+  "robotFeatures": [
+    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.6,\"y\":0.1},\"size\":{\"width\":0.7,\"length\":0.3048},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
+  ]
 }

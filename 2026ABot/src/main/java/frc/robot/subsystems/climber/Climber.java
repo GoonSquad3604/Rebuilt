@@ -33,8 +33,6 @@ public class Climber extends SubsystemBase {
   private boolean beganAutoClimbing;
   private int autoClimbStep = 0;
 
-  // private boolean beganAutoClimb = false;
-
   public enum ClimberWantedState {
     IDLE,
     STOW,
@@ -114,7 +112,7 @@ public class Climber extends SubsystemBase {
     Logger.processInputs("Subsystems/Climber", climberInputs);
     // Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
 
-    SmartDashboard.putBoolean("climber stowed", isStowed());
+    // SmartDashboard.putBoolean("climber stowed", isStowed());
 
     SmartDashboard.putBoolean("away from tower?", RobotState.getInstance().isAwayFromTower());
 
@@ -128,7 +126,7 @@ public class Climber extends SubsystemBase {
       }
     }
 
-    SmartDashboard.putBoolean("climber deployed", isDeployed());
+    // SmartDashboard.putBoolean("climber deployed", isDeployed());
     // SmartDashboard.putBoolean("climb can proceed", canProceed());
 
     // SmartDashboard.putBoolean("left Climb detected", climberIO.leftClimbDetected());
@@ -235,12 +233,6 @@ public class Climber extends SubsystemBase {
     return null;
   }
 
-  // //deploying outer would go here
-  // CLIMBING_MID_RUNG,
-  // GRABBING_HIGH_RUNG,
-  // RELEASING_INNER,
-  // CLIMBING_HIGH_RUNG,
-
   private void applyStates() {
     switch (currentState) {
       case IDLING:
@@ -316,7 +308,6 @@ public class Climber extends SubsystemBase {
 
   private void climbMidRung() {
     climberIO.setInnerPosition(ClimberConstants.innerClimbL2Position);
-    // climberIO.setOuterPosition(ClimberConstants.outerDeployedPosition);
   }
 
   private void climbHighRung() {
@@ -441,7 +432,7 @@ public class Climber extends SubsystemBase {
         return nearPosition(ClimberConstants.innerGrabL2Position, "inner");
       case 3:
         // return true if outer rungs are deployed
-        return isOuterDeployed();
+        return nearPosition(ClimberConstants.checkOuterDeployedPosition, "outer");
       case 4:
         // return true if inner rungs fully climbed mid rung
         return nearPosition(ClimberConstants.checkInnerClimbL2Position, "inner");

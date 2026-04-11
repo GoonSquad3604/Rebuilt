@@ -37,11 +37,13 @@ public final class ShooterConstants {
     public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.725;
+    public static final double hoodMaxPos = 0.75;
     public static final double hoodMinPos = 0.05;
 
+    public static final double hoodAtSetpointTolerance = 0.01;
+
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.377;
+    public static final double offset = -0.937;
   }
 
   public static final class LauncherConstants {
@@ -61,41 +63,28 @@ public final class ShooterConstants {
     public static final double launcherAtSetpointTolerance = 3;
   }
 
-  // public static final class SecondaryLauncherConstants {
-
-  //   public static final int motorID = 9;
-
-  //   public static final double P = 0.010244;
-  //   public static final double I = 0;
-  //   public static final double D = 0;
-  //   public static final double S = 0.36956;
-  //   public static final double V = 0.1017;
-  //   public static final double A = 0.0032915;
-
-  //   public static final double forwardVelocity = 50;
-  //   public static final double cleanSpeed = 0.1;
-
-  //   public static final double atSetpointTolerance = 3;
-  // }
-
   public static final class TurretConstants {
 
-    public static final int turretID = 5;
-    public static final int turretEncoderID = 30;
+    public static final int motorID = 5;
+    public static final int encoderID = 30;
 
-    public static final double turretP = 32;
-    public static final double turretI = 0;
-    public static final double turretD = 0.25;
-    public static final double turretS = 0.4;
-    public static final double turretV = 0;
+    public static final double P = 32;
+    public static final double I = 0;
+    public static final double D = 0.25;
+    public static final double S = 0.4;
+    public static final double V = 0;
+
+    public static final double rampRate = 0.20;
 
     public static final double maxEncoderPosition = 0.927; // .75 for 180
-    public static final double minEncoderPosition = 0.06; // .25 for 180
+    public static final double minEncoderPosition = 0.05; // .25 for 180
 
-    public static final double forwardPosition = 0;
-    public static final double angleAtSetpointTolerance = 30;
+    public static final double forwardAngle = 180;
+    public static final double atSetpointTolerance = 20; // 30
 
-    public static final double turretAcceleration = 50;
-    public static final double turretVelocity = 25;
+    public static final double turretAcceleration = 60;
+    public static final double turretVelocity = 30;
+
+    public static final double encoderOffset = -0.421;
   }
 }

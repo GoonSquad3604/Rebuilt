@@ -75,13 +75,12 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            Commands.waitSeconds(0.3604),
             Commands.parallel(
                 runPath("LeftClimbPt1"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.75),
+                    Commands.waitSeconds(5.5),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(2.05),
+            Commands.waitSeconds(5.25),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("LeftClimbPt2"),
@@ -120,6 +119,21 @@ public class AutoFactory {
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
   }
 
+  public Pair<Pose2d, Command> createLeftDoubleSwipeBumpAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("LeftDoubleSwipeBumpPt1"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            runPath("LeftDoubleSwipeBumpPt2"),
+            Commands.waitSeconds(2.0),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("LeftDoubleSwipeBumpPt3"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            runPath("LeftDoubleSwipeBumpPt4")));
+  }
+
   public Pair<Pose2d, Command> createRightClimbAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -152,6 +166,21 @@ public class AutoFactory {
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
   }
 
+  public Pair<Pose2d, Command> createRightDoubleSwipeBumpAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("RightDoubleSwipeBumpPt1"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            runPath("RightDoubleSwipeBumpPt2"),
+            Commands.waitSeconds(2.0),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("RightDoubleSwipeBumpPt3"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            runPath("RightDoubleSwipeBumpPt4")));
+  }
+
   public Pair<Pose2d, Command> createMiddleDepotClimbAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -165,6 +194,41 @@ public class AutoFactory {
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("MiddleDepotClimbPt3"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
+  }
+
+  public Pair<Pose2d, Command> createMiddleDepotNeutralAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            runPath("MiddleDepotClimbPt1"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+            Commands.parallel(
+                runPath("MiddleDepotClimbPt2"),
+                Commands.sequence(
+                    Commands.waitSeconds(9.5),
+                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE))),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
+  }
+
+  public Pair<Pose2d, Command> createRightPassAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            Commands.parallel(
+                runPath("RightPass"),
+                Commands.sequence(
+                    Commands.waitSeconds(1),
+                    robotContainer
+                        .getSuperstructure()
+                        .setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+                    Commands.waitUntil(() -> RobotState.getInstance().nearTrench()),
+                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+                    Commands.waitUntil(() -> !RobotState.getInstance().nearTrench()),
+                    robotContainer
+                        .getSuperstructure()
+                        .setWantedState(WantedSuperState.INTAKE_AND_SHOOT)))));
   }
 
   public Pair<Pose2d, Command> createChaos_hehe() {
