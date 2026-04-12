@@ -274,6 +274,24 @@ public class RobotContainer {
                             == CurrentSuperState.INTAKING_AND_SHOOTING)
                 .ignoringDisable(true));
 
+    // toggle shoot mode
+    driverController
+        .leftBumper()
+        .or(testController.leftBumper())
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.INTAKE),
+                Commands.either(
+                    superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+                    Commands.either(
+                        superstructure.setWantedState(WantedSuperState.SHOOT),
+                        superstructure.setWantedState(WantedSuperState.TRACK),
+                        () -> superstructure.getCurrentSuperState() != CurrentSuperState.SHOOTING),
+                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
+                () ->
+                    superstructure.getCurrentSuperState()
+                        == CurrentSuperState.INTAKING_AND_SHOOTING));
+
     // Toggle ready to climb
     driverController
         .povUp()
@@ -367,25 +385,6 @@ public class RobotContainer {
     // CurrentSuperState.INTAKING),
     //                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
     //             .ignoringDisable(true));
-
-    // Shoot
-    operatorButtonBox
-        .button(11)
-        .or(driverController.leftBumper())
-        .or(testController.leftBumper())
-        .onTrue(
-            Commands.either(
-                superstructure.setWantedState(WantedSuperState.INTAKE),
-                Commands.either(
-                    superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-                    Commands.either(
-                        superstructure.setWantedState(WantedSuperState.SHOOT),
-                        superstructure.setWantedState(WantedSuperState.TRACK),
-                        () -> superstructure.getCurrentSuperState() != CurrentSuperState.SHOOTING),
-                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
-                () ->
-                    superstructure.getCurrentSuperState()
-                        == CurrentSuperState.INTAKING_AND_SHOOTING));
 
     // Clean (only available on pit box)
     operatorButtonBox

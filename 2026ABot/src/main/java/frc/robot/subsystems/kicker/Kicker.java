@@ -26,14 +26,16 @@ public class Kicker extends SubsystemBase {
     IDLE,
     REV,
     TEST,
-    CLEAN
+    CLEAN,
+    UNJAM
   }
 
   public enum KickerCurrentState {
     IDLING,
     REVVING,
     TESTING,
-    CLEANING
+    CLEANING,
+    UNJAMMING
   }
 
   private KickerCurrentState currentState = KickerCurrentState.IDLING;
@@ -89,6 +91,7 @@ public class Kicker extends SubsystemBase {
       case REV -> KickerCurrentState.REVVING;
       case TEST -> KickerCurrentState.TESTING;
       case CLEAN -> KickerCurrentState.CLEANING;
+      case UNJAM -> KickerCurrentState.UNJAMMING;
     };
   }
 
@@ -105,6 +108,9 @@ public class Kicker extends SubsystemBase {
         break;
       case CLEANING:
         clean();
+        break;
+      case UNJAMMING:
+        unjam();
         break;
     }
   }
@@ -123,6 +129,15 @@ public class Kicker extends SubsystemBase {
 
   private void clean() {
     kickerIO.setPower(KickerConstants.cleanSpeed);
+  }
+
+  private void unjam() {
+    kickerIO.setVelocity(KickerConstants.unjamSpeed);
+  }
+
+  // checks for a current spike
+  public boolean isSpiked() {
+    return (kickerIO.getCurrent() > KickerConstants.spikeThreshold);
   }
 
   public boolean atVelocity() {

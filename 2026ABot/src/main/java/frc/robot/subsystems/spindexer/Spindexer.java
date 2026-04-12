@@ -21,13 +21,15 @@ public class Spindexer extends SubsystemBase {
   public enum SpindexerWantedState {
     IDLE,
     SPIN,
-    CLEAN
+    CLEAN,
+    UNJAM
   }
 
   private enum SpindexerCurrentState {
     IDLING,
     SPINNING,
-    CLEANING
+    CLEANING,
+    UNJAMMING
   }
 
   private SpindexerCurrentState currentState = SpindexerCurrentState.IDLING;
@@ -80,6 +82,7 @@ public class Spindexer extends SubsystemBase {
       case IDLE -> SpindexerCurrentState.IDLING;
       case SPIN -> SpindexerCurrentState.SPINNING;
       case CLEAN -> SpindexerCurrentState.CLEANING;
+      case UNJAM -> SpindexerCurrentState.UNJAMMING;
     };
   }
 
@@ -93,6 +96,9 @@ public class Spindexer extends SubsystemBase {
         break;
       case CLEANING:
         clean();
+        break;
+      case UNJAMMING:
+        unjam();
         break;
     }
   }
@@ -109,6 +115,10 @@ public class Spindexer extends SubsystemBase {
     spindexerIO.setPower(SpindexerConstants.cleanSpeed);
   }
 
+  private void unjam() {
+    spindexerIO.setVelocity(SpindexerConstants.unjamSpeed);
+  }
+
   // testing only, remove later:
   public void setPower(double power) {
     spindexerIO.setPower(power);
@@ -116,6 +126,11 @@ public class Spindexer extends SubsystemBase {
 
   public void setVelocity(double velocity) {
     spindexerIO.setVelocity(velocity);
+  }
+
+  // checks for a current spike
+  public boolean isSpiked() {
+    return (spindexerIO.getCurrent() > SpindexerConstants.spikeThreshold);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

@@ -35,6 +35,8 @@ public class Superstructure extends SubsystemBase {
   private boolean beganFiring = false;
   private boolean readyToClimb = false;
 
+  private Timer spikeTimer = new Timer();
+
   public enum WantedSuperState {
     STOPPED,
     TRACK,
@@ -271,8 +273,17 @@ public class Superstructure extends SubsystemBase {
     } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
-
-    if ((shooter.launcherAtSetpoint() || beganFiring)
+    if (spindexer.isSpiked() || kicker.isSpiked()) {
+      spindexer.setWantedState(SpindexerWantedState.UNJAM);
+      kicker.setWantedState(KickerWantedState.UNJAM);
+      spikeTimer.reset();
+      spikeTimer.start();
+    } else if (spikeTimer.get() > .25) {
+      spikeTimer.reset();
+      spikeTimer.stop();
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+      kicker.setWantedState(KickerWantedState.REV);
+    } else if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
@@ -298,7 +309,17 @@ public class Superstructure extends SubsystemBase {
       climber.setWantedState(ClimberWantedState.STOW);
     }
 
-    if ((shooter.launcherAtSetpoint() || beganFiring)
+    if (spindexer.isSpiked() || kicker.isSpiked()) {
+      spindexer.setWantedState(SpindexerWantedState.UNJAM);
+      kicker.setWantedState(KickerWantedState.UNJAM);
+      spikeTimer.reset();
+      spikeTimer.start();
+    } else if (spikeTimer.get() > .25) {
+      spikeTimer.reset();
+      spikeTimer.stop();
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+      kicker.setWantedState(KickerWantedState.REV);
+    } else if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;

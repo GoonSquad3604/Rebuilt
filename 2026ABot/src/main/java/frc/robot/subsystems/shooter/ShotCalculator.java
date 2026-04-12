@@ -49,24 +49,23 @@ public class ShotCalculator {
   static {
     minDistance = 0;
     maxDistance = 3604;
-    phaseDelay = 0.05;
+    phaseDelay = 0.075;
 
-    shotFlywheelVelocityMap.put(2.0, 47.0);
-    shotFlywheelVelocityMap.put(3.0, 55.0);
-    shotFlywheelVelocityMap.put(4.0, 63.0);
+    shotFlywheelVelocityMap.put(1.751, 45.0); // hub
+    shotFlywheelVelocityMap.put(2.127, 48.5);
+    shotFlywheelVelocityMap.put(2.813, 50.0);
+    shotFlywheelVelocityMap.put(3.463, 55.0);
 
-    shotHoodPositionMap.put(2.0, 0.5); // min
-    shotHoodPositionMap.put(3.0, 0.55);
-    shotHoodPositionMap.put(4.0, 0.6); // min
+    shotHoodPositionMap.put(1.751, 0.07); // hub
+    shotHoodPositionMap.put(2.127, 0.475);
+    shotHoodPositionMap.put(2.813, 0.475);
+    shotHoodPositionMap.put(3.463, 0.525);
 
-    timeOfFlightMap.put(0.94, 1.07); // min
-    timeOfFlightMap.put(1.34, 0.98);
-    timeOfFlightMap.put(1.67, 1.05);
-    timeOfFlightMap.put(1.8, 1.12);
-    timeOfFlightMap.put(2.29, 1.16);
-    timeOfFlightMap.put(2.84, 1.16);
-    timeOfFlightMap.put(3.15, 1.07);
-    timeOfFlightMap.put(3.66, 1.05); // max
+    timeOfFlightMap.put(1.751, 1.0); // hub
+    timeOfFlightMap.put(2.127, 1.0);
+    timeOfFlightMap.put(2.813, 1.15);
+    timeOfFlightMap.put(3.463, 1.25);
+
   }
 
   public ShootingParameters getParameters() {
