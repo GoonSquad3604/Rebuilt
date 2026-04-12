@@ -337,16 +337,16 @@ public class RobotContainer {
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED));
 
     // cllimber testing
-    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-1)));
+    driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-0.8)));
     driverController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
-    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(1)));
+    driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(0.8)));
     driverController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
 
-    driverController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(1)));
+    driverController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(0.8)));
     driverController.y().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
-    driverController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-1)));
+    driverController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-0.8)));
     driverController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
     /* operator */
