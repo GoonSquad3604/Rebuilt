@@ -217,7 +217,10 @@ public class RobotContainer {
         .b()
         .whileTrue(
             DriveCommands.joystickDriveAtClosest45(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> driverController.getLeftTriggerAxis() > 0.05));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));

@@ -312,6 +312,7 @@ public class Climber extends SubsystemBase {
 
   private void climbHighRung() {
     climberIO.setOuterPosition(ClimberConstants.outerClimbL3Position);
+    climberIO.setInnerPower(0);
   }
 
   private void releaseInner() {

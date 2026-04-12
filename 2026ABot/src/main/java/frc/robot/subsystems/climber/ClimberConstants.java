@@ -37,7 +37,7 @@ public final class ClimberConstants {
   // step 1 - climb on low rung with outer hooks
   public static final double outerClimbL1Position = 0.520;
   public static final double checkOuterClimbL1Position = 0.544;
-
+  // 0.646
   // step 2 - grab mid rung with inner hooks
   public static final double innerGrabL2Position = 0.355;
 
@@ -46,7 +46,7 @@ public final class ClimberConstants {
 
   // step 4 - climb on mid rung with inner hooks
   public static final double innerClimbL2Position = 0.690;
-  public static final double checkInnerClimbL2Position = 0.655;
+  public static final double checkInnerClimbL2Position = 0.650;
 
   // step 5 - grab high rung with outer hooks
   public static final double outerGrabL3Position = 0.831;

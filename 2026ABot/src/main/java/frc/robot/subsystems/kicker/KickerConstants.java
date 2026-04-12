@@ -11,7 +11,7 @@ public class KickerConstants {
   public static final double A = 0.01112;
 
   public static final double shootingVelocity = 35.6; // 20
-  public static final double shootingVelocityTolerance = 10;
+  public static final double shootingVelocityTolerance = 1;
   public static final double unjamSpeed = -11;
 
   public static final double cleanSpeed = 0.1;
