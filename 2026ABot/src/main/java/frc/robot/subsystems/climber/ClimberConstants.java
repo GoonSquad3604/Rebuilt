@@ -42,6 +42,7 @@ public final class ClimberConstants {
   public static final double innerGrabL2Position = 0.355;
 
   // step 3 - L1 to deployed position
+  public static final double checkOuterDeployedPosition = 0.8;
 
   // step 4 - climb on mid rung with inner hooks
   public static final double innerClimbL2Position = 0.690;

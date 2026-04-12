@@ -105,4 +105,8 @@ public class KickerIOPhoenix implements KickerIO {
   public void setOpenLoop(double output) {
     kickerMotor.setControl(voltageRequest.withOutput(output));
   }
+
+  public double getCurrent() {
+    return kickerMotor.getSupplyCurrent().getValueAsDouble();
+  }
 }

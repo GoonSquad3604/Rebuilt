@@ -40,8 +40,7 @@ public class Shooter extends SubsystemBase {
   private ShootingParameters shootingParameters;
   private ShootingParameters lastParameters;
 
-  private boolean turretAtSetpoint = false;
-  private boolean launcherAtSetpoint = false;
+  // private boolean beganFiring = false;
 
   private double dashboardHoodPosition;
   private double dashboardLauncherVelocity;
@@ -52,18 +51,16 @@ public class Shooter extends SubsystemBase {
     SHOOT,
     EJECT,
     TEST_SHOOT,
-    TRENCH,
     CLEAN
   }
 
   private enum CurrentState {
     IDLING,
     TRACKING_TARGET,
-    SHOOTING_FORWARD,
     SHOOTING,
+    SHOOTING_FORWARD,
     EJECTING,
     TESTING_SHOOTING,
-    ALIGNING_TO_TRENCH,
     CLEANING
   }
 
@@ -105,9 +102,6 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
-    // Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-    // Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoints());
-
     if (ShotCalculator.getInstance().getParameters() != null) {
       if (lastParameters == null) {
         lastParameters = ShotCalculator.getInstance().getParameters();
@@ -118,9 +112,6 @@ public class Shooter extends SubsystemBase {
 
     CurrentState newState = handleStateTransitions();
     if (newState != currentState || lastParameters != shootingParameters) {
-      // || lastParameters.turretAngle() != shootingParameters.turretAngle()
-      // || lastParameters.hoodPose() != shootingParameters.hoodPose()
-      // || lastParameters.primaryFlywheelSpeed() != shootingParameters.primaryFlywheelSpeed()) {
 
       currentState = newState;
       lastParameters = shootingParameters;
@@ -133,10 +124,12 @@ public class Shooter extends SubsystemBase {
 
     dashboardHoodPosition =
         SmartDashboard.getNumber("Hood Pose", ShooterConstants.HoodConstants.hoodMinPos);
-    dashboardLauncherVelocity = SmartDashboard.getNumber("PrimaryLauncher Velocity", 0);
+    dashboardLauncherVelocity = SmartDashboard.getNumber("Launcher Velocity", 0);
 
     SmartDashboard.putNumber("Hood Pose", dashboardHoodPosition);
-    SmartDashboard.putNumber("PrimaryLauncher Velocity", dashboardLauncherVelocity);
+    SmartDashboard.putNumber("Launcher Velocity", dashboardLauncherVelocity);
+
+    SmartDashboard.putBoolean("In Dead Zone", !(atValidShootingLocation()));
 
     hoodMotorDisconnected.set(!hoodInputs.motorConnected);
     hoodEncoderDisconnected.set(!hoodInputs.encoderConnected);
@@ -155,7 +148,6 @@ public class Shooter extends SubsystemBase {
       case EJECT -> CurrentState.EJECTING;
       case TEST_SHOOT -> CurrentState.TESTING_SHOOTING;
       case TRACK_TARGET -> CurrentState.TRACKING_TARGET;
-      case TRENCH -> CurrentState.ALIGNING_TO_TRENCH;
       case CLEAN -> CurrentState.CLEANING;
     };
   }
@@ -180,43 +172,86 @@ public class Shooter extends SubsystemBase {
       case TRACKING_TARGET:
         trackTarget();
         break;
-      case ALIGNING_TO_TRENCH:
-        trench();
-        break;
       case CLEANING:
         clean();
         break;
     }
   }
 
-  public boolean reachedSetpoints() {
-
+  public boolean launcherAtSetpoint() {
     if (shootingParameters == null) return false;
 
-    // if override and shooting is forwards
-    if (RobotState.getInstance().isOverride()
-        && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD) {
+    boolean launcherAtSetpoint = false;
 
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
       launcherAtSetpoint =
           MathUtil.isNear(
               ShooterConstants.LauncherConstants.forwardVelocity,
               launcherIO.getVelocity(),
               ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
-    } else {
-      // default shooting check systems for if at desired positions
-      turretAtSetpoint =
-          MathUtil.isNear(
-              shootingParameters.turretAngle(),
-              turretIO.getAngle(),
-              ShooterConstants.TurretConstants.angleAtSetpointTolerance);
+    } else if (currentState == CurrentState.TESTING_SHOOTING) {
       launcherAtSetpoint =
           MathUtil.isNear(
-              shootingParameters.primaryFlywheelSpeed(),
+              dashboardLauncherVelocity,
+              launcherIO.getVelocity(),
+              ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+    } else {
+      launcherAtSetpoint =
+          MathUtil.isNear(
+              shootingParameters.flywheelVelocity(),
               launcherIO.getVelocity(),
               ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
     }
 
-    return turretAtSetpoint && launcherAtSetpoint && shootingParameters.validShootingLocation();
+    return launcherAtSetpoint;
+  }
+
+  public boolean turretAtSetpoint() {
+    if (shootingParameters == null) return false;
+
+    boolean turretAtSetpoint = false;
+
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
+      turretAtSetpoint =
+          MathUtil.isNear(
+              ShooterConstants.TurretConstants.forwardAngle,
+              turretIO.getAngle(),
+              ShooterConstants.TurretConstants.atSetpointTolerance);
+    } else {
+      turretAtSetpoint =
+          MathUtil.isNear(
+              shootingParameters.turretAngle(),
+              turretIO.getAngle(),
+              ShooterConstants.TurretConstants.atSetpointTolerance);
+    }
+
+    return turretAtSetpoint;
+  }
+
+  public boolean hoodAtSetpoint() {
+    if (shootingParameters == null) return false;
+
+    boolean hoodAtSetpoint = false;
+
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
+      hoodAtSetpoint =
+          MathUtil.isNear(
+              ShooterConstants.HoodConstants.forwardPosition,
+              hoodIO.getPosition(),
+              ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+    } else {
+      hoodAtSetpoint =
+          MathUtil.isNear(
+              shootingParameters.hoodPosition(),
+              hoodIO.getPosition(),
+              ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+    }
+
+    return hoodAtSetpoint;
+  }
+
+  public boolean atValidShootingLocation() {
+    return shootingParameters.validShootingLocation();
   }
 
   public void setWantedState(ShooterWantedState wantedState) {
@@ -230,37 +265,30 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shootForward() {
-    turretIO.setPosition(ShooterConstants.TurretConstants.forwardPosition);
+    turretIO.setAngle(ShooterConstants.TurretConstants.forwardAngle);
     hoodIO.setPosition(ShooterConstants.HoodConstants.forwardPosition);
     launcherIO.setVelocity(ShooterConstants.LauncherConstants.forwardVelocity);
   }
 
   private void shoot() {
     turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPose());
-    launcherIO.setVelocity(shootingParameters.primaryFlywheelSpeed());
+    hoodIO.setPosition(shootingParameters.hoodPosition());
+    launcherIO.setVelocity(shootingParameters.flywheelVelocity());
   }
 
   private void eject() {
     turretIO.setPower(0.0);
     hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);
-    launcherIO.setVelocity(shootingParameters.primaryFlywheelSpeed());
+    launcherIO.setVelocity(shootingParameters.flywheelVelocity());
   }
 
   private void testShoot() {
     launcherIO.setVelocity(dashboardLauncherVelocity);
-
     hoodIO.setPosition(dashboardHoodPosition);
     turretIO.setAngle(shootingParameters.turretAngle());
   }
 
   private void trackTarget() {
-    turretIO.setAngle(shootingParameters.turretAngle());
-    launcherIO.setPower(0);
-    hoodIO.setPosition(shootingParameters.hoodPose());
-  }
-
-  private void trench() {
     turretIO.setAngle(shootingParameters.turretAngle());
     launcherIO.setPower(0.0);
     hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);

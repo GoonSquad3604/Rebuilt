@@ -102,4 +102,8 @@ public class SpindexerIOPhoenix implements SpindexerIO {
   public void setOpenLoop(double output) {
     spindexerMotor.setControl(voltageRequest.withOutput(output));
   }
+
+  public double getCurrent() {
+    return spindexerMotor.getSupplyCurrent().getValueAsDouble();
+  }
 }

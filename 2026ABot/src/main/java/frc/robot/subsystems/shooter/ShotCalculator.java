@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.RobotState.ShooterTarget;
@@ -17,8 +18,9 @@ import frc.robot.util.GeomUtil;
 public class ShotCalculator {
 
   private static ShotCalculator instance;
-
+  private boolean isValid;
   private double turretAngle;
+  private double hoodPosition;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -28,56 +30,42 @@ public class ShotCalculator {
   public record ShootingParameters(
       boolean validShootingLocation,
       double turretAngle,
-      double hoodPose,
-      double primaryFlywheelSpeed) {}
-  // double secondaryFlywheelSpeed) {}
+      double hoodPosition,
+      double flywheelVelocity) {}
 
   // Cache parameters
   private static ShootingParameters latestParameters = null;
-
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
+
+  private static final InterpolatingDoubleTreeMap shotFlywheelVelocityMap =
+      new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap shotHoodPositionMap =
       new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap shotPrimaryFlywheelSpeedMap =
-      new InterpolatingDoubleTreeMap();
-  // private static final InterpolatingDoubleTreeMap shotSecondaryFlywheelSpeedMap =
-  //     new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap timeOfFlightMap =
       new InterpolatingDoubleTreeMap();
 
   static {
     minDistance = 0;
-    maxDistance = 3.85;
-    phaseDelay = 0.05;
+    maxDistance = 3604;
+    phaseDelay = 0.075;
 
-    shotPrimaryFlywheelSpeedMap.put(0.94, 47.0); // min
-    shotPrimaryFlywheelSpeedMap.put(1.34, 47.0);
-    shotPrimaryFlywheelSpeedMap.put(1.67, 50.0);
-    shotPrimaryFlywheelSpeedMap.put(1.8, 52.0);
-    shotPrimaryFlywheelSpeedMap.put(2.29, 56.0);
-    shotPrimaryFlywheelSpeedMap.put(2.84, 75.0);
-    shotPrimaryFlywheelSpeedMap.put(3.15, 85.0);
-    shotPrimaryFlywheelSpeedMap.put(3.66, 95.0); // max
+    shotFlywheelVelocityMap.put(1.751, 45.0); // hub
+    shotFlywheelVelocityMap.put(2.127, 48.5);
+    shotFlywheelVelocityMap.put(2.813, 50.0);
+    shotFlywheelVelocityMap.put(3.463, 55.0);
 
-    timeOfFlightMap.put(0.94, 1.07); // min
-    timeOfFlightMap.put(1.34, 0.98);
-    timeOfFlightMap.put(1.67, 1.05);
-    timeOfFlightMap.put(1.8, 1.12);
-    timeOfFlightMap.put(2.29, 1.16);
-    timeOfFlightMap.put(2.84, 1.16);
-    timeOfFlightMap.put(3.15, 1.07);
-    timeOfFlightMap.put(3.66, 1.05); // max
+    shotHoodPositionMap.put(1.751, 0.07); // hub
+    shotHoodPositionMap.put(2.127, 0.475);
+    shotHoodPositionMap.put(2.813, 0.475);
+    shotHoodPositionMap.put(3.463, 0.525);
 
-    shotHoodPositionMap.put(0.94, 0.1); // min
-    shotHoodPositionMap.put(1.34, 0.3);
-    shotHoodPositionMap.put(1.67, 0.3);
-    shotHoodPositionMap.put(1.8, 0.3);
-    shotHoodPositionMap.put(2.29, 0.35);
-    shotHoodPositionMap.put(2.84, 0.5);
-    shotHoodPositionMap.put(3.15, 0.6);
-    shotHoodPositionMap.put(3.66, 0.725); // max
+    timeOfFlightMap.put(1.751, 1.0); // hub
+    timeOfFlightMap.put(2.127, 1.0);
+    timeOfFlightMap.put(2.813, 1.15);
+    timeOfFlightMap.put(3.463, 1.25);
+
   }
 
   public ShootingParameters getParameters() {
@@ -145,7 +133,22 @@ public class ShotCalculator {
       lookaheadTurretToTargetDistance = targetPose.getDistance(lookaheadPose.getTranslation());
     }
 
-    // Calculate parameters accounted for imparted velocity
+    /* Calculate parameters accounted for predicted position */
+
+    // distance deadzone
+    isValid =
+        (lookaheadTurretToTargetDistance >= minDistance
+                && lookaheadTurretToTargetDistance <= maxDistance)
+            || RobotState.getInstance().getTarget() != ShooterTarget.HUB;
+
+    // tower deadzone
+    isValid =
+        isValid
+            && !(RobotState.getInstance().isUnderTower(lookaheadPose))
+            && !(RobotState.getInstance().isBehindHub(lookaheadPose))
+            && !(RobotState.getInstance().nearTrench());
+
+    // turret angle
     turretAngle =
         lookaheadPose
             .getRotation()
@@ -157,14 +160,23 @@ public class ShotCalculator {
       turretAngle += 360;
     }
 
+    turretAngle = 360 - turretAngle;
+
+    // hood position
+    hoodPosition = shotHoodPositionMap.get(lookaheadTurretToTargetDistance);
+
+    // emergency trench hood align
+    if (RobotState.getInstance().nearTrench()) {
+      hoodPosition = ShooterConstants.HoodConstants.hoodMinPos;
+    }
+
+    // configure parameters with calculated values
     latestParameters =
         new ShootingParameters(
-            (lookaheadTurretToTargetDistance >= minDistance
-                    && lookaheadTurretToTargetDistance <= maxDistance)
-                || RobotState.getInstance().getTarget() != ShooterTarget.HUB,
-            360 - turretAngle,
-            shotHoodPositionMap.get(lookaheadTurretToTargetDistance),
-            shotPrimaryFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
+            isValid,
+            turretAngle,
+            hoodPosition,
+            shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values
     // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
@@ -172,6 +184,11 @@ public class ShotCalculator {
     // Logger.recordOutput(
     //     "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
     //     lookaheadTurretToTargetDistance);
+
+    SmartDashboard.putBoolean(
+        "Is Under Tower", RobotState.getInstance().isUnderTower(lookaheadPose));
+    SmartDashboard.putBoolean("Is Behind Hub", RobotState.getInstance().isBehindHub(lookaheadPose));
+    SmartDashboard.putBoolean("Is Under Trench", RobotState.getInstance().nearTrench());
 
     return latestParameters;
   }

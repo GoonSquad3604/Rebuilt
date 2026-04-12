@@ -82,6 +82,26 @@ public class RobotState {
     return getPose().getY() > 3.25 && getPose().getY() < 4.5;
   }
 
+  public boolean isUnderTower(Pose2d pose) {
+    return pose.getX() < AllianceFlipUtil.apply(FieldConstants.Tower.leftUpright).getX()
+        && pose.getY() > AllianceFlipUtil.apply(FieldConstants.Tower.rightUpright).getY()
+        && pose.getY() < AllianceFlipUtil.apply(FieldConstants.Tower.leftUpright).getY();
+  }
+
+  public boolean isBehindHub(Pose2d pose) {
+    return pose.getX() > AllianceFlipUtil.apply(FieldConstants.Hub.farLeftCorner).getX()
+        && pose.getX() < AllianceFlipUtil.applyX(7.0)
+        && pose.getY() > AllianceFlipUtil.apply(FieldConstants.Hub.farRightCorner).getY()
+        && pose.getY() < AllianceFlipUtil.apply(FieldConstants.Hub.farLeftCorner).getY();
+  }
+
+  public boolean nearTrench() {
+    // blue
+    return (getPose().getX() > 3.8 && getPose().getX() < 5.8)
+        // red
+        || (getPose().getX() > 10.884 && getPose().getX() < 13);
+  }
+
   /** Get the rotation of the estimated pose. */
   public Rotation2d getRotation() {
     return estimatedPose.getRotation();

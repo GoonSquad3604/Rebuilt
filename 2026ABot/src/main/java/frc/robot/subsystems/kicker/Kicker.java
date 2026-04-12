@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -19,16 +20,22 @@ public class Kicker extends SubsystemBase {
 
   private SysIdRoutine sysID;
 
+  private double dashboardKickerVelocity;
+
   public enum KickerWantedState {
     IDLE,
     REV,
-    CLEAN
+    TEST,
+    CLEAN,
+    UNJAM
   }
 
   public enum KickerCurrentState {
     IDLING,
     REVVING,
-    CLEANING
+    TESTING,
+    CLEANING,
+    UNJAMMING
   }
 
   private KickerCurrentState currentState = KickerCurrentState.IDLING;
@@ -65,6 +72,10 @@ public class Kicker extends SubsystemBase {
       applyStates();
     }
 
+    dashboardKickerVelocity =
+        SmartDashboard.getNumber("Kicker Velocity", KickerConstants.shootingVelocity);
+    SmartDashboard.putNumber("Kicker Velocity", dashboardKickerVelocity);
+
     // Logger.recordOutput("Subsystems/Kicker/WantedState", wantedState);
 
     kickerMotorDisconnected.set(!kickerInputs.motorConnected);
@@ -78,7 +89,9 @@ public class Kicker extends SubsystemBase {
     return switch (wantedState) {
       case IDLE -> KickerCurrentState.IDLING;
       case REV -> KickerCurrentState.REVVING;
+      case TEST -> KickerCurrentState.TESTING;
       case CLEAN -> KickerCurrentState.CLEANING;
+      case UNJAM -> KickerCurrentState.UNJAMMING;
     };
   }
 
@@ -90,8 +103,14 @@ public class Kicker extends SubsystemBase {
       case REVVING:
         rev();
         break;
+      case TESTING:
+        test();
+        break;
       case CLEANING:
         clean();
+        break;
+      case UNJAMMING:
+        unjam();
         break;
     }
   }
@@ -104,8 +123,21 @@ public class Kicker extends SubsystemBase {
     kickerIO.setVelocity(KickerConstants.shootingVelocity);
   }
 
+  private void test() {
+    kickerIO.setVelocity(dashboardKickerVelocity);
+  }
+
   private void clean() {
     kickerIO.setPower(KickerConstants.cleanSpeed);
+  }
+
+  private void unjam() {
+    kickerIO.setVelocity(KickerConstants.unjamSpeed);
+  }
+
+  // checks for a current spike
+  public boolean isSpiked() {
+    return (kickerIO.getCurrent() > KickerConstants.spikeThreshold);
   }
 
   public boolean atVelocity() {

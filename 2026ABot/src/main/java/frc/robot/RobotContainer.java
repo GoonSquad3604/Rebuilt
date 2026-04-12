@@ -19,7 +19,6 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.CurrentSuperState;
 import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -94,7 +93,7 @@ public class RobotContainer {
     spindexer = new Spindexer(new SpindexerIOPhoenix());
     superstructure = new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
 
-    // Set up auto routines
+    // Set up SysId auto chooser
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
@@ -209,9 +208,9 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
                     () -> driverController.getLeftTriggerAxis() > 0.05)
-                .alongWith(superstructure.setWantedState(WantedSuperState.ALIGN_TO_TRENCH)));
+                .alongWith(superstructure.setWantedState(WantedSuperState.TRACK)));
 
-    driverController.rightBumper().onFalse(superstructure.setWantedState(WantedSuperState.STOPPED));
+    driverController.rightBumper().onFalse(superstructure.setWantedState(WantedSuperState.TRACK));
 
     // Lock to 45° when B button is held
     driverController
@@ -235,40 +234,69 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     // Toggle intake mode
+    // driverController
+    //     .rightTrigger()
+    //     .or(testController.rightTrigger())
+    //     .onTrue(
+    //         Commands.either(
+    //                 superstructure.setWantedState(WantedSuperState.INTAKE),
+    //                 Commands.either(
+    //                     superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+    //                     Commands.either(
+    //                         superstructure.setWantedState(WantedSuperState.SHOOT),
+    //                         superstructure.setWantedState(WantedSuperState.STOPPED),
+    //                         () ->
+    //                             superstructure.getCurrentSuperState()
+    //                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
+    //                     () -> superstructure.getCurrentSuperState() ==
+    // CurrentSuperState.SHOOTING),
+    //                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
+    //             .ignoringDisable(true));
+
+    // Toggle intake mode
     driverController
         .rightTrigger()
+        .or(testController.rightTrigger())
         .onTrue(
             Commands.either(
-                    superstructure.setWantedState(WantedSuperState.INTAKE),
+                    superstructure.setWantedState(WantedSuperState.SHOOT),
                     Commands.either(
                         superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
                         Commands.either(
-                            superstructure.setWantedState(WantedSuperState.SHOOT),
-                            superstructure.setWantedState(WantedSuperState.STOPPED),
+                            superstructure.setWantedState(WantedSuperState.INTAKE),
+                            superstructure.setWantedState(WantedSuperState.TRACK),
                             () ->
                                 superstructure.getCurrentSuperState()
-                                    == CurrentSuperState.INTAKING_AND_SHOOTING),
+                                    != CurrentSuperState.INTAKING),
                         () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
-                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
+                    () ->
+                        superstructure.getCurrentSuperState()
+                            == CurrentSuperState.INTAKING_AND_SHOOTING)
                 .ignoringDisable(true));
 
+    // toggle shoot mode
+    driverController
+        .leftBumper()
+        .or(testController.leftBumper())
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.INTAKE),
+                Commands.either(
+                    superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+                    Commands.either(
+                        superstructure.setWantedState(WantedSuperState.SHOOT),
+                        superstructure.setWantedState(WantedSuperState.TRACK),
+                        () -> superstructure.getCurrentSuperState() != CurrentSuperState.SHOOTING),
+                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
+                () ->
+                    superstructure.getCurrentSuperState()
+                        == CurrentSuperState.INTAKING_AND_SHOOTING));
+
+    // Toggle ready to climb
     driverController
         .povUp()
         .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
         .onTrue(superstructure.toggleReadyToClimb());
-
-    // Climber testing
-    // driverController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-.8)));
-    // driverController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
-
-    // driverController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(.8)));
-    // driverController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
-
-    // driverController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(.8)));
-    // driverController.y().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
-
-    // driverController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-.8)));
-    // driverController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
     /* OPERATOR */
 
@@ -276,10 +304,13 @@ public class RobotContainer {
     operatorButtonBox
         .button(1)
         .onTrue(RobotState.getInstance().toggleManualShooting().ignoringDisable(true));
+
+    // Set manual target to left pass
     operatorButtonBox
         .button(2)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.LEFT_PASS));
-    // operatorButtonBox.button(3).onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.HUB));
+
+    // Eject
     operatorButtonBox
         .button(3)
         .onTrue(
@@ -287,9 +318,13 @@ public class RobotContainer {
                 superstructure.setWantedState(WantedSuperState.STOPPED),
                 superstructure.setWantedState(WantedSuperState.EJECT),
                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.EJECTING));
+
+    // Set manual target to right pass
     operatorButtonBox
         .button(4)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.RIGHT_PASS));
+
+    // Set manual target to forward
     operatorButtonBox
         .button(5)
         .onTrue(RobotState.getInstance().setManualTarget(ShooterTarget.FORWARD));
@@ -299,8 +334,7 @@ public class RobotContainer {
         .button(6)
         .onTrue(superstructure.setWantedState(WantedSuperState.STOW).ignoringDisable(true));
 
-    // Toggle tracking
-    // operatorButtonBox.button(7).onTrue(superstructure.toggleTracking());
+    // Progress Manual Climb
     operatorButtonBox
         .button(7)
         .and(() -> hopper.isStowed())
@@ -321,7 +355,7 @@ public class RobotContainer {
         .button(9)
         .onTrue(superstructure.setWantedState(WantedSuperState.DECLIMB).ignoringDisable(true));
 
-    // climb mode
+    // Climb
     operatorButtonBox
         .button(10)
         .onTrue(
@@ -331,28 +365,31 @@ public class RobotContainer {
                     () -> superstructure.getCurrentSuperState() != CurrentSuperState.CLIMBING)
                 .ignoringDisable(true));
 
-    // toggle shoot mode
-    operatorButtonBox
-        .button(11)
-        .or(driverController.leftBumper())
-        .onTrue(
-            Commands.either(
-                    superstructure.setWantedState(WantedSuperState.SHOOT),
-                    Commands.either(
-                        superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-                        Commands.either(
-                            superstructure.setWantedState(WantedSuperState.INTAKE),
-                            superstructure.setWantedState(WantedSuperState.STOPPED),
-                            () ->
-                                superstructure.getCurrentSuperState()
-                                    == CurrentSuperState.INTAKING_AND_SHOOTING),
-                        () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
-                    () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
-                .ignoringDisable(true));
+    // Shoot
+    // operatorButtonBox
+    //     .button(11)
+    //     .or(driverController.leftBumper())
+    //     .or(testController.leftBumper())
+    //     .onTrue(
+    //         Commands.either(
+    //                 superstructure.setWantedState(WantedSuperState.SHOOT),
+    //                 Commands.either(
+    //                     superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+    //                     Commands.either(
+    //                         superstructure.setWantedState(WantedSuperState.INTAKE),
+    //                         superstructure.setWantedState(WantedSuperState.STOPPED),
+    //                         () ->
+    //                             superstructure.getCurrentSuperState()
+    //                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
+    //                     () -> superstructure.getCurrentSuperState() ==
+    // CurrentSuperState.INTAKING),
+    //                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
+    //             .ignoringDisable(true));
 
-    /* test controller */
-    driverController
-        .back()
+    // Clean (only available on pit box)
+    operatorButtonBox
+        .button(12)
+        .or(testController.x())
         .onTrue(
             Commands.either(
                     superstructure.setWantedState(WantedSuperState.CLEAN),
@@ -360,25 +397,41 @@ public class RobotContainer {
                     () -> superstructure.getCurrentSuperState() != CurrentSuperState.CLEANING)
                 .ignoringDisable(true));
 
-    testController.b().onTrue(Commands.runOnce(() -> climber.setPositionOuterRungs(0.6)));
-    testController.b().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
+    /* test controller */
+
+    testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(-.8)));
+    testController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
+
+    testController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerInnerRungs(.8)));
+    testController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerInnerRungs(0.0)));
+
+    testController.y().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(.8)));
+    testController.y().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
+
+    testController.a().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-.8)));
+    testController.a().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
 
     testController
-        .a()
+        .b()
         .onTrue(
-            Commands.runOnce(
-                () -> climber.setPositionOuterRungs(ClimberConstants.outerStowedPosition)));
-    testController
-        .y()
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.TRACK),
+                superstructure.setWantedState(WantedSuperState.STOPPED),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.TRACKING));
+
+    testController.povLeft().onTrue(Commands.runOnce(() -> intake.setHingePower(0.2)));
+    testController.povLeft().onFalse(Commands.runOnce(() -> intake.setHingePower(0.0)));
+
+    testController.povRight().onTrue(Commands.runOnce(() -> intake.setHingePower(-0.2)));
+    testController.povRight().onFalse(Commands.runOnce(() -> intake.setHingePower(0.0)));
+
+    driverController
+        .rightStick()
         .onTrue(
-            Commands.runOnce(
-                () -> climber.setPositionOuterRungs(ClimberConstants.outerDeployedPosition)));
-
-    testController.povUp().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(.8)));
-    testController.povUp().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
-
-    testController.povDown().onTrue(Commands.runOnce(() -> climber.setPowerOuterRungs(-.8)));
-    testController.povDown().onFalse(Commands.runOnce(() -> climber.setPowerOuterRungs(0.0)));
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                superstructure.setWantedState(WantedSuperState.TRACK),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.TESTING_SHOOTING));
   }
 
   /**
@@ -386,7 +439,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getSysIdRoutine() {
     return autoChooser.get();
   }
 

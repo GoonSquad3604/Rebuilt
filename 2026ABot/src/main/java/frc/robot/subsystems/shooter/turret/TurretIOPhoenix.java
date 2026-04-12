@@ -50,35 +50,27 @@ public class TurretIOPhoenix implements TurretIO {
 
   public TurretIOPhoenix() {
 
-    turretMotor = new TalonFX(ShooterConstants.TurretConstants.turretID, Constants.CANBusName);
-    // turretRequest = new PositionVoltage(0);
-
-    turretEncoder =
-        new CANcoder(ShooterConstants.TurretConstants.turretEncoderID, Constants.CANBusName);
-    turretEncoderConfig = new CANcoderConfiguration();
-
-    turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = -0.617;
-    turretEncoderConfig.MagnetSensor.SensorDirection =
-        SensorDirectionValue.CounterClockwise_Positive;
-
-    turretEncoder.getConfigurator().apply(turretEncoderConfig);
-
+    // motor config
+    turretMotor = new TalonFX(ShooterConstants.TurretConstants.motorID, Constants.CANBusName);
     turretMotorConfig = new TalonFXConfiguration();
 
     turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
     turretMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.Feedback.FeedbackRemoteSensorID =
-        ShooterConstants.TurretConstants.turretEncoderID;
+    turretMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.TurretConstants.encoderID;
     turretMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-    // turretMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    // turretMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = .999;
-    // turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    // turretMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 
-    // motion magic
+    // encoder config
+    turretEncoder = new CANcoder(ShooterConstants.TurretConstants.encoderID, Constants.CANBusName);
+    turretEncoderConfig = new CANcoderConfiguration();
+
+    turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = ShooterConstants.TurretConstants.encoderOffset;
+    turretEncoderConfig.MagnetSensor.SensorDirection =
+        SensorDirectionValue.CounterClockwise_Positive;
+
+    // motion magic position control
     turretMotorConfig.MotionMagic.MotionMagicAcceleration =
         ShooterConstants.TurretConstants.turretAcceleration;
     turretMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
@@ -86,12 +78,15 @@ public class TurretIOPhoenix implements TurretIO {
 
     turretMotorConfig.Slot0 =
         new Slot0Configs()
-            .withKP(ShooterConstants.TurretConstants.turretP)
-            .withKI(ShooterConstants.TurretConstants.turretI)
-            .withKD(ShooterConstants.TurretConstants.turretD)
-            .withKS(ShooterConstants.TurretConstants.turretS)
-            .withKV(ShooterConstants.TurretConstants.turretV);
-    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.20; // 0.25
+            .withKP(ShooterConstants.TurretConstants.P)
+            .withKI(ShooterConstants.TurretConstants.I)
+            .withKD(ShooterConstants.TurretConstants.D)
+            .withKS(ShooterConstants.TurretConstants.S)
+            .withKV(ShooterConstants.TurretConstants.V);
+    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod =
+        ShooterConstants.TurretConstants.rampRate;
+
+    // apply configs
     PhoenixUtil.tryUntilOk(5, () -> turretEncoder.getConfigurator().apply(turretEncoderConfig));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
@@ -145,17 +140,6 @@ public class TurretIOPhoenix implements TurretIO {
                     ShooterConstants.TurretConstants.maxEncoderPosition))
             .withEnableFOC(true));
   }
-
-  // @Override
-  // public void setPosition(double position, double velocity) {
-  //   turretMotor.setControl(
-  //       turretRequest
-  //           .withPosition(
-  //               MathUtil.clamp(
-  //                   position,
-  //                   ShooterConstants.TurretConstants.minEncoderPosition,
-  //                   ShooterConstants.TurretConstants.maxEncoderPosition)));
-  // }
 
   @Override
   public void setAngle(double angle) {

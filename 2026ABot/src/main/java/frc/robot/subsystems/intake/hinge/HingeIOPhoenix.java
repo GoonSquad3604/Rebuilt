@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -66,14 +67,16 @@ public class HingeIOPhoenix implements HingeIO {
     motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1;
 
     encoderConfig = new CANcoderConfiguration();
-    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = .75;
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoderConfig.MagnetSensor.MagnetOffset = IntakeConstants.HingeConstants.encoderOffset;
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> hingeMotor.getConfigurator().apply(motorConfig));
     PhoenixUtil.tryUntilOk(5, () -> hingeEncoder.getConfigurator().apply(encoderConfig));
 
     // base status signal
-    position = hingeEncoder.getPosition();
+    position = hingeEncoder.getAbsolutePosition();
     velocity = hingeEncoder.getVelocity();
     appliedVoltage = hingeMotor.getMotorVoltage();
     supplyCurrent = hingeMotor.getSupplyCurrent();
@@ -102,7 +105,7 @@ public class HingeIOPhoenix implements HingeIO {
     inputs.voltage = hingeMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hingeMotor.getSupplyCurrent().getValueAsDouble();
     // inputs.velocity = hingeEncoder.getVelocity().getValueAsDouble();
-    inputs.position = hingeEncoder.getPosition().getValueAsDouble();
+    inputs.position = hingeEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
@@ -116,7 +119,7 @@ public class HingeIOPhoenix implements HingeIO {
 
   @Override
   public double getPosition() {
-    return hingeMotor.getPosition().getValueAsDouble();
+    return hingeEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override

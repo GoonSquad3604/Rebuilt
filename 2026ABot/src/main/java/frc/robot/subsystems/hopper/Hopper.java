@@ -99,7 +99,7 @@ public class Hopper extends SubsystemBase {
       case IDLE:
         return HopperCurrentState.IDLING;
       case DEPLOY:
-        return isDeployed() ? HopperCurrentState.DEPLOYED : HopperCurrentState.DEPLOYING;
+        return HopperCurrentState.DEPLOYING;
       case STOW:
         if (isStowed()) {
           // wantedState = HopperWantedState.IDLE;
@@ -152,8 +152,8 @@ public class Hopper extends SubsystemBase {
   }
 
   private void deployed() {
-    wasDeployed = true;
-    hopperIO.setPower(0.0);
+    // wasDeployed = true;
+    // hopperIO.setPower(0.0);
   }
 
   private void stowFast() {
@@ -184,10 +184,10 @@ public class Hopper extends SubsystemBase {
   }
 
   public boolean isStowed() {
-    if (!recentlyStowed) {
-      recentlyStowed = true;
-      hopperIO.setEncoderPosition(0.0);
-    }
+    // if (!recentlyStowed) {
+    //   recentlyStowed = true;
+    hopperIO.setEncoderPosition(0.0);
+    // }
     return hopperIO.stowedDetectorTriggered();
   }
 
