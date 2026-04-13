@@ -43,7 +43,7 @@ public final class ShooterConstants {
     public static final double hoodAtSetpointTolerance = 0.01;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = .033;
+    public static final double offset = -0.873;
   }
 
   public static final class LauncherConstants {

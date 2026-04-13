@@ -35,7 +35,7 @@ public class Superstructure extends SubsystemBase {
   private boolean beganFiring = false;
   private boolean readyToClimb = false;
 
-  private Timer spikeTimer = new Timer();
+  // private Timer spikeTimer = new Timer();
 
   public enum WantedSuperState {
     STOPPED,
@@ -242,7 +242,7 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.EJECT);
 
     if (hopper.isStowed()) {
-      wantedSuperState = WantedSuperState.STOPPED;
+      wantedSuperState = WantedSuperState.TRACK;
       return;
     }
 
@@ -253,7 +253,7 @@ public class Superstructure extends SubsystemBase {
       if (!hopper.isStowed()) {
         hopper.setWantedState(HopperWantedState.STOW);
       } else {
-        wantedSuperState = WantedSuperState.STOPPED;
+        wantedSuperState = WantedSuperState.TRACK;
       }
     }
   }
@@ -273,22 +273,20 @@ public class Superstructure extends SubsystemBase {
     } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
-    // if (spindexer.isSpiked() || kicker.isSpiked()) {
-    //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-    //   kicker.setWantedState(KickerWantedState.UNJAM);
-    //   spikeTimer.reset();
-    //   spikeTimer.start();
-    // } else if (spikeTimer.get() > .25) {
-    //   spikeTimer.reset();
-    //   spikeTimer.stop();
-    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
-    //   kicker.setWantedState(KickerWantedState.REV);
-    // } else
+
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
-      spindexer.setWantedState(SpindexerWantedState.SPIN);
+      // new code:
+      if(kicker.isJammed()) {
+        spindexer.setWantedState(SpindexerWantedState.UNJAM);
+        kicker.setWantedState(KickerWantedState.UNJAM);
+      }else {
+        spindexer.setWantedState(SpindexerWantedState.SPIN);
+        kicker.setWantedState(KickerWantedState.REV);
+      }
+      //spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
     }
@@ -310,17 +308,6 @@ public class Superstructure extends SubsystemBase {
       climber.setWantedState(ClimberWantedState.STOW);
     }
 
-    // if (spindexer.isSpiked() || kicker.isSpiked()) {
-    //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-    //   kicker.setWantedState(KickerWantedState.UNJAM);
-    //   spikeTimer.reset();
-    //   spikeTimer.start();
-    // } else if (spikeTimer.get() > .25) {
-    //   spikeTimer.reset();
-    //   spikeTimer.stop();
-    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
-    //   kicker.setWantedState(KickerWantedState.REV);
-    // } else
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {

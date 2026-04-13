@@ -14,7 +14,8 @@ public class SpindexerConstants {
 
   public static final double spinVelocity = 120; // 80
   public static final double cleanSpeed = 0.1;
-  public static final double unjamSpeed = -50;
+  public static final double unjamVelocity = -50;
 
-  public static final double spikeThreshold = 45;
+  // public static final double spikeThreshold = 45;
+  public static final double unjamDuration = 0.5;
 }
