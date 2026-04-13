@@ -40,7 +40,8 @@ public class KickerIOPhoenix implements KickerIO {
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    motorConfig.CurrentLimits.SupplyCurrentLimit = 60;
+    motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     motorConfig.Slot0 =
         new Slot0Configs()
             .withKP(KickerConstants.P)

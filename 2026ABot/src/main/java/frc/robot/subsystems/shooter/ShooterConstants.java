@@ -18,8 +18,8 @@ public final class ShooterConstants {
 
   public static double robotToTurretLinear = 6.3245553203;
 
-  public static Translation2d leftPassPosition = new Translation2d(3.5, 6.125);
-  public static Translation2d rightPassPosition = new Translation2d(3.5, 2.125);
+  public static Translation2d leftPassPosition = new Translation2d(1.2, 6.125);
+  public static Translation2d rightPassPosition = new Translation2d(1.2, 2.125);
 
   public static final class HoodConstants {
 
@@ -43,7 +43,7 @@ public final class ShooterConstants {
     public static final double hoodAtSetpointTolerance = 0.01;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.937;
+    public static final double offset = .033;
   }
 
   public static final class LauncherConstants {

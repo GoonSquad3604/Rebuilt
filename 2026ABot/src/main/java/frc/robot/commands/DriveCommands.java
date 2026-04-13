@@ -76,7 +76,7 @@ public class DriveCommands {
           omega = Math.copySign(omega * omega, omega);
 
           // is slowmode?
-          double multiplier = slowMode.getAsBoolean() ? 0.33 : 1;
+          double multiplier = slowMode.getAsBoolean() ? 0.25 : 1;
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
@@ -222,7 +222,7 @@ public class DriveCommands {
   }
   /** Angle the drive train at the closest 45 degree to get over the bump as easy as possible */
   public static Command joystickDriveAtClosest45(
-      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, BooleanSupplier slowMode) {
 
     // Create PID controller
     ProfiledPIDController angleController =
@@ -261,11 +261,14 @@ public class DriveCommands {
                   angleController.calculate(
                       drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
 
+              // is slowmode?
+              double multiplier = slowMode.getAsBoolean() ? 0.25 : 1;
+
               // Convert to field relative speeds & send command
               ChassisSpeeds speeds =
                   new ChassisSpeeds(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec() * multiplier,
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec() * multiplier,
                       omega);
               boolean isFlipped =
                   DriverStation.getAlliance().isPresent()

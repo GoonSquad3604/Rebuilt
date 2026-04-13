@@ -21,6 +21,7 @@ public class ShotCalculator {
   private boolean isValid;
   private double turretAngle;
   private double hoodPosition;
+  private boolean isPassing;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -49,23 +50,31 @@ public class ShotCalculator {
   static {
     minDistance = 0;
     maxDistance = 3604;
-    phaseDelay = 0.075;
+    phaseDelay = 0.1125;
 
     shotFlywheelVelocityMap.put(1.751, 45.0); // hub
     shotFlywheelVelocityMap.put(2.127, 48.5);
     shotFlywheelVelocityMap.put(2.813, 50.0);
+    shotFlywheelVelocityMap.put(3.023, 53.0);
     shotFlywheelVelocityMap.put(3.463, 55.0);
+    shotFlywheelVelocityMap.put(4.336, 63.0);
+    shotFlywheelVelocityMap.put(4.743, 66.0);
 
     shotHoodPositionMap.put(1.751, 0.07); // hub
     shotHoodPositionMap.put(2.127, 0.475);
     shotHoodPositionMap.put(2.813, 0.475);
+    shotHoodPositionMap.put(3.023, 0.5);
     shotHoodPositionMap.put(3.463, 0.525);
+    shotHoodPositionMap.put(4.336, 0.59);
+    shotHoodPositionMap.put(4.743, 0.6);
 
     timeOfFlightMap.put(1.751, 1.0); // hub
     timeOfFlightMap.put(2.127, 1.0);
     timeOfFlightMap.put(2.813, 1.15);
+    timeOfFlightMap.put(3.023, 1.17);
     timeOfFlightMap.put(3.463, 1.25);
-
+    timeOfFlightMap.put(4.336, 1.28);
+    timeOfFlightMap.put(4.743, 1.3);
   }
 
   public ShootingParameters getParameters() {
@@ -73,10 +82,13 @@ public class ShotCalculator {
     Translation2d targetPose;
     if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
       targetPose = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+      isPassing = false;
     } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
       targetPose = AllianceFlipUtil.apply(ShooterConstants.leftPassPosition);
+      isPassing = true;
     } else {
       targetPose = AllianceFlipUtil.apply(ShooterConstants.rightPassPosition);
+      isPassing = true;
     }
 
     Pose2d estimatedPose = RobotState.getInstance().getPose();
@@ -165,18 +177,20 @@ public class ShotCalculator {
     // hood position
     hoodPosition = shotHoodPositionMap.get(lookaheadTurretToTargetDistance);
 
+    double flywheelVelocity = shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance);
+
+    // if (isPassing) {
+    //   hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
+    //   flywheelVelocity = 100;
+    // }
+
     // emergency trench hood align
     if (RobotState.getInstance().nearTrench()) {
       hoodPosition = ShooterConstants.HoodConstants.hoodMinPos;
     }
 
     // configure parameters with calculated values
-    latestParameters =
-        new ShootingParameters(
-            isValid,
-            turretAngle,
-            hoodPosition,
-            shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance));
+    latestParameters = new ShootingParameters(isValid, turretAngle, hoodPosition, flywheelVelocity);
 
     // Log calculated values
     // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
