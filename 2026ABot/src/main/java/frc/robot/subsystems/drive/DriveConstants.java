@@ -25,15 +25,20 @@ public class DriveConstants {
   public static final double CLIMB_DRIVE_MAX_VELOCITY = 2;
   public static final double CLIMB_DRIVE_MAX_ACCELERATION = 10;
 
-  public static final Pose2d leftClimbPos =
-      new Pose2d(1.638, 4.183, new Rotation2d(Units.degreesToRadians(-90)));
-  public static final Pose2d rightClimbPos =
-      new Pose2d(1.638, 3.319, new Rotation2d(Units.degreesToRadians(-90)));
+  //   public static final Pose2d leftClimbPos =
+  //       new Pose2d(1.638, 4.183, new Rotation2d(Units.degreesToRadians(-90)));
+  //   public static final Pose2d rightClimbPos =
+  //       new Pose2d(1.638, 3.319, new Rotation2d(Units.degreesToRadians(-90)));
+
+  //   public static final Pose2d leftClimbFirstPose =
+  //       new Pose2d(2.5, 4.183, new Rotation2d(Units.degreesToRadians(-90)));
+  //   public static final Pose2d rightClimbFirstPose =
+  //       new Pose2d(2.5, 3.319, new Rotation2d(Units.degreesToRadians(-90)));
 
   public static final Pose2d leftClimbFirstPose =
-      new Pose2d(2.5, 4.183, new Rotation2d(Units.degreesToRadians(-90)));
+      new Pose2d(1.775, 5, new Rotation2d(Units.degreesToRadians(-90)));
   public static final Pose2d rightClimbFirstPose =
-      new Pose2d(2.5, 3.319, new Rotation2d(Units.degreesToRadians(-90)));
+      new Pose2d(1.775, 3, new Rotation2d(Units.degreesToRadians(-90)));
 
   public static final double checkClimbX = 1.775;
   public static final double climbX = 1.638;

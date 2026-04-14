@@ -9,10 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.intake.IntakeConstants;
-import frc.robot.subsystems.spindexer.Spindexer.SpindexerWantedState;
-import frc.robot.subsystems.spindexer.SpindexerConstants;
-
 import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
@@ -84,7 +80,7 @@ public class Kicker extends SubsystemBase {
       applyStates();
     }
 
-    if(currentState == KickerCurrentState.REVVING) {
+    if (currentState == KickerCurrentState.REVVING) {
       updateisJammed();
     }
 
@@ -103,15 +99,16 @@ public class Kicker extends SubsystemBase {
 
   private KickerCurrentState handleStateTransitions() {
     switch (wantedState) {
-      case IDLE: return KickerCurrentState.IDLING;
-      // case REV: return KickerCurrentState.REVVING;
-      case REV: 
-        return continueUnjamming()
-          ? KickerCurrentState.UNJAMMING
-          : KickerCurrentState.REVVING;
-      case TEST: return KickerCurrentState.TESTING;
-      case CLEAN: return KickerCurrentState.CLEANING;
-      case UNJAM: 
+      case IDLE:
+        return KickerCurrentState.IDLING;
+        // case REV: return KickerCurrentState.REVVING;
+      case REV:
+        return continueUnjamming() ? KickerCurrentState.UNJAMMING : KickerCurrentState.REVVING;
+      case TEST:
+        return KickerCurrentState.TESTING;
+      case CLEAN:
+        return KickerCurrentState.CLEANING;
+      case UNJAM:
         beganUnjamming = true;
         timeBeganUnjamming = Timer.getFPGATimestamp();
         wantedState = KickerWantedState.REV;
@@ -163,8 +160,7 @@ public class Kicker extends SubsystemBase {
   private boolean continueUnjamming() {
     if (!beganUnjamming) return false;
     double newTimestamp = Timer.getFPGATimestamp();
-    boolean shouldStopUnjamming =
-        timeBeganUnjamming < newTimestamp - KickerConstants.unjamDuration;
+    boolean shouldStopUnjamming = timeBeganUnjamming < newTimestamp - KickerConstants.unjamDuration;
     if (shouldStopUnjamming) {
       beganUnjamming = false;
     }
@@ -172,16 +168,16 @@ public class Kicker extends SubsystemBase {
   }
 
   private void updateisJammed() {
-    if(kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
-      if(!beganJamming) {
+    if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
+      if (!beganJamming) {
         timeBeganJamming = Timer.getFPGATimestamp();
       }
       beganJamming = true;
       double newTimestamp = Timer.getFPGATimestamp();
-      if(timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
+      if (timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
         isJammed = true;
       }
-    }else {
+    } else {
       beganJamming = false;
       isJammed = false;
     }

@@ -39,6 +39,7 @@ public class ShotCalculator {
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
+  private static double rotationalPhaseDelay;
 
   private static final InterpolatingDoubleTreeMap shotFlywheelVelocityMap =
       new InterpolatingDoubleTreeMap();
@@ -51,6 +52,7 @@ public class ShotCalculator {
     minDistance = 0;
     maxDistance = 3604;
     phaseDelay = 0.1125;
+    rotationalPhaseDelay = 0.05;
 
     shotFlywheelVelocityMap.put(1.751, 45.0); // hub
     shotFlywheelVelocityMap.put(2.127, 48.5);
@@ -135,7 +137,7 @@ public class ShotCalculator {
                   Rotation2d.fromRadians(
                       ShooterConstants.robotToTurretLinear
                           * robotVelocity.omegaRadiansPerSecond
-                          * phaseDelay));
+                          * rotationalPhaseDelay));
 
       lookaheadPose =
           new Pose2d(
@@ -179,10 +181,10 @@ public class ShotCalculator {
 
     double flywheelVelocity = shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance);
 
-    // if (isPassing) {
-    //   hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
-    //   flywheelVelocity = 100;
-    // }
+    if (isPassing && lookaheadTurretToTargetDistance > 6) {
+      hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
+      flywheelVelocity = 100;
+    }
 
     // emergency trench hood align
     if (RobotState.getInstance().nearTrench()) {

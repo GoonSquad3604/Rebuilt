@@ -21,6 +21,7 @@ import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIOPhoenix;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.hopper.Hopper;
@@ -30,6 +31,8 @@ import frc.robot.subsystems.intake.hinge.HingeIOPhoenix;
 import frc.robot.subsystems.intake.rollers.RollerSystemIOPhoenix;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.KickerIOPhoenix;
+import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.leds.LedsIOCANdle;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.hood.HoodIOPhoenix;
 import frc.robot.subsystems.shooter.launcher.LauncherIOPhoenix;
@@ -57,6 +60,7 @@ public class RobotContainer {
   private final Kicker kicker;
   private final Shooter shooter;
   private final Spindexer spindexer;
+  private final Leds leds;
   private final Superstructure superstructure;
 
   // Controller
@@ -91,7 +95,9 @@ public class RobotContainer {
     kicker = new Kicker(new KickerIOPhoenix());
     shooter = new Shooter(new HoodIOPhoenix(), new LauncherIOPhoenix(), new TurretIOPhoenix());
     spindexer = new Spindexer(new SpindexerIOPhoenix());
-    superstructure = new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer);
+    leds = new Leds(new LedsIOCANdle());
+    superstructure =
+        new Superstructure(drive, climber, hopper, intake, kicker, shooter, spindexer, leds);
 
     // Set up SysId auto chooser
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -237,26 +243,6 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     // Toggle intake mode
-    // driverController
-    //     .rightTrigger()
-    //     .or(testController.rightTrigger())
-    //     .onTrue(
-    //         Commands.either(
-    //                 superstructure.setWantedState(WantedSuperState.INTAKE),
-    //                 Commands.either(
-    //                     superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-    //                     Commands.either(
-    //                         superstructure.setWantedState(WantedSuperState.SHOOT),
-    //                         superstructure.setWantedState(WantedSuperState.STOPPED),
-    //                         () ->
-    //                             superstructure.getCurrentSuperState()
-    //                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
-    //                     () -> superstructure.getCurrentSuperState() ==
-    // CurrentSuperState.SHOOTING),
-    //                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
-    //             .ignoringDisable(true));
-
-    // Toggle intake mode
     driverController
         .rightTrigger()
         .or(testController.rightTrigger())
@@ -300,6 +286,33 @@ public class RobotContainer {
         .povUp()
         .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
         .onTrue(superstructure.toggleReadyToClimb());
+
+    // climb align
+    driverController
+        .povRight()
+        // .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
+        .whileTrue(
+            DriveCommands.alignToClimb(drive)
+                .until(
+                    () ->
+                        RobotState.getInstance()
+                            .atDrivePosition(
+                                RobotState.getInstance().isLeftSide()
+                                    ? DriveConstants.leftClimbFirstPose
+                                    : DriveConstants.rightClimbFirstPose))
+                .andThen(
+                    RobotState.getInstance().isLeftSide()
+                        ? DriveCommands.joystickDrive(
+                                drive, () -> 0, () -> 0.325, () -> 0, () -> false)
+                            .repeatedly()
+                        : DriveCommands.joystickDrive(
+                                drive, () -> 0, () -> -0.325, () -> 0, () -> false)
+                            .repeatedly())
+                .until(() -> climber.sensorsValid())
+                .andThen(
+                    DriveCommands.joystickDrive(
+                            drive, () -> -0.3604, () -> 0.0, () -> 0, () -> false)
+                        .repeatedly()));
 
     /* OPERATOR */
 

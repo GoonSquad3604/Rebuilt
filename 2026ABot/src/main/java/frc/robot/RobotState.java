@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shooter.ShooterConstants;
@@ -75,7 +77,14 @@ public class RobotState {
   }
 
   public boolean isLeftSide() {
-    return AllianceFlipUtil.apply(getPose()).getY() > AllianceFlipUtil.applyY(4.5);
+    if (getPose().getY() >= FieldConstants.fieldWidth / 2.0) {
+      // left
+      return DriverStation.getAlliance().get() == Alliance.Blue ? true : false;
+    } else {
+      // right
+      return DriverStation.getAlliance().get() == Alliance.Blue ? false : true;
+    }
+    // return getPose().getY() > 4.5;
   }
 
   public boolean isInMiddle() {

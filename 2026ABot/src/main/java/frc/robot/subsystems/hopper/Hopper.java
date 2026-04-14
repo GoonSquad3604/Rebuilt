@@ -109,9 +109,9 @@ public class Hopper extends SubsystemBase {
           return HopperCurrentState.STOWING_POWER;
         }
       case HOLD_IN:
-        if(!isStowed()) {
+        if (!isStowed()) {
           return HopperCurrentState.HOLDING_IN;
-        }else {
+        } else {
           return HopperCurrentState.IDLING;
         }
     }
@@ -129,18 +129,18 @@ public class Hopper extends SubsystemBase {
       case DEPLOYING:
         deploy();
         break;
-      // case DEPLOYED:
-      //   deployed();
-      //   break;
-      // case STOWING_PID:
-      //   stowFast();
-      //   break;
+        // case DEPLOYED:
+        //   deployed();
+        //   break;
+        // case STOWING_PID:
+        //   stowFast();
+        //   break;
       case STOWING_POWER:
         stowSlow();
         break;
-      // case STOWED:
-      //   stowed();
-      //   break;
+        // case STOWED:
+        //   stowed();
+        //   break;
     }
   }
 
@@ -179,10 +179,8 @@ public class Hopper extends SubsystemBase {
 
   public boolean isDeployed() {
     return MathUtil.isNear(
-            HopperConstants.extendedPos,
-            hopperIO.getPosition(),
-            HopperConstants.atSetpointTolerance);
-        // || wasDeployed;
+        HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+    // || wasDeployed;
   }
 
   public boolean isStowed() {

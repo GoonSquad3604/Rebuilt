@@ -49,14 +49,15 @@ public final class ClimberConstants {
   public static final double checkInnerClimbL2Position = 0.650;
 
   // step 5 - grab high rung with outer hooks
-  public static final double outerGrabL3Position = 0.831;
+  public static final double outerGrabL3Position = 0.833;
 
   // step 6 - release inner hooks from mid rung
-  public static final double innerReleaseL2Position = 0.569;
+  public static final double outerHopPosition = 0.841;
+  public static final double innerReleaseL2Position = 0.615;
   // public static final double checkInnerReleaseL2Position = 0.569;
 
   // step 7 - climb on high rung with outer hooks (and disable inner pid)
-  public static final double outerClimbL3Position = 0.524; // placeholder
+  public static final double outerClimbL3Position = 0.500; // placeholder
 
   public static final double atSetpointTolerance = 0.005; // placeholder
 

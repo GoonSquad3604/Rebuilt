@@ -66,16 +66,20 @@ public class ClimberIOPhoenix implements ClimberIO {
     centerClimbConfig = new CANrangeConfiguration();
 
     leftClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
-    leftClimbConfig.ProximityParams.ProximityThreshold = 0.6;
+    leftClimbConfig.ProximityParams.ProximityThreshold = 0.5;
     leftClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
 
     rightClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
-    rightClimbConfig.ProximityParams.ProximityThreshold = 0.6;
+    rightClimbConfig.ProximityParams.ProximityThreshold = 0.5;
     rightClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
 
     centerClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
-    centerClimbConfig.ProximityParams.ProximityThreshold = 0.6;
+    centerClimbConfig.ProximityParams.ProximityThreshold = 0.5;
     centerClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
+    // centerClimbConfig.FovParams.FOVCenterX = -5;
+    // centerClimbConfig.FovParams.FOVCenterY = -5;
+    centerClimbConfig.FovParams.FOVRangeX = 6.75;
+    centerClimbConfig.FovParams.FOVRangeY = 6.75;
 
     leftClimbRange.getConfigurator().apply(leftClimbConfig);
     rightClimbRange.getConfigurator().apply(rightClimbConfig);

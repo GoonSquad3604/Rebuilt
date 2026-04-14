@@ -37,13 +37,13 @@ public final class ShooterConstants {
     public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.75;
+    public static final double hoodMaxPos = 0.7;
     public static final double hoodMinPos = 0.05;
 
     public static final double hoodAtSetpointTolerance = 0.01;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.873;
+    public static final double offset = -0.872;
   }
 
   public static final class LauncherConstants {

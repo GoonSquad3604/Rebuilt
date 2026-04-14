@@ -57,6 +57,7 @@ public class Climber extends SubsystemBase {
     // deploying outer would go here
     CLIMBING_MID_RUNG,
     GRABBING_HIGH_RUNG,
+    RELEASING_INNER_WITH_HOP,
     RELEASING_INNER,
     CLIMBING_HIGH_RUNG,
   }
@@ -110,9 +111,6 @@ public class Climber extends SubsystemBase {
 
     climberIO.updateInputs(climberInputs);
     Logger.processInputs("Subsystems/Climber", climberInputs);
-    // Logger.recordOutput("Subsystems/Climber/ManualClimbStep", manualClimbStep);
-
-    // SmartDashboard.putBoolean("climber stowed", isStowed());
 
     SmartDashboard.putBoolean("away from tower?", RobotState.getInstance().isAwayFromTower());
 
@@ -126,13 +124,7 @@ public class Climber extends SubsystemBase {
       }
     }
 
-    // SmartDashboard.putBoolean("climber deployed", isDeployed());
-    // SmartDashboard.putBoolean("climb can proceed", canProceed());
-
-    // SmartDashboard.putBoolean("left Climb detected", climberIO.leftClimbDetected());
-    // SmartDashboard.putBoolean("right Climb detected", climberIO.rightClimbDetected());
-    // SmartDashboard.putBoolean("center Climb detected", climberIO.centerClimbDetected());
-    // SmartDashboard.putBoolean("climber sensors valid", sensorsValid());
+    SmartDashboard.putBoolean("center sensor", climberIO.centerClimbDetected());
 
     // Logger.recordOutput("Subsystems/Climber/WantedState", wantedState);
 
@@ -214,11 +206,19 @@ public class Climber extends SubsystemBase {
             // if fully grabbed high rung, release inner rungs
             if (canProceedAutoClimb()) {
               autoClimbStep++;
-              return ClimberCurrentState.RELEASING_INNER;
+              return ClimberCurrentState.RELEASING_INNER_WITH_HOP;
             } else {
               return currentState;
             }
           case 6:
+            // if fully grabbed high rung, release inner rungs
+            if (canProceedAutoClimb()) {
+              autoClimbStep++;
+              return ClimberCurrentState.RELEASING_INNER;
+            } else {
+              return currentState;
+            }
+          case 7:
             // if fully released inner, climb high rung
             if (canProceedAutoClimb()) {
               autoClimbStep++;
@@ -266,11 +266,14 @@ public class Climber extends SubsystemBase {
       case GRABBING_HIGH_RUNG:
         grabHighRung();
         break;
-      case CLIMBING_HIGH_RUNG:
-        climbHighRung();
+      case RELEASING_INNER_WITH_HOP:
+        releaseInnerWithHop();
         break;
       case RELEASING_INNER:
         releaseInner();
+        break;
+      case CLIMBING_HIGH_RUNG:
+        climbHighRung();
         break;
     }
   }
@@ -315,7 +318,13 @@ public class Climber extends SubsystemBase {
     climberIO.setInnerPower(0);
   }
 
+  private void releaseInnerWithHop() {
+    climberIO.setOuterPosition(ClimberConstants.outerHopPosition);
+    climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
+  }
+
   private void releaseInner() {
+    climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
     climberIO.setInnerPosition(ClimberConstants.innerReleaseL2Position);
   }
 
@@ -441,6 +450,9 @@ public class Climber extends SubsystemBase {
         // return true if outer rungs fully reached the grab position
         return nearPosition(ClimberConstants.outerGrabL3Position, "outer");
       case 6:
+        // return true when outer reaches hop position
+        return nearPosition(ClimberConstants.innerReleaseL2Position, "inner");
+      case 7:
         // return true if the inner rungs reached their extended position
         return nearPosition(ClimberConstants.innerReleaseL2Position, "inner");
     }

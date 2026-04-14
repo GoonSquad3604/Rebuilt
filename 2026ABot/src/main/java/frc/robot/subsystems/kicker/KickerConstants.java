@@ -19,5 +19,4 @@ public class KickerConstants {
   public static final double unjamDuration = 0.5;
 
   public static final double cleanSpeed = 0.1;
-
 }

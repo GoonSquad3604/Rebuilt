@@ -86,10 +86,10 @@ public class Spindexer extends SubsystemBase {
     switch (wantedState) {
       case IDLE:
         return SpindexerCurrentState.IDLING;
-      case SPIN: 
+      case SPIN:
         return continueUnjamming()
-          ? SpindexerCurrentState.UNJAMMING
-          : SpindexerCurrentState.SPINNING;
+            ? SpindexerCurrentState.UNJAMMING
+            : SpindexerCurrentState.SPINNING;
       case CLEAN:
         return SpindexerCurrentState.CLEANING;
       case UNJAM:
