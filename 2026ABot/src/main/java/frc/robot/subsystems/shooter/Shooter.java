@@ -51,7 +51,7 @@ public class Shooter extends SubsystemBase {
     SHOOT,
     EJECT,
     TEST_SHOOT,
-    CLEAN
+    CLEAN,
   }
 
   private enum CurrentState {
@@ -61,7 +61,7 @@ public class Shooter extends SubsystemBase {
     SHOOTING_FORWARD,
     EJECTING,
     TESTING_SHOOTING,
-    CLEANING
+    CLEANING,
   }
 
   private ShooterWantedState wantedState = ShooterWantedState.IDLE;

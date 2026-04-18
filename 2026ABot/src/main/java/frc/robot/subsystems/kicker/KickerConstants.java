@@ -12,9 +12,11 @@ public class KickerConstants {
 
   public static final double shootingVelocity = 35.6; // 20
   public static final double shootingVelocityTolerance = 1;
-  public static final double unjamSpeed = -11;
+
+  public static final double minJammedVelocity = 30;
+  public static final double jamCheckTimeDuration = 2.0;
+  public static final double unjamVelocity = -15;
+  public static final double unjamDuration = 0.5;
 
   public static final double cleanSpeed = 0.1;
-
-  public static final double spikeThreshold = 45;
 }

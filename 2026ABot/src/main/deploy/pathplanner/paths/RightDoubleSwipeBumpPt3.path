@@ -84,7 +84,7 @@
       "minWaypointRelativePos": 2.132890365448495,
       "maxWaypointRelativePos": 2.7707641196013135,
       "constraints": {
-        "maxVelocity": 1.4,
+        "maxVelocity": 2.0,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -104,13 +104,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 1.0,
     "rotation": -45.0
   },
   "reversed": false,
   "folder": "RightDoubleSwipeBump",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 1.0,
     "rotation": 0.0
   },
   "useDefaultConstraints": false

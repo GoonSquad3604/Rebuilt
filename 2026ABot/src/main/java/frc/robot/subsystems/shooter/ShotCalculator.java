@@ -22,6 +22,8 @@ public class ShotCalculator {
   private double turretAngle;
   private double hoodPosition;
   private boolean isPassing;
+  private static double r = .628 / .7;
+  private static double velocityDecrement = 3;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -39,6 +41,7 @@ public class ShotCalculator {
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
+  private static double rotationalPhaseDelay;
 
   private static final InterpolatingDoubleTreeMap shotFlywheelVelocityMap =
       new InterpolatingDoubleTreeMap();
@@ -50,31 +53,44 @@ public class ShotCalculator {
   static {
     minDistance = 0;
     maxDistance = 3604;
-    phaseDelay = 0.1125;
+    phaseDelay = 0.1;
+    rotationalPhaseDelay = 0.05;
 
-    shotFlywheelVelocityMap.put(1.751, 45.0); // hub
-    shotFlywheelVelocityMap.put(2.127, 48.5);
-    shotFlywheelVelocityMap.put(2.813, 50.0);
-    shotFlywheelVelocityMap.put(3.023, 53.0);
-    shotFlywheelVelocityMap.put(3.463, 55.0);
-    shotFlywheelVelocityMap.put(4.336, 63.0);
-    shotFlywheelVelocityMap.put(4.743, 66.0);
+    shotFlywheelVelocityMap.put(1.751, 47.0 - velocityDecrement); // hub
+    shotFlywheelVelocityMap.put(2.127, 48.5 - velocityDecrement);
+    shotFlywheelVelocityMap.put(2.5, 49.5 - velocityDecrement);
+    shotFlywheelVelocityMap.put(2.813, 50.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(3.023, 53.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(3.463, 55.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(3.6, 59.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(3.8, 63.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(4.336, 63.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(4.743, 66.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(5.0, 70.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(6.743, 84.0 - velocityDecrement);
 
-    shotHoodPositionMap.put(1.751, 0.07); // hub
-    shotHoodPositionMap.put(2.127, 0.475);
-    shotHoodPositionMap.put(2.813, 0.475);
-    shotHoodPositionMap.put(3.023, 0.5);
-    shotHoodPositionMap.put(3.463, 0.525);
-    shotHoodPositionMap.put(4.336, 0.59);
-    shotHoodPositionMap.put(4.743, 0.6);
+    shotHoodPositionMap.put(1.751, 0.2 * r); // hub
+    shotHoodPositionMap.put(2.127, 0.475 * r);
+    shotHoodPositionMap.put(2.5, 0.475 * r);
+    shotHoodPositionMap.put(2.813, 0.475 * r);
+    shotHoodPositionMap.put(3.023, 0.5 * r);
+    shotHoodPositionMap.put(3.463, 0.525 * r);
+    shotHoodPositionMap.put(3.6, 0.56 * r);
+    shotHoodPositionMap.put(3.8, 0.58 * r);
+    shotHoodPositionMap.put(4.336, 0.59 * r);
+    shotHoodPositionMap.put(4.743, 0.6 * r);
+    shotHoodPositionMap.put(6.743, 0.7 * r);
 
     timeOfFlightMap.put(1.751, 1.0); // hub
     timeOfFlightMap.put(2.127, 1.0);
+    timeOfFlightMap.put(2.5, 1.1);
     timeOfFlightMap.put(2.813, 1.15);
     timeOfFlightMap.put(3.023, 1.17);
     timeOfFlightMap.put(3.463, 1.25);
+    timeOfFlightMap.put(3.8, 1.26);
     timeOfFlightMap.put(4.336, 1.28);
     timeOfFlightMap.put(4.743, 1.3);
+    timeOfFlightMap.put(6.743, 1.45);
   }
 
   public ShootingParameters getParameters() {
@@ -135,7 +151,7 @@ public class ShotCalculator {
                   Rotation2d.fromRadians(
                       ShooterConstants.robotToTurretLinear
                           * robotVelocity.omegaRadiansPerSecond
-                          * phaseDelay));
+                          * rotationalPhaseDelay));
 
       lookaheadPose =
           new Pose2d(
@@ -179,10 +195,9 @@ public class ShotCalculator {
 
     double flywheelVelocity = shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance);
 
-    // if (isPassing) {
-    //   hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
-    //   flywheelVelocity = 100;
-    // }
+    flywheelVelocity +=
+        Math.abs(
+            Math.sin(estimatedPose.getRotation().getDegrees()) * ShooterConstants.maxExtraVelocity);
 
     // emergency trench hood align
     if (RobotState.getInstance().nearTrench()) {

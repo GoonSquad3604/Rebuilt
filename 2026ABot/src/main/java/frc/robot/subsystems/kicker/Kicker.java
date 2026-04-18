@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,6 +22,13 @@ public class Kicker extends SubsystemBase {
   private SysIdRoutine sysID;
 
   private double dashboardKickerVelocity;
+
+  private boolean isJammed = false;
+  private boolean beganJamming = false;
+  private double timeBeganJamming;
+
+  private boolean beganUnjamming;
+  private double timeBeganUnjamming;
 
   public enum KickerWantedState {
     IDLE,
@@ -72,6 +80,10 @@ public class Kicker extends SubsystemBase {
       applyStates();
     }
 
+    if (currentState == KickerCurrentState.REVVING) {
+      updateisJammed();
+    }
+
     dashboardKickerVelocity =
         SmartDashboard.getNumber("Kicker Velocity", KickerConstants.shootingVelocity);
     SmartDashboard.putNumber("Kicker Velocity", dashboardKickerVelocity);
@@ -86,13 +98,23 @@ public class Kicker extends SubsystemBase {
   }
 
   private KickerCurrentState handleStateTransitions() {
-    return switch (wantedState) {
-      case IDLE -> KickerCurrentState.IDLING;
-      case REV -> KickerCurrentState.REVVING;
-      case TEST -> KickerCurrentState.TESTING;
-      case CLEAN -> KickerCurrentState.CLEANING;
-      case UNJAM -> KickerCurrentState.UNJAMMING;
-    };
+    switch (wantedState) {
+      case IDLE:
+        return KickerCurrentState.IDLING;
+        // case REV: return KickerCurrentState.REVVING;
+      case REV:
+        return continueUnjamming() ? KickerCurrentState.UNJAMMING : KickerCurrentState.REVVING;
+      case TEST:
+        return KickerCurrentState.TESTING;
+      case CLEAN:
+        return KickerCurrentState.CLEANING;
+      case UNJAM:
+        // beganUnjamming = true;
+        // timeBeganUnjamming = Timer.getFPGATimestamp();
+        // wantedState = KickerWantedState.REV;
+        return KickerCurrentState.UNJAMMING;
+    }
+    return KickerCurrentState.IDLING;
   }
 
   private void applyStates() {
@@ -132,12 +154,37 @@ public class Kicker extends SubsystemBase {
   }
 
   private void unjam() {
-    kickerIO.setVelocity(KickerConstants.unjamSpeed);
+    kickerIO.setVelocity(KickerConstants.unjamVelocity);
   }
 
-  // checks for a current spike
-  public boolean isSpiked() {
-    return (kickerIO.getCurrent() > KickerConstants.spikeThreshold);
+  private boolean continueUnjamming() {
+    if (!beganUnjamming) return false;
+    double newTimestamp = Timer.getFPGATimestamp();
+    boolean shouldStopUnjamming = timeBeganUnjamming < newTimestamp - KickerConstants.unjamDuration;
+    if (shouldStopUnjamming) {
+      beganUnjamming = false;
+    }
+    return shouldStopUnjamming;
+  }
+
+  private void updateisJammed() {
+    if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
+      if (!beganJamming) {
+        timeBeganJamming = Timer.getFPGATimestamp();
+      }
+      beganJamming = true;
+      double newTimestamp = Timer.getFPGATimestamp();
+      if (timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
+        isJammed = true;
+      }
+    } else {
+      beganJamming = false;
+      isJammed = false;
+    }
+  }
+
+  public boolean isJammed() {
+    return isJammed;
   }
 
   public boolean atVelocity() {

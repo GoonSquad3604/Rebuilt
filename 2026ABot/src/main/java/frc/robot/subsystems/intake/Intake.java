@@ -36,7 +36,6 @@ public class Intake extends SubsystemBase {
   public enum IntakeWantedState {
     IDLE,
     INTAKE,
-    // STOP_WHEELS,
     STOW,
     KICK,
     VOMIT,

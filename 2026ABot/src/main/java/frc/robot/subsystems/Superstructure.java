@@ -16,6 +16,8 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeWantedState;
 import frc.robot.subsystems.kicker.Kicker;
 import frc.robot.subsystems.kicker.Kicker.KickerWantedState;
+import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.leds.Leds.LedsWantedState;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterWantedState;
 import frc.robot.subsystems.spindexer.Spindexer;
@@ -31,11 +33,12 @@ public class Superstructure extends SubsystemBase {
   private final Kicker kicker;
   private final Shooter shooter;
   private final Spindexer spindexer;
+  private final Leds leds;
 
   private boolean beganFiring = false;
   private boolean readyToClimb = false;
 
-  private Timer spikeTimer = new Timer();
+  // private Timer spikeTimer = new Timer();
 
   public enum WantedSuperState {
     STOPPED,
@@ -49,8 +52,10 @@ public class Superstructure extends SubsystemBase {
     CLIMB_IN_AUTO,
     DECLIMB,
     EJECT,
+    DEFENSE,
     TEST_SHOOT,
-    CLEAN
+    CLEAN,
+    UNJAM
   }
 
   public enum CurrentSuperState {
@@ -65,8 +70,10 @@ public class Superstructure extends SubsystemBase {
     CLIMBING_IN_AUTO,
     DECLIMBING,
     EJECTING,
+    DEFENDING,
     TESTING_SHOOTING,
-    CLEANING
+    CLEANING,
+    UNJAMMING
   }
 
   private WantedSuperState wantedSuperState = WantedSuperState.STOPPED;
@@ -80,7 +87,8 @@ public class Superstructure extends SubsystemBase {
       Intake intake,
       Kicker kicker,
       Shooter shooter,
-      Spindexer spindexer) {
+      Spindexer spindexer,
+      Leds leds) {
     this.drive = drive;
     this.climber = climber;
     this.hopper = hopper;
@@ -88,6 +96,7 @@ public class Superstructure extends SubsystemBase {
     this.kicker = kicker;
     this.shooter = shooter;
     this.spindexer = spindexer;
+    this.leds = leds;
   }
 
   @Override
@@ -98,6 +107,8 @@ public class Superstructure extends SubsystemBase {
     SmartDashboard.putString("manualTarget", RobotState.getInstance().getManualTarget().toString());
 
     SmartDashboard.putString("Alliance Shift Status", decideAllianceShiftInfo());
+
+    SmartDashboard.putBoolean("isLeftSide", RobotState.getInstance().isLeftSide());
 
     currentSuperState = handleStateTransitions();
     applyStates();
@@ -146,8 +157,10 @@ public class Superstructure extends SubsystemBase {
       case DECLIMB -> CurrentSuperState.DECLIMBING;
       case STOW -> CurrentSuperState.STOWING;
       case EJECT -> CurrentSuperState.EJECTING;
+      case DEFENSE -> CurrentSuperState.DEFENDING;
       case TEST_SHOOT -> CurrentSuperState.TESTING_SHOOTING;
       case CLEAN -> CurrentSuperState.CLEANING;
+      case UNJAM -> CurrentSuperState.UNJAMMING;
     };
   }
 
@@ -186,11 +199,17 @@ public class Superstructure extends SubsystemBase {
       case EJECTING:
         eject();
         break;
+      case DEFENDING:
+        defense();
+        break;
       case TESTING_SHOOTING:
         testShoot();
         break;
       case CLEANING:
         clean();
+        break;
+      case UNJAMMING:
+        unjam();
         break;
     }
   }
@@ -203,6 +222,7 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.IDLE);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
+    leds.setWantedState(LedsWantedState.IDLE);
   }
 
   private void track() {
@@ -213,6 +233,7 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
     spindexer.setWantedState(SpindexerWantedState.IDLE);
+    leds.setWantedState(LedsWantedState.TRACK);
   }
 
   private void intake() {
@@ -233,6 +254,7 @@ public class Superstructure extends SubsystemBase {
     } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
+    leds.setWantedState(LedsWantedState.INTAKE);
   }
 
   private void stow() {
@@ -242,7 +264,7 @@ public class Superstructure extends SubsystemBase {
     shooter.setWantedState(ShooterWantedState.EJECT);
 
     if (hopper.isStowed()) {
-      wantedSuperState = WantedSuperState.STOPPED;
+      wantedSuperState = WantedSuperState.DEFENSE;
       return;
     }
 
@@ -253,9 +275,10 @@ public class Superstructure extends SubsystemBase {
       if (!hopper.isStowed()) {
         hopper.setWantedState(HopperWantedState.STOW);
       } else {
-        wantedSuperState = WantedSuperState.STOPPED;
+        wantedSuperState = WantedSuperState.DEFENSE;
       }
     }
+    leds.setWantedState(LedsWantedState.STOW);
   }
 
   private void shoot() {
@@ -273,25 +296,24 @@ public class Superstructure extends SubsystemBase {
     } else {
       climber.setWantedState(ClimberWantedState.STOW);
     }
-    // if (spindexer.isSpiked() || kicker.isSpiked()) {
-    //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-    //   kicker.setWantedState(KickerWantedState.UNJAM);
-    //   spikeTimer.reset();
-    //   spikeTimer.start();
-    // } else if (spikeTimer.get() > .25) {
-    //   spikeTimer.reset();
-    //   spikeTimer.stop();
-    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
-    //   kicker.setWantedState(KickerWantedState.REV);
-    // } else
+
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
+      // new code:
+      // if (kicker.isJammed()) {
+      //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
+      //   kicker.setWantedState(KickerWantedState.UNJAM);
+      // } else {
+      // spindexer.setWantedState(SpindexerWantedState.SPIN);
+      // kicker.setWantedState(KickerWantedState.REV);
+      // }
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
     }
+    leds.setWantedState(LedsWantedState.SHOOT);
   }
 
   private void intakeAndShoot() {
@@ -310,17 +332,6 @@ public class Superstructure extends SubsystemBase {
       climber.setWantedState(ClimberWantedState.STOW);
     }
 
-    // if (spindexer.isSpiked() || kicker.isSpiked()) {
-    //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-    //   kicker.setWantedState(KickerWantedState.UNJAM);
-    //   spikeTimer.reset();
-    //   spikeTimer.start();
-    // } else if (spikeTimer.get() > .25) {
-    //   spikeTimer.reset();
-    //   spikeTimer.stop();
-    //   spindexer.setWantedState(SpindexerWantedState.SPIN);
-    //   kicker.setWantedState(KickerWantedState.REV);
-    // } else
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
@@ -329,6 +340,7 @@ public class Superstructure extends SubsystemBase {
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
     }
+    leds.setWantedState(LedsWantedState.INTAKE_AND_SHOOT);
   }
 
   private void climb() {
@@ -352,6 +364,7 @@ public class Superstructure extends SubsystemBase {
         }
       }
     }
+    leds.setWantedState(LedsWantedState.CLIMB);
   }
 
   private void setUpAutoClimb() {
@@ -376,10 +389,12 @@ public class Superstructure extends SubsystemBase {
         }
       }
     }
+    leds.setWantedState(LedsWantedState.CLIMB);
   }
 
   public void climbInAuto() {
     climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
+    leds.setWantedState(LedsWantedState.CLIMB);
     // wantedSuperState = WantedSuperState.STOPPED;
   }
 
@@ -399,6 +414,17 @@ public class Superstructure extends SubsystemBase {
     kicker.setWantedState(KickerWantedState.REV);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
+    leds.setWantedState(LedsWantedState.EJECT);
+  }
+
+  private void defense() {
+    climber.setWantedState(ClimberWantedState.IDLE);
+    // hopper.setWantedState(HopperWantedState.IDLE);
+    intake.setWantedState(IntakeWantedState.IDLE);
+    kicker.setWantedState(KickerWantedState.IDLE);
+    shooter.setWantedState(ShooterWantedState.IDLE);
+    spindexer.setWantedState(SpindexerWantedState.IDLE);
+    leds.setWantedState(LedsWantedState.POLICE);
   }
 
   private void testShoot() {
@@ -422,6 +448,7 @@ public class Superstructure extends SubsystemBase {
         intake.setWantedState(IntakeWantedState.KICK);
       }
     }
+    leds.setWantedState(LedsWantedState.SHOOT);
   }
 
   private void clean() {
@@ -434,6 +461,14 @@ public class Superstructure extends SubsystemBase {
     } else {
       intake.setWantedState(IntakeWantedState.CLEAN);
     }
+    leds.setWantedState(LedsWantedState.CLEAN);
+  }
+
+  private void unjam() {
+    kicker.setWantedState(KickerWantedState.UNJAM);
+    shooter.setWantedState(ShooterWantedState.TRACK_TARGET);
+    spindexer.setWantedState(SpindexerWantedState.UNJAM);
+    leds.setWantedState(LedsWantedState.UNJAM);
   }
 
   // helper methods

@@ -3,6 +3,7 @@ package frc.robot.subsystems.spindexer;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -17,6 +18,9 @@ public class Spindexer extends SubsystemBase {
   private final Alert spindexerMotorDisconnected;
 
   private SysIdRoutine sysID;
+
+  private boolean beganUnjamming;
+  private double timeBeganUnjamming;
 
   public enum SpindexerWantedState {
     IDLE,
@@ -62,7 +66,8 @@ public class Spindexer extends SubsystemBase {
     Logger.processInputs("Subsystems/Spindexer", spindexerInputs);
 
     SpindexerCurrentState newState = handleStateTransitions();
-    if (newState != currentState) {
+
+    if (newState != currentState /*|| currentState == SpindexerCurrentState.UNJAMMING*/) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Spindexer/CurrentState", currentState);
       applyStates();
@@ -78,12 +83,22 @@ public class Spindexer extends SubsystemBase {
   }
 
   private SpindexerCurrentState handleStateTransitions() {
-    return switch (wantedState) {
-      case IDLE -> SpindexerCurrentState.IDLING;
-      case SPIN -> SpindexerCurrentState.SPINNING;
-      case CLEAN -> SpindexerCurrentState.CLEANING;
-      case UNJAM -> SpindexerCurrentState.UNJAMMING;
-    };
+    switch (wantedState) {
+      case IDLE:
+        return SpindexerCurrentState.IDLING;
+      case SPIN:
+        // return continueUnjamming()
+        // ? SpindexerCurrentState.UNJAMMING
+        return SpindexerCurrentState.SPINNING;
+      case CLEAN:
+        return SpindexerCurrentState.CLEANING;
+      case UNJAM:
+        // beganUnjamming = true;
+        // timeBeganUnjamming = Timer.getFPGATimestamp();
+        // wantedState = SpindexerWantedState.SPIN;
+        return SpindexerCurrentState.UNJAMMING;
+    }
+    return SpindexerCurrentState.IDLING;
   }
 
   private void applyStates() {
@@ -116,7 +131,19 @@ public class Spindexer extends SubsystemBase {
   }
 
   private void unjam() {
-    spindexerIO.setVelocity(SpindexerConstants.unjamSpeed);
+    spindexerIO.setVelocity(SpindexerConstants.unjamVelocity);
+  }
+
+  // checks for if jammed
+  private boolean continueUnjamming() {
+    if (!beganUnjamming) return false;
+    double newTimestamp = Timer.getFPGATimestamp();
+    boolean shouldStopUnjamming =
+        timeBeganUnjamming < newTimestamp - SpindexerConstants.unjamDuration;
+    if (shouldStopUnjamming) {
+      beganUnjamming = false;
+    }
+    return shouldStopUnjamming;
   }
 
   // testing only, remove later:
@@ -126,11 +153,6 @@ public class Spindexer extends SubsystemBase {
 
   public void setVelocity(double velocity) {
     spindexerIO.setVelocity(velocity);
-  }
-
-  // checks for a current spike
-  public boolean isSpiked() {
-    return (spindexerIO.getCurrent() > SpindexerConstants.spikeThreshold);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
