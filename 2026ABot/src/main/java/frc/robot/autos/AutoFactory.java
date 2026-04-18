@@ -78,15 +78,16 @@ public class AutoFactory {
             Commands.parallel(
                 runPath("LeftClimbPt1"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.5),
+                    Commands.waitSeconds(5.7),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(5.25),
+            Commands.waitSeconds(5.0),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("LeftClimbPt2"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
   }
 
+  // unused
   public Pair<Pose2d, Command> createLeftDepotAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -105,6 +106,7 @@ public class AutoFactory {
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
   }
 
+  // unused
   public Pair<Pose2d, Command> createLeftDoubleSwipeAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -124,7 +126,7 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            runPath("LeftDoubleSwipeBumpPt1"),
+            runPath("LeftDoubleSwipeBumpPt1New"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
             runPath("LeftDoubleSwipeBumpPt2"),
             Commands.waitSeconds(2.0),
@@ -139,19 +141,19 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            Commands.waitSeconds(0.3604),
             Commands.parallel(
                 runPath("RightClimbPt1"),
                 Commands.sequence(
-                    Commands.waitSeconds(5.8),
+                    Commands.waitSeconds(4.8),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT))),
-            Commands.waitSeconds(2.3604),
+            Commands.waitSeconds(5.5),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("RightClimbPt2"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
   }
 
+  // unused
   public Pair<Pose2d, Command> createRightDoubleSwipeAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -185,11 +187,11 @@ public class AutoFactory {
     return Pair.of(
         RobotState.getInstance().getPose(),
         Commands.sequence(
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
             runPath("MiddleDepotClimbPt1"),
             runPath("MiddleDepotClimbPt2"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
-            Commands.waitSeconds(8.5),
+            Commands.waitSeconds(6.5),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("MiddleDepotClimbPt3"),
@@ -201,16 +203,20 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            runPath("MiddleDepotClimbPt1"),
+            runPath("MiddleDepotNeutralPt1"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
             Commands.parallel(
-                runPath("MiddleDepotClimbPt2"),
+                runPath("MiddleDepotNeutralPt2"),
                 Commands.sequence(
-                    Commands.waitSeconds(9.5),
+                    Commands.waitSeconds(2),
+                    robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+                    Commands.waitSeconds(3.5),
                     robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE))),
-            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            runPath("MiddleDepotNeutralPt3")));
   }
 
+  // unused
   public Pair<Pose2d, Command> createRightPassAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -231,6 +237,23 @@ public class AutoFactory {
                         .setWantedState(WantedSuperState.INTAKE_AND_SHOOT)))));
   }
 
+  // msc playoff
+  public Pair<Pose2d, Command> createHubMiddleDepotClimbAuto() {
+    return Pair.of(
+        RobotState.getInstance().getPose(),
+        Commands.sequence(
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
+            runPath("HubMiddleDepotClimbPt1"),
+            runPath("HubMiddleDepotClimbPt2"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
+            Commands.waitSeconds(6.5),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
+            Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
+            runPath("MiddleDepotClimbPt3"),
+            robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_IN_AUTO)));
+  }
+
+  // very used (trust me)
   public Pair<Pose2d, Command> createChaos_hehe() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -252,4 +275,5 @@ public class AutoFactory {
       return Commands.none();
     }
   }
+  
 }

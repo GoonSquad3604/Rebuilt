@@ -21,6 +21,8 @@ public final class ShooterConstants {
   public static Translation2d leftPassPosition = new Translation2d(1.2, 6.125);
   public static Translation2d rightPassPosition = new Translation2d(1.2, 2.125);
 
+  public static final double maxExtraVelocity = 5;
+
   public static final class HoodConstants {
 
     public static final int hoodID = 9;
@@ -37,13 +39,13 @@ public final class ShooterConstants {
     public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.7;
-    public static final double hoodMinPos = 0.05;
+    public static final double hoodMaxPos = 0.628;
+    public static final double hoodMinPos = 0.1; // 0.05
 
     public static final double hoodAtSetpointTolerance = 0.01;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = -0.872;
+    public static final double offset = 0.033;
   }
 
   public static final class LauncherConstants {

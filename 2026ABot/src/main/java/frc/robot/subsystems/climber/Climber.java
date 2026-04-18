@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -333,11 +335,19 @@ public class Climber extends SubsystemBase {
   }
 
   private void grabHighRung() {
-    climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+    if (DriverStation.getAlliance().get() == Alliance.Red) {
+      climberIO.setOuterPosition(ClimberConstants.outerGrabL3PositionRed);
+    } else {
+      climberIO.setOuterPosition(ClimberConstants.outerGrabL3Position);
+    }
   }
 
   private void grabmidRung() {
-    climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+    if (DriverStation.getAlliance().get() == Alliance.Red) {
+      climberIO.setInnerPosition(ClimberConstants.innerGrabL2PositionRed);
+    } else {
+      climberIO.setInnerPosition(ClimberConstants.innerGrabL2Position);
+    }
   }
 
   public boolean isStowed() {
@@ -436,7 +446,11 @@ public class Climber extends SubsystemBase {
         return isDeployed();
       case 1:
         // return true if outer rungs are fully climbed on low rung
-        return nearPosition(ClimberConstants.checkOuterClimbL1Position, "outer");
+        if (DriverStation.getAlliance().get() == Alliance.Red) {
+          return nearPosition(ClimberConstants.checkOuterClimbL1PositionRed, "outer");
+        } else {
+          return nearPosition(ClimberConstants.checkOuterClimbL1Position, "outer");
+        }
       case 2:
         // return true if inner rungs reached the grab position
         return nearPosition(ClimberConstants.innerGrabL2Position, "inner");
@@ -445,7 +459,11 @@ public class Climber extends SubsystemBase {
         return nearPosition(ClimberConstants.checkOuterDeployedPosition, "outer");
       case 4:
         // return true if inner rungs fully climbed mid rung
-        return nearPosition(ClimberConstants.checkInnerClimbL2Position, "inner");
+        if (DriverStation.getAlliance().get() == Alliance.Red) {
+          return nearPosition(ClimberConstants.checkInnerClimbL2PositionRed, "inner");
+        } else {
+          return nearPosition(ClimberConstants.checkInnerClimbL2Position, "inner");
+        }
       case 5:
         // return true if outer rungs fully reached the grab position
         return nearPosition(ClimberConstants.outerGrabL3Position, "outer");

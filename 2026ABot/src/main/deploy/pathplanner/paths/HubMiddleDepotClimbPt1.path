@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 3.536,
+        "y": 3.8467141162514817
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 3.1701423487544496,
+        "y": 4.868698695136415
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.029062870699882,
-        "y": 6.095385527876631
+        "x": 0.792,
+        "y": 4.912
       },
       "prevControl": {
-        "x": 0.029062870699881893,
-        "y": 6.095385527876631
+        "x": 2.265594306049823,
+        "y": 4.9090782918149465
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 119.99999999999999
   },
   "reversed": false,
-  "folder": null,
+  "folder": "MSCPlayoff",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

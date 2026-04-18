@@ -112,6 +112,8 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    // resets hopper motor encoder to 0
+    robotContainer.getHopper().isStowed();
     // SydId autos:
     // autonomousCommand = robotContainer.getSysIdRoutine();
 

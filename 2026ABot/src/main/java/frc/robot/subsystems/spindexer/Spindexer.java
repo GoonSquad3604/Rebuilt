@@ -67,7 +67,7 @@ public class Spindexer extends SubsystemBase {
 
     SpindexerCurrentState newState = handleStateTransitions();
 
-    if (newState != currentState || currentState == SpindexerCurrentState.UNJAMMING) {
+    if (newState != currentState /*|| currentState == SpindexerCurrentState.UNJAMMING*/) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Spindexer/CurrentState", currentState);
       applyStates();
@@ -87,15 +87,15 @@ public class Spindexer extends SubsystemBase {
       case IDLE:
         return SpindexerCurrentState.IDLING;
       case SPIN:
-        return continueUnjamming()
-            ? SpindexerCurrentState.UNJAMMING
-            : SpindexerCurrentState.SPINNING;
+        // return continueUnjamming()
+        // ? SpindexerCurrentState.UNJAMMING
+        return SpindexerCurrentState.SPINNING;
       case CLEAN:
         return SpindexerCurrentState.CLEANING;
       case UNJAM:
-        beganUnjamming = true;
-        timeBeganUnjamming = Timer.getFPGATimestamp();
-        wantedState = SpindexerWantedState.SPIN;
+        // beganUnjamming = true;
+        // timeBeganUnjamming = Timer.getFPGATimestamp();
+        // wantedState = SpindexerWantedState.SPIN;
         return SpindexerCurrentState.UNJAMMING;
     }
     return SpindexerCurrentState.IDLING;

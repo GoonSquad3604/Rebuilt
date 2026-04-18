@@ -226,6 +226,7 @@ public class FieldConstants {
 
   /** Tower related constants */
   public static class Tower {
+    
     // Dimensions
     public static final double width = Units.inchesToMeters(49.25);
     public static final double depth = Units.inchesToMeters(45.0);

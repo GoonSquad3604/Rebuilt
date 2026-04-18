@@ -1,6 +1,7 @@
 package frc.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -10,6 +11,9 @@ public class Leds extends SubsystemBase {
   private LedsIOInputsAutoLogged ledInputs = new LedsIOInputsAutoLogged();
   private final Alert CANdleDisconnected;
 
+  private double lastColorSwitch = 0.0;
+  private boolean isRed = false;
+
   public enum LedsWantedState {
     IDLE,
     STOW,
@@ -18,8 +22,10 @@ public class Leds extends SubsystemBase {
     INTAKE_AND_SHOOT,
     CLIMB,
     TRACK,
+    POLICE,
     CLEAN,
-    EJECT
+    EJECT,
+    UNJAM
   }
 
   public enum CurrentState {
@@ -30,8 +36,10 @@ public class Leds extends SubsystemBase {
     INTAKE_AND_SHOOTING,
     CLIMBING,
     TRACKING,
+    POLICING,
     CLEANING,
-    EJECTING
+    EJECTING,
+    UNJAMMING
   }
 
   private LedsWantedState wantedState = LedsWantedState.IDLE;
@@ -52,7 +60,15 @@ public class Leds extends SubsystemBase {
 
     CurrentState newState = handleStateTransitions();
 
-    if (newState != currentState) {
+    if (newState != currentState || currentState == CurrentState.POLICING) {
+
+      if (currentState == CurrentState.POLICING) {
+        double lastTimestamp = Timer.getFPGATimestamp();
+        if (lastTimestamp > lastColorSwitch + LedConstants.colorSwitchInterval) {
+          lastColorSwitch = Timer.getFPGATimestamp();
+          isRed = !isRed;
+        }
+      }
       ledsIO.turnOff();
       currentState = newState;
       Logger.recordOutput("Subsystems/LEDs/CurrentState", currentState);
@@ -72,6 +88,8 @@ public class Leds extends SubsystemBase {
       case TRACK -> CurrentState.TRACKING;
       case EJECT -> CurrentState.EJECTING;
       case CLEAN -> CurrentState.CLEANING;
+      case POLICE -> CurrentState.POLICING;
+      case UNJAM -> CurrentState.UNJAMMING;
     };
   }
 
@@ -106,6 +124,16 @@ public class Leds extends SubsystemBase {
         ledsIO.setStrobe(LedConstants.red);
         break;
       case CLEANING:
+        ledsIO.setColor(LedConstants.green);
+        break;
+      case POLICING:
+        if (isRed) {
+          ledsIO.setColor(LedConstants.red);
+        } else {
+          ledsIO.setColor(LedConstants.blue);
+        }
+        break;
+      case UNJAMMING:
         ledsIO.setColor(LedConstants.green);
         break;
     }

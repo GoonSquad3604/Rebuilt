@@ -8,6 +8,8 @@ public class LedConstants {
 
   public static final int STRIP_LENGTH = 56;
 
+  public static final double colorSwitchInterval = 0.3604;
+
   // colors
   public static final RGBWColor white = new RGBWColor(100, 100, 100, 150);
   public static final RGBWColor black = new RGBWColor(0, 0, 0, 150);

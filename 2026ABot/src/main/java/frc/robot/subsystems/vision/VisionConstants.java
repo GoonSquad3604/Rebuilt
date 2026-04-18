@@ -31,6 +31,7 @@ public class VisionConstants {
           Units.inchesToMeters(13.375),
           Units.inchesToMeters(20.25),
           new Rotation3d(0.0, Math.toRadians(-2), Math.toRadians(90)));
+          
   public static Transform3d robotToCamera1 =
       new Transform3d(
           0.283, -0.2904, 0.1954, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(315)));
@@ -44,6 +45,7 @@ public class VisionConstants {
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.15;
   public static double maxZError = 0.75;
+  public static double maxDistance = 6.0;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)

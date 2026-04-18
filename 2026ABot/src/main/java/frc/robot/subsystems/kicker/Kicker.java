@@ -109,9 +109,9 @@ public class Kicker extends SubsystemBase {
       case CLEAN:
         return KickerCurrentState.CLEANING;
       case UNJAM:
-        beganUnjamming = true;
-        timeBeganUnjamming = Timer.getFPGATimestamp();
-        wantedState = KickerWantedState.REV;
+        // beganUnjamming = true;
+        // timeBeganUnjamming = Timer.getFPGATimestamp();
+        // wantedState = KickerWantedState.REV;
         return KickerCurrentState.UNJAMMING;
     }
     return KickerCurrentState.IDLING;
