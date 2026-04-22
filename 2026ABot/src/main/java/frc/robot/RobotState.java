@@ -6,8 +6,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shooter.ShooterConstants;
@@ -25,27 +23,15 @@ public class RobotState {
   }
 
   private Pose2d targetPose = new Pose2d();
-  private Rotation2d turretAngle;
 
   private ShooterTarget target = ShooterTarget.HUB;
   private ShooterTarget manualTarget = ShooterTarget.HUB;
 
   private boolean override = false;
 
-  // private static final double poseBufferSizeSec = 2.0;
-  // private static final double turretAngleBufferSizeSec = 2.0;
-  // private static final Matrix<N3, N1> odometryStateStdDevs =
-  //     new Matrix<>(VecBuilder.fill(0.003, 0.003, 0.002));
-
   // Pose estimation fields
   private Pose2d odometryPose = Pose2d.kZero;
   private Pose2d estimatedPose = Pose2d.kZero;
-
-  // private final TimeInterpolatableBuffer<Pose2d> poseBuffer =
-  //     TimeInterpolatableBuffer.createBuffer(poseBufferSizeSec);
-  // private final TimeInterpolatableBuffer<Rotation2d> turretAngleBuffer =
-  //     TimeInterpolatableBuffer.createBuffer(turretAngleBufferSizeSec);
-  // private final Matrix<N3, N1> qStdDevs = new Matrix<>(Nat.N3(), Nat.N1());
 
   // Odometry fields
   private Rotation2d gyroOffset = Rotation2d.kZero;
@@ -59,12 +45,7 @@ public class RobotState {
     return instance;
   }
 
-  private RobotState() {
-    // for (int i = 0; i < 3; ++i) {
-    // qStdDevs.set(i, 0, Math.pow(odometryStateStdDevs.get(i, 0), 2));
-    // }
-    // Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
-  }
+  private RobotState() {}
 
   /** Reset the pose estimate and odometry pose to the given pose. */
   public void resetPose(Pose2d pose) {
@@ -73,19 +54,17 @@ public class RobotState {
     gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
     estimatedPose = pose;
     odometryPose = pose;
-    // poseBuffer.clear();
   }
 
-  public boolean isLeftSide() {
-    if (getPose().getY() >= FieldConstants.fieldWidth / 2.0) {
-      // left
-      return DriverStation.getAlliance().get() == Alliance.Blue ? true : false;
-    } else {
-      // right
-      return DriverStation.getAlliance().get() == Alliance.Blue ? false : true;
-    }
-    // return getPose().getY() > 4.5;
-  }
+  // public boolean isLeftSide() {
+  //   if (getPose().getY() >= FieldConstants.fieldWidth / 2.0) {
+  //     // left
+  //     return DriverStation.getAlliance().get() == Alliance.Blue ? true : false;
+  //   } else {
+  //     // right
+  //     return DriverStation.getAlliance().get() == Alliance.Blue ? false : true;
+  //   }
+  // }
 
   public boolean isInMiddle() {
     return getPose().getY() > 3.25 && getPose().getY() < 4.5;

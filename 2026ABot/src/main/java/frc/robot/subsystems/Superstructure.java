@@ -38,8 +38,6 @@ public class Superstructure extends SubsystemBase {
   private boolean beganFiring = false;
   private boolean readyToClimb = false;
 
-  // private Timer spikeTimer = new Timer();
-
   public enum WantedSuperState {
     STOPPED,
     TRACK,
@@ -107,8 +105,6 @@ public class Superstructure extends SubsystemBase {
     SmartDashboard.putString("manualTarget", RobotState.getInstance().getManualTarget().toString());
 
     SmartDashboard.putString("Alliance Shift Status", decideAllianceShiftInfo());
-
-    SmartDashboard.putBoolean("isLeftSide", RobotState.getInstance().isLeftSide());
 
     currentSuperState = handleStateTransitions();
     applyStates();
@@ -301,14 +297,6 @@ public class Superstructure extends SubsystemBase {
         && shooter.turretAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
-      // new code:
-      // if (kicker.isJammed()) {
-      //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-      //   kicker.setWantedState(KickerWantedState.UNJAM);
-      // } else {
-      // spindexer.setWantedState(SpindexerWantedState.SPIN);
-      // kicker.setWantedState(KickerWantedState.REV);
-      // }
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
@@ -395,7 +383,6 @@ public class Superstructure extends SubsystemBase {
   public void climbInAuto() {
     climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
     leds.setWantedState(LedsWantedState.CLIMB);
-    // wantedSuperState = WantedSuperState.STOPPED;
   }
 
   private void declimb() {
@@ -409,9 +396,9 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void eject() {
-    hopper.setWantedState(HopperWantedState.DEPLOY);
-    intake.setWantedState(IntakeWantedState.VOMIT);
-    kicker.setWantedState(KickerWantedState.REV);
+    // hopper.setWantedState(HopperWantedState.DEPLOY);
+    // intake.setWantedState(IntakeWantedState.VOMIT);
+    kicker.setWantedState(KickerWantedState.EJECT);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
     leds.setWantedState(LedsWantedState.EJECT);
@@ -419,7 +406,7 @@ public class Superstructure extends SubsystemBase {
 
   private void defense() {
     climber.setWantedState(ClimberWantedState.IDLE);
-    // hopper.setWantedState(HopperWantedState.IDLE);
+    hopper.setWantedState(HopperWantedState.STOW);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.IDLE);

@@ -17,57 +17,9 @@ public class AutoFactory {
   private final DriverStation.Alliance alliance;
   private final RobotContainer robotContainer;
 
-  AutoFactory(final DriverStation.Alliance alliance, final RobotContainer robotContainer) {
+  public AutoFactory(final DriverStation.Alliance alliance, final RobotContainer robotContainer) {
     this.alliance = alliance;
     this.robotContainer = robotContainer;
-  }
-
-  public Pair<Pose2d, Command> createMainAuto() {
-    // var initialPose = RobotState.getInstance().getPose();
-    boolean isLeft = RobotState.getInstance().isLeftSide();
-    boolean isMiddle = RobotState.getInstance().isInMiddle();
-    if (isLeft) {
-      // left auto
-      return Pair.of(
-          RobotState.getInstance().getPose(),
-          Commands.sequence(
-              robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-              Commands.parallel(
-                  runPath("LeftStartToNeutral"),
-                  Commands.sequence(
-                      Commands.waitSeconds(5.2),
-                      robotContainer
-                          .getSuperstructure()
-                          .setWantedState(WantedSuperState.INTAKE_AND_SHOOT))),
-              runPath("LeftPickUpDepot"),
-              Commands.waitSeconds(5),
-              robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
-              Commands.waitSeconds(5),
-              // remove later
-              robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)
-
-              // robotContainer.getSuperstructure().setWantedState(WantedSuperState.CLIMB_LEFT)
-
-              ));
-    } else if (isMiddle) {
-      // middle auto
-      return Pair.of(
-          RobotState.getInstance().getPose(),
-          Commands.sequence(
-              robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-              runPath("MiddleGoToDepot"),
-              runPath("LeftPickUpDepot"),
-              Commands.waitSeconds(10),
-              // remove later
-              robotContainer.getSuperstructure().setWantedState(WantedSuperState.STOPPED)));
-    } else {
-      // right auto
-      return Pair.of(
-          RobotState.getInstance().getPose(),
-          Commands.sequence(
-              // robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT)));
-              ));
-    }
   }
 
   public Pair<Pose2d, Command> createLeftClimbAuto() {
@@ -237,7 +189,7 @@ public class AutoFactory {
                         .setWantedState(WantedSuperState.INTAKE_AND_SHOOT)))));
   }
 
-  // msc playoff
+  // hub starting pose variant of middle auto
   public Pair<Pose2d, Command> createHubMiddleDepotClimbAuto() {
     return Pair.of(
         RobotState.getInstance().getPose(),
@@ -246,7 +198,7 @@ public class AutoFactory {
             runPath("HubMiddleDepotClimbPt1"),
             runPath("HubMiddleDepotClimbPt2"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
-            Commands.waitSeconds(6.5),
+            Commands.waitSeconds(6),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB),
             Commands.waitUntil(() -> robotContainer.getSuperstructure().climberDeployed()),
             runPath("MiddleDepotClimbPt3"),
@@ -275,5 +227,4 @@ public class AutoFactory {
       return Commands.none();
     }
   }
-  
 }

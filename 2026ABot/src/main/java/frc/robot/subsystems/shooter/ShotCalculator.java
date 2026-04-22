@@ -21,9 +21,6 @@ public class ShotCalculator {
   private boolean isValid;
   private double turretAngle;
   private double hoodPosition;
-  private boolean isPassing;
-  private static double r = .628 / .7;
-  private static double velocityDecrement = 3;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -56,30 +53,30 @@ public class ShotCalculator {
     phaseDelay = 0.1;
     rotationalPhaseDelay = 0.05;
 
-    shotFlywheelVelocityMap.put(1.751, 47.0 - velocityDecrement); // hub
-    shotFlywheelVelocityMap.put(2.127, 48.5 - velocityDecrement);
-    shotFlywheelVelocityMap.put(2.5, 49.5 - velocityDecrement);
-    shotFlywheelVelocityMap.put(2.813, 50.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(3.023, 53.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(3.463, 55.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(3.6, 59.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(3.8, 63.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(4.336, 63.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(4.743, 66.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(5.0, 70.0 - velocityDecrement);
-    shotFlywheelVelocityMap.put(6.743, 84.0 - velocityDecrement);
+    shotFlywheelVelocityMap.put(1.751, 44.0); // hub
+    shotFlywheelVelocityMap.put(2.127, 45.5);
+    shotFlywheelVelocityMap.put(2.5, 46.5);
+    shotFlywheelVelocityMap.put(2.813, 47.0);
+    shotFlywheelVelocityMap.put(3.023, 50.0);
+    shotFlywheelVelocityMap.put(3.463, 52.0);
+    shotFlywheelVelocityMap.put(3.6, 56.0);
+    shotFlywheelVelocityMap.put(3.8, 60.0);
+    shotFlywheelVelocityMap.put(4.336, 60.0);
+    shotFlywheelVelocityMap.put(4.743, 63.0);
+    shotFlywheelVelocityMap.put(5.0, 67.0);
+    shotFlywheelVelocityMap.put(6.743, 81.0);
 
-    shotHoodPositionMap.put(1.751, 0.2 * r); // hub
-    shotHoodPositionMap.put(2.127, 0.475 * r);
-    shotHoodPositionMap.put(2.5, 0.475 * r);
-    shotHoodPositionMap.put(2.813, 0.475 * r);
-    shotHoodPositionMap.put(3.023, 0.5 * r);
-    shotHoodPositionMap.put(3.463, 0.525 * r);
-    shotHoodPositionMap.put(3.6, 0.56 * r);
-    shotHoodPositionMap.put(3.8, 0.58 * r);
-    shotHoodPositionMap.put(4.336, 0.59 * r);
-    shotHoodPositionMap.put(4.743, 0.6 * r);
-    shotHoodPositionMap.put(6.743, 0.7 * r);
+    shotHoodPositionMap.put(1.751, 0.1794); // hub
+    shotHoodPositionMap.put(2.127, 0.4261);
+    shotHoodPositionMap.put(2.5, 0.4261);
+    shotHoodPositionMap.put(2.813, 0.4261);
+    shotHoodPositionMap.put(3.023, 0.4486);
+    shotHoodPositionMap.put(3.463, 0.471);
+    shotHoodPositionMap.put(3.6, 0.5024);
+    shotHoodPositionMap.put(3.8, 0.5203);
+    shotHoodPositionMap.put(4.336, 0.5293);
+    shotHoodPositionMap.put(4.743, 0.5383);
+    shotHoodPositionMap.put(6.743, 0.628);
 
     timeOfFlightMap.put(1.751, 1.0); // hub
     timeOfFlightMap.put(2.127, 1.0);
@@ -98,13 +95,10 @@ public class ShotCalculator {
     Translation2d targetPose;
     if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
       targetPose = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
-      isPassing = false;
     } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
       targetPose = AllianceFlipUtil.apply(ShooterConstants.leftPassPosition);
-      isPassing = true;
     } else {
       targetPose = AllianceFlipUtil.apply(ShooterConstants.rightPassPosition);
-      isPassing = true;
     }
 
     Pose2d estimatedPose = RobotState.getInstance().getPose();
@@ -142,7 +136,6 @@ public class ShotCalculator {
       double offsetX = turretVelocityX * timeOfFlight;
       double offsetY = turretVelocityY * timeOfFlight;
 
-      // Rotation2d offsetRotation = targetPose.minus(lookaheadPose.getTranslation()).getAngle();
       Rotation2d offsetRotation =
           targetPose
               .minus(lookaheadPose.getTranslation())
@@ -168,13 +161,6 @@ public class ShotCalculator {
         (lookaheadTurretToTargetDistance >= minDistance
                 && lookaheadTurretToTargetDistance <= maxDistance)
             || RobotState.getInstance().getTarget() != ShooterTarget.HUB;
-
-    // tower deadzone
-    isValid =
-        isValid
-            && !(RobotState.getInstance().isUnderTower(lookaheadPose))
-            && !(RobotState.getInstance().isBehindHub(lookaheadPose))
-            && !(RobotState.getInstance().nearTrench());
 
     // turret angle
     turretAngle =
@@ -214,8 +200,8 @@ public class ShotCalculator {
     //     "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
     //     lookaheadTurretToTargetDistance);
 
-    SmartDashboard.putBoolean(
-        "Is Under Tower", RobotState.getInstance().isUnderTower(lookaheadPose));
+    // SmartDashboard.putBoolean(
+    //     "Is Under Tower", RobotState.getInstance().isUnderTower(lookaheadPose));
     SmartDashboard.putBoolean("Is Behind Hub", RobotState.getInstance().isBehindHub(lookaheadPose));
     SmartDashboard.putBoolean("Is Under Trench", RobotState.getInstance().nearTrench());
 

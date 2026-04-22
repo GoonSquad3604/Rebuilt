@@ -225,6 +225,11 @@ public class Shooter extends SubsystemBase {
               ShooterConstants.TurretConstants.atSetpointTolerance);
     }
 
+    if (shootingParameters.turretAngle() > ShooterConstants.TurretConstants.maxAnglePosition
+        || shootingParameters.turretAngle() < ShooterConstants.TurretConstants.minAnglePosition) {
+      return false;
+    }
+
     return turretAtSetpoint;
   }
 

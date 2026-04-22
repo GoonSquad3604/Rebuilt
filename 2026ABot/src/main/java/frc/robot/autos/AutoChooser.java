@@ -23,8 +23,6 @@ public class AutoChooser extends SendableChooser<Autos> {
 
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
-          // new AutoProgram(Autos.MAIN, "Main", AutoFactory::createMainAuto),
-          new AutoProgram(Autos.HUB_MIDDLE_DEPOT_CLIMB, "MSC Playoff", AutoFactory::createHubMiddleDepotClimbAuto),
           new AutoProgram(Autos.LEFT_CLIMB, "Left Climb", AutoFactory::createLeftClimbAuto),
           new AutoProgram(
               Autos.LEFT_DOUBLE_SWIPE_BUMP,
@@ -39,6 +37,10 @@ public class AutoChooser extends SendableChooser<Autos> {
               Autos.MIDDLE_DEPOT_CLIMB,
               "Middle Depot Climb",
               AutoFactory::createMiddleDepotClimbAuto),
+          new AutoProgram(
+              Autos.HUB_MIDDLE_DEPOT_CLIMB,
+              "(Hub) Middle Depot Climb",
+              AutoFactory::createHubMiddleDepotClimbAuto),
           new AutoProgram(
               Autos.MIDDLE_DEPOT_NEUTRAL,
               "Middle Depot Neutral",

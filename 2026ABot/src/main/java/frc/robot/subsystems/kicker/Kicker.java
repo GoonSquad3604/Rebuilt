@@ -24,8 +24,8 @@ public class Kicker extends SubsystemBase {
   private double dashboardKickerVelocity;
 
   private boolean isJammed = false;
-  private boolean beganJamming = false;
-  private double timeBeganJamming;
+  // private boolean beganJamming = false;
+  // private double timeBeganJamming;
 
   private boolean beganUnjamming;
   private double timeBeganUnjamming;
@@ -35,6 +35,7 @@ public class Kicker extends SubsystemBase {
     REV,
     TEST,
     CLEAN,
+    EJECT,
     UNJAM
   }
 
@@ -43,6 +44,7 @@ public class Kicker extends SubsystemBase {
     REVVING,
     TESTING,
     CLEANING,
+    EJECTING,
     UNJAMMING
   }
 
@@ -80,9 +82,9 @@ public class Kicker extends SubsystemBase {
       applyStates();
     }
 
-    if (currentState == KickerCurrentState.REVVING) {
-      updateisJammed();
-    }
+    // if (currentState == KickerCurrentState.REVVING) {
+    //   updateisJammed();
+    // }
 
     dashboardKickerVelocity =
         SmartDashboard.getNumber("Kicker Velocity", KickerConstants.shootingVelocity);
@@ -108,6 +110,8 @@ public class Kicker extends SubsystemBase {
         return KickerCurrentState.TESTING;
       case CLEAN:
         return KickerCurrentState.CLEANING;
+      case EJECT:
+        return KickerCurrentState.EJECTING;
       case UNJAM:
         // beganUnjamming = true;
         // timeBeganUnjamming = Timer.getFPGATimestamp();
@@ -131,6 +135,9 @@ public class Kicker extends SubsystemBase {
       case CLEANING:
         clean();
         break;
+      case EJECTING:
+        eject();
+        break;
       case UNJAMMING:
         unjam();
         break;
@@ -153,6 +160,10 @@ public class Kicker extends SubsystemBase {
     kickerIO.setPower(KickerConstants.cleanSpeed);
   }
 
+  private void eject() {
+    kickerIO.setPower(.9);
+  }
+
   private void unjam() {
     kickerIO.setVelocity(KickerConstants.unjamVelocity);
   }
@@ -167,21 +178,21 @@ public class Kicker extends SubsystemBase {
     return shouldStopUnjamming;
   }
 
-  private void updateisJammed() {
-    if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
-      if (!beganJamming) {
-        timeBeganJamming = Timer.getFPGATimestamp();
-      }
-      beganJamming = true;
-      double newTimestamp = Timer.getFPGATimestamp();
-      if (timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
-        isJammed = true;
-      }
-    } else {
-      beganJamming = false;
-      isJammed = false;
-    }
-  }
+  // private void updateisJammed() {
+  //   if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
+  //     if (!beganJamming) {
+  //       timeBeganJamming = Timer.getFPGATimestamp();
+  //     }
+  //     beganJamming = true;
+  //     double newTimestamp = Timer.getFPGATimestamp();
+  //     if (timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
+  //       isJammed = true;
+  //     }
+  //   } else {
+  //     beganJamming = false;
+  //     isJammed = false;
+  //   }
+  // }
 
   public boolean isJammed() {
     return isJammed;

@@ -70,16 +70,20 @@ public final class ShooterConstants {
     public static final int motorID = 5;
     public static final int encoderID = 30;
 
-    public static final double P = 32;
-    public static final double I = 0;
-    public static final double D = 0.25;
-    public static final double S = 0.4;
-    public static final double V = 0;
+    public static final double P = 24; // 32
+    public static final double I = 0.0; // 0
+    public static final double D = 0.0; // .25
+    public static final double S = 0.9; // .4
+    public static final double V = 0.2; // 0
+    public static final double A = 0.0; // 0
 
-    public static final double rampRate = 0.20;
+    public static final double rampRate = 0.05; // .15
 
-    public static final double maxEncoderPosition = 0.927; // .75 for 180
-    public static final double minEncoderPosition = 0.05; // .25 for 180
+    public static final double maxEncoderPosition = 0.927;
+    public static final double minEncoderPosition = 0.05;
+
+    public static final double maxAnglePosition = 333.72;
+    public static final double minAnglePosition = 18;
 
     public static final double forwardAngle = 180;
     public static final double atSetpointTolerance = 20; // 30

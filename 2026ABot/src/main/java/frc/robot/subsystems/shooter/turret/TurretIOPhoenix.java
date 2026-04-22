@@ -7,7 +7,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -29,8 +29,8 @@ public class TurretIOPhoenix implements TurretIO {
 
   // motor
   private final TalonFX turretMotor;
-  // private final PositionVoltage turretRequest;
-  private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0.0);
+  // private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0.0);
+  private final PositionVoltage turretRequest;
 
   private final TalonFXConfiguration turretMotorConfig;
 
@@ -38,7 +38,7 @@ public class TurretIOPhoenix implements TurretIO {
   private final CANcoder turretEncoder;
   private final CANcoderConfiguration turretEncoderConfig;
 
-  private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final VoltageOut voltageRequest;
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -70,11 +70,14 @@ public class TurretIOPhoenix implements TurretIO {
     turretEncoderConfig.MagnetSensor.SensorDirection =
         SensorDirectionValue.CounterClockwise_Positive;
 
-    // motion magic position control
-    turretMotorConfig.MotionMagic.MotionMagicAcceleration =
-        ShooterConstants.TurretConstants.turretAcceleration;
-    turretMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
-        ShooterConstants.TurretConstants.turretVelocity;
+    // pid configs
+
+    voltageRequest = new VoltageOut(0);
+    turretRequest = new PositionVoltage(0.0);
+    // turretMotorConfig.MotionMagic.MotionMagicAcceleration =
+    //     ShooterConstants.TurretConstants.turretAcceleration;
+    // turretMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
+    //     ShooterConstants.TurretConstants.turretVelocity;
 
     turretMotorConfig.Slot0 =
         new Slot0Configs()
@@ -82,7 +85,8 @@ public class TurretIOPhoenix implements TurretIO {
             .withKI(ShooterConstants.TurretConstants.I)
             .withKD(ShooterConstants.TurretConstants.D)
             .withKS(ShooterConstants.TurretConstants.S)
-            .withKV(ShooterConstants.TurretConstants.V);
+            .withKV(ShooterConstants.TurretConstants.V)
+            .withKA(ShooterConstants.TurretConstants.A);
     turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod =
         ShooterConstants.TurretConstants.rampRate;
 

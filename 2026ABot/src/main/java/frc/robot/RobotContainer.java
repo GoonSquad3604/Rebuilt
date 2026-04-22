@@ -106,16 +106,16 @@ public class RobotContainer {
         "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption(
         "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // autoChooser.addOption(
     //     "Launcher SysId (Quasistatic Forward)",
@@ -153,32 +153,6 @@ public class RobotContainer {
     //     "Kicker SysId (Dynamic Forward)", kicker.sysIdDynamic(SysIdRoutine.Direction.kForward));
     // autoChooser.addOption(
     //     "Kicker SysId (Dynamic Reverse)", kicker.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "ClimberOuter SysId (Quasistatic Forward)",
-        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Quasistatic Reverse)",
-        climber.climberOuterSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Dynamic Forward)",
-        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberOuter SysId (Dynamic Reverse)",
-        climber.climberOuterSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    autoChooser.addOption(
-        "ClimberInner SysId (Quasistatic Forward)",
-        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberInner SysId (Quasistatic Reverse)",
-        climber.climberInnerSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "ClimberInner SysId (Dynamic Forward)",
-        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "ClimberInner SysId (Dynamic Reverse)",
-        climber.climberInnerSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -387,27 +361,6 @@ public class RobotContainer {
     operatorButtonBox.button(11).onTrue(superstructure.setWantedState(WantedSuperState.UNJAM));
     operatorButtonBox.button(11).onFalse(superstructure.setWantedState(WantedSuperState.TRACK));
 
-    // Shoot
-    // operatorButtonBox
-    //     .button(11)
-    //     .or(driverController.leftBumper())
-    //     .or(testController.leftBumper())
-    //     .onTrue(
-    //         Commands.either(
-    //                 superstructure.setWantedState(WantedSuperState.SHOOT),
-    //                 Commands.either(
-    //                     superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
-    //                     Commands.either(
-    //                         superstructure.setWantedState(WantedSuperState.INTAKE),
-    //                         superstructure.setWantedState(WantedSuperState.STOPPED),
-    //                         () ->
-    //                             superstructure.getCurrentSuperState()
-    //                                 == CurrentSuperState.INTAKING_AND_SHOOTING),
-    //                     () -> superstructure.getCurrentSuperState() ==
-    // CurrentSuperState.INTAKING),
-    //                 () -> superstructure.getCurrentSuperState() == CurrentSuperState.STOPPED)
-    //             .ignoringDisable(true));
-
     // Clean (only available on pit box)
     operatorButtonBox
         .button(12)
@@ -441,26 +394,7 @@ public class RobotContainer {
                 superstructure.setWantedState(WantedSuperState.STOPPED),
                 () -> superstructure.getCurrentSuperState() != CurrentSuperState.TRACKING));
 
-    testController.povLeft().onTrue(Commands.runOnce(() -> shooter.setHoodPower(0.1)));
-    testController.povLeft().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    testController.povRight().onTrue(Commands.runOnce(() -> shooter.setHoodPower(-0.1)));
-    testController.povRight().onFalse(Commands.runOnce(() -> shooter.setHoodPower(0.0)));
-
-    // driverController
-    //     .rightStick()
-    //     .onTrue(
-    //         Commands.either(
-    //             superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
-    //             superstructure.setWantedState(WantedSuperState.TRACK),
-    //             () -> superstructure.getCurrentSuperState() != CurrentSuperState.TESTING_SHOOTING));
-
-    // driverController
-    //     .povLeft()
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.SET_UP_AUTO_CLIMB));
-    // driverController
-    //     .povDown()
-    //     .onTrue(superstructure.setWantedState(WantedSuperState.CLIMB_IN_AUTO));
+    driverController.rightStick().onTrue(superstructure.setWantedState(WantedSuperState.TRACK));
   }
 
   /**
