@@ -44,7 +44,7 @@ public class AutoFactory {
         RobotState.getInstance().getPose(),
         Commands.sequence(
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE),
-            runPath("NewLeftDoubleSwipePt1"),
+            runPath("badNewLeftDoubleSwipePt1"),
             robotContainer.getSuperstructure().setWantedState(WantedSuperState.SHOOT),
             runPath("NewLeftDoubleSwipePt2"),
             Commands.waitSeconds(1.0),
