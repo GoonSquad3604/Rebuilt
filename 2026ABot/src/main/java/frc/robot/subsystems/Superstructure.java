@@ -397,8 +397,8 @@ public class Superstructure extends SubsystemBase {
 
   private void eject() {
     // hopper.setWantedState(HopperWantedState.DEPLOY);
-    // intake.setWantedState(IntakeWantedState.VOMIT);
-    kicker.setWantedState(KickerWantedState.EJECT);
+    intake.setWantedState(IntakeWantedState.VOMIT);
+    kicker.setWantedState(KickerWantedState.REV);
     shooter.setWantedState(ShooterWantedState.SHOOT);
     spindexer.setWantedState(SpindexerWantedState.SPIN);
     leds.setWantedState(LedsWantedState.EJECT);

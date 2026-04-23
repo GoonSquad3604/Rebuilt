@@ -189,8 +189,6 @@ public class RobotContainer {
                     () -> driverController.getLeftTriggerAxis() > 0.05)
                 .alongWith(superstructure.setWantedState(WantedSuperState.TRACK)));
 
-    driverController.rightBumper().onFalse(superstructure.setWantedState(WantedSuperState.TRACK));
-
     // Lock to 45° when B button is held
     driverController
         .b()
@@ -263,32 +261,14 @@ public class RobotContainer {
         .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
         .onTrue(superstructure.toggleReadyToClimb());
 
-    // climb align
-    // driverController
-    //     .povRight()
-    //     // .and(() -> superstructure.getCurrentSuperState() == CurrentSuperState.CLIMBING)
-    //     .whileTrue(
-    //         DriveCommands.alignToClimb(drive)
-    //             .until(
-    //                 () ->
-    //                     RobotState.getInstance()
-    //                         .atDrivePosition(
-    //                             RobotState.getInstance().isLeftSide()
-    //                                 ? DriveConstants.leftClimbFirstPose
-    //                                 : DriveConstants.rightClimbFirstPose))
-    //             .andThen(
-    //                 RobotState.getInstance().isLeftSide()
-    //                     ? DriveCommands.joystickDrive(
-    //                             drive, () -> 0, () -> 0.325, () -> 0, () -> false)
-    //                         .repeatedly()
-    //                     : DriveCommands.joystickDrive(
-    //                             drive, () -> 0, () -> -0.325, () -> 0, () -> false)
-    //                         .repeatedly())
-    //             .until(() -> climber.sensorsValid())
-    //             .andThen(
-    //                 DriveCommands.joystickDrive(
-    //                         drive, () -> -0.3604, () -> 0.0, () -> 0, () -> false)
-    //                     .repeatedly()));
+    // toggle vomit mode
+    driverController
+        .a()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.EJECT),
+                superstructure.setWantedState(WantedSuperState.TRACK),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.EJECTING));
 
     /* OPERATOR */
 

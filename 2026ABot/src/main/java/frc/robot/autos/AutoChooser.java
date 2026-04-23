@@ -23,6 +23,10 @@ public class AutoChooser extends SendableChooser<Autos> {
 
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
+          new AutoProgram(
+              Autos.NEW_LEFT_DOUBLE_SWIPE,
+              "New Left 2Swipe",
+              AutoFactory::createNewLeftDoubleSwipeAuto),
           new AutoProgram(Autos.LEFT_CLIMB, "Left Climb", AutoFactory::createLeftClimbAuto),
           new AutoProgram(
               Autos.LEFT_DOUBLE_SWIPE_BUMP,
