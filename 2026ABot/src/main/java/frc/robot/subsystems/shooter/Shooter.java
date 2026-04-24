@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
 import frc.robot.RobotState.ShooterTarget;
+import frc.robot.subsystems.shooter.ShooterConstants.HoodConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShootingParameters;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -49,6 +50,7 @@ public class Shooter extends SubsystemBase {
     IDLE,
     TRACK_TARGET,
     SHOOT,
+    PASS,
     EJECT,
     TEST_SHOOT,
     CLEAN,
@@ -58,6 +60,7 @@ public class Shooter extends SubsystemBase {
     IDLING,
     TRACKING_TARGET,
     SHOOTING,
+    PASSING,
     SHOOTING_FORWARD,
     EJECTING,
     TESTING_SHOOTING,
@@ -145,6 +148,10 @@ public class Shooter extends SubsystemBase {
               && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD
           ? CurrentState.SHOOTING_FORWARD
           : CurrentState.SHOOTING;
+      case PASS -> RobotState.getInstance().isOverride()
+              && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD
+          ? CurrentState.SHOOTING_FORWARD
+          : CurrentState.PASSING;
       case EJECT -> CurrentState.EJECTING;
       case TEST_SHOOT -> CurrentState.TESTING_SHOOTING;
       case TRACK_TARGET -> CurrentState.TRACKING_TARGET;
@@ -159,6 +166,9 @@ public class Shooter extends SubsystemBase {
         break;
       case SHOOTING:
         shoot();
+        break;
+      case PASSING:
+        pass();
         break;
       case EJECTING:
         eject();
@@ -196,11 +206,19 @@ public class Shooter extends SubsystemBase {
               launcherIO.getVelocity(),
               ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
     } else {
-      launcherAtSetpoint =
-          MathUtil.isNear(
-              shootingParameters.flywheelVelocity(),
-              launcherIO.getVelocity(),
-              ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+      if (currentState == CurrentState.PASSING) {
+        launcherAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.passFlywheelVelocity(),
+                launcherIO.getVelocity(),
+                ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+      } else {
+        launcherAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.flywheelVelocity(),
+                launcherIO.getVelocity(),
+                ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+      }
     }
 
     return launcherAtSetpoint;
@@ -279,6 +297,12 @@ public class Shooter extends SubsystemBase {
     turretIO.setAngle(shootingParameters.turretAngle());
     hoodIO.setPosition(shootingParameters.hoodPosition());
     launcherIO.setVelocity(shootingParameters.flywheelVelocity());
+  }
+
+  private void pass() {
+    turretIO.setAngle(shootingParameters.turretAngle());
+    hoodIO.setPosition(HoodConstants.hoodMaxPos);
+    launcherIO.setVelocity(shootingParameters.passFlywheelVelocity());
   }
 
   private void eject() {

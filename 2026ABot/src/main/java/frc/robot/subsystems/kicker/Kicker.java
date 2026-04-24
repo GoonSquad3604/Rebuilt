@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,12 +26,13 @@ public class Kicker extends SubsystemBase {
   // private boolean beganJamming = false;
   // private double timeBeganJamming;
 
-  private boolean beganUnjamming;
-  private double timeBeganUnjamming;
+  // private boolean beganUnjamming;
+  // private double timeBeganUnjamming;
 
   public enum KickerWantedState {
     IDLE,
     REV,
+    PASS,
     TEST,
     CLEAN,
     EJECT,
@@ -42,6 +42,7 @@ public class Kicker extends SubsystemBase {
   public enum KickerCurrentState {
     IDLING,
     REVVING,
+    PASSING,
     TESTING,
     CLEANING,
     EJECTING,
@@ -105,7 +106,9 @@ public class Kicker extends SubsystemBase {
         return KickerCurrentState.IDLING;
         // case REV: return KickerCurrentState.REVVING;
       case REV:
-        return continueUnjamming() ? KickerCurrentState.UNJAMMING : KickerCurrentState.REVVING;
+        return KickerCurrentState.REVVING;
+      case PASS:
+        return KickerCurrentState.PASSING;
       case TEST:
         return KickerCurrentState.TESTING;
       case CLEAN:
@@ -128,6 +131,9 @@ public class Kicker extends SubsystemBase {
         break;
       case REVVING:
         rev();
+        break;
+      case PASSING:
+        pass();
         break;
       case TESTING:
         test();
@@ -152,6 +158,10 @@ public class Kicker extends SubsystemBase {
     kickerIO.setVelocity(KickerConstants.shootingVelocity);
   }
 
+  private void pass() {
+    kickerIO.setVelocity(KickerConstants.passingVelocity);
+  }
+
   private void test() {
     kickerIO.setVelocity(dashboardKickerVelocity);
   }
@@ -168,15 +178,16 @@ public class Kicker extends SubsystemBase {
     kickerIO.setVelocity(KickerConstants.unjamVelocity);
   }
 
-  private boolean continueUnjamming() {
-    if (!beganUnjamming) return false;
-    double newTimestamp = Timer.getFPGATimestamp();
-    boolean shouldStopUnjamming = timeBeganUnjamming < newTimestamp - KickerConstants.unjamDuration;
-    if (shouldStopUnjamming) {
-      beganUnjamming = false;
-    }
-    return shouldStopUnjamming;
-  }
+  // private boolean continueUnjamming() {
+  //   if (!beganUnjamming) return false;
+  //   double newTimestamp = Timer.getFPGATimestamp();
+  //   boolean shouldStopUnjamming = timeBeganUnjamming < newTimestamp -
+  // KickerConstants.unjamDuration;
+  //   if (shouldStopUnjamming) {
+  //     beganUnjamming = false;
+  //   }
+  //   return shouldStopUnjamming;
+  // }
 
   // private void updateisJammed() {
   //   if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {

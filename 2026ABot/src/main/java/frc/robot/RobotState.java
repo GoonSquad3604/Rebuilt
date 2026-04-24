@@ -66,9 +66,9 @@ public class RobotState {
   //   }
   // }
 
-  public boolean isInMiddle() {
-    return getPose().getY() > 3.25 && getPose().getY() < 4.5;
-  }
+  // public boolean isInMiddle() {
+  //   return getPose().getY() > 3.25 && getPose().getY() < 4.5;
+  // }
 
   public boolean isUnderTower(Pose2d pose) {
     return pose.getX() < AllianceFlipUtil.apply(FieldConstants.Tower.leftUpright).getX()

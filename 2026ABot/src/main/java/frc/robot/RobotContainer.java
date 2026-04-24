@@ -228,10 +228,15 @@ public class RobotContainer {
                             () ->
                                 superstructure.getCurrentSuperState()
                                     != CurrentSuperState.INTAKING),
-                        () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
+                        () ->
+                            superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING
+                                || superstructure.getCurrentSuperState()
+                                    == CurrentSuperState.PASSING),
                     () ->
                         superstructure.getCurrentSuperState()
-                            == CurrentSuperState.INTAKING_AND_SHOOTING)
+                                == CurrentSuperState.INTAKING_AND_SHOOTING
+                            || superstructure.getCurrentSuperState()
+                                == CurrentSuperState.INTAKING_AND_PASSING)
                 .ignoringDisable(true));
 
     // toggle shoot mode
@@ -244,15 +249,18 @@ public class RobotContainer {
                     Commands.either(
                         superstructure.setWantedState(WantedSuperState.INTAKE_AND_SHOOT),
                         Commands.either(
-                            superstructure.setWantedState(WantedSuperState.SHOOT),
                             superstructure.setWantedState(WantedSuperState.TRACK),
+                            superstructure.setWantedState(WantedSuperState.SHOOT),
                             () ->
-                                superstructure.getCurrentSuperState()
-                                    != CurrentSuperState.SHOOTING),
+                                superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING
+                                    || superstructure.getCurrentSuperState()
+                                        == CurrentSuperState.PASSING),
                         () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
                     () ->
                         superstructure.getCurrentSuperState()
-                            == CurrentSuperState.INTAKING_AND_SHOOTING)
+                                == CurrentSuperState.INTAKING_AND_SHOOTING
+                            || superstructure.getCurrentSuperState()
+                                == CurrentSuperState.INTAKING_AND_PASSING)
                 .ignoringDisable(true));
 
     // Toggle ready to climb
@@ -374,7 +382,13 @@ public class RobotContainer {
                 superstructure.setWantedState(WantedSuperState.STOPPED),
                 () -> superstructure.getCurrentSuperState() != CurrentSuperState.TRACKING));
 
-    driverController.rightStick().onTrue(superstructure.setWantedState(WantedSuperState.TRACK));
+    driverController
+        .rightStick()
+        .onTrue(
+            Commands.either(
+                superstructure.setWantedState(WantedSuperState.TEST_SHOOT),
+                superstructure.setWantedState(WantedSuperState.TRACK),
+                () -> superstructure.getCurrentSuperState() != CurrentSuperState.TESTING_SHOOTING));
   }
 
   /**

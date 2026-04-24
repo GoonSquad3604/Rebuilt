@@ -28,7 +28,7 @@ public class Leds extends SubsystemBase {
     UNJAM
   }
 
-  public enum CurrentState {
+  private enum CurrentState {
     IDLING,
     STOWING,
     INTAKING,

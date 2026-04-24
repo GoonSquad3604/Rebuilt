@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
+import frc.robot.RobotState.ShooterTarget;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.Climber.ClimberWantedState;
 import frc.robot.subsystems.drive.Drive;
@@ -62,7 +63,9 @@ public class Superstructure extends SubsystemBase {
     INTAKING,
     STOWING,
     SHOOTING,
+    PASSING,
     INTAKING_AND_SHOOTING,
+    INTAKING_AND_PASSING,
     CLIMBING,
     SETTING_UP_AUTO_CLIMB,
     CLIMBING_IN_AUTO,
@@ -145,8 +148,12 @@ public class Superstructure extends SubsystemBase {
       case STOPPED -> CurrentSuperState.STOPPED;
       case TRACK -> CurrentSuperState.TRACKING;
       case INTAKE -> CurrentSuperState.INTAKING;
-      case SHOOT -> CurrentSuperState.SHOOTING;
-      case INTAKE_AND_SHOOT -> CurrentSuperState.INTAKING_AND_SHOOTING;
+      case SHOOT -> RobotState.getInstance().getTarget() != ShooterTarget.HUB
+          ? CurrentSuperState.PASSING
+          : CurrentSuperState.SHOOTING;
+      case INTAKE_AND_SHOOT -> RobotState.getInstance().getTarget() != ShooterTarget.HUB
+          ? CurrentSuperState.INTAKING_AND_PASSING
+          : CurrentSuperState.INTAKING_AND_SHOOTING;
       case CLIMB -> CurrentSuperState.CLIMBING;
       case SET_UP_AUTO_CLIMB -> CurrentSuperState.SETTING_UP_AUTO_CLIMB;
       case CLIMB_IN_AUTO -> CurrentSuperState.CLIMBING_IN_AUTO;
@@ -174,11 +181,17 @@ public class Superstructure extends SubsystemBase {
       case SHOOTING:
         shoot();
         break;
+      case PASSING:
+        pass();
+        break;
       case STOWING:
         stow();
         break;
       case INTAKING_AND_SHOOTING:
         intakeAndShoot();
+        break;
+      case INTAKING_AND_PASSING:
+        intakeAndPass();
         break;
       case SETTING_UP_AUTO_CLIMB:
         setUpAutoClimb();
@@ -304,9 +317,63 @@ public class Superstructure extends SubsystemBase {
     leds.setWantedState(LedsWantedState.SHOOT);
   }
 
+  private void pass() {
+    shooter.setWantedState(ShooterWantedState.PASS);
+    kicker.setWantedState(KickerWantedState.PASS);
+
+    if (climber.isStowed()) {
+      climber.setWantedState(ClimberWantedState.IDLE);
+      if (!hopper.isDeployed()) {
+        hopper.setWantedState(HopperWantedState.DEPLOY);
+        intake.setWantedState(IntakeWantedState.STOW);
+      } else {
+        intake.setWantedState(IntakeWantedState.KICK);
+      }
+    } else {
+      climber.setWantedState(ClimberWantedState.STOW);
+    }
+
+    if ((shooter.launcherAtSetpoint() || beganFiring)
+        && shooter.turretAtSetpoint()
+        && shooter.atValidShootingLocation()) {
+      beganFiring = true;
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    } else {
+      spindexer.setWantedState(SpindexerWantedState.IDLE);
+    }
+    leds.setWantedState(LedsWantedState.SHOOT);
+  }
+
   private void intakeAndShoot() {
     shooter.setWantedState(ShooterWantedState.SHOOT);
     kicker.setWantedState(KickerWantedState.REV);
+
+    if (climber.isStowed()) {
+      climber.setWantedState(ClimberWantedState.IDLE);
+      if (!hopper.isDeployed()) {
+        hopper.setWantedState(HopperWantedState.DEPLOY);
+        intake.setWantedState(IntakeWantedState.STOW);
+      } else {
+        intake.setWantedState(IntakeWantedState.INTAKE);
+      }
+    } else {
+      climber.setWantedState(ClimberWantedState.STOW);
+    }
+
+    if ((shooter.launcherAtSetpoint() || beganFiring)
+        && shooter.turretAtSetpoint()
+        && shooter.atValidShootingLocation()) {
+      beganFiring = true;
+      spindexer.setWantedState(SpindexerWantedState.SPIN);
+    } else {
+      spindexer.setWantedState(SpindexerWantedState.IDLE);
+    }
+    leds.setWantedState(LedsWantedState.INTAKE_AND_SHOOT);
+  }
+
+  private void intakeAndPass() {
+    shooter.setWantedState(ShooterWantedState.PASS);
+    kicker.setWantedState(KickerWantedState.PASS);
 
     if (climber.isStowed()) {
       climber.setWantedState(ClimberWantedState.IDLE);
