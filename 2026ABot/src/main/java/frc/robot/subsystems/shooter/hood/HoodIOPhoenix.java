@@ -64,9 +64,10 @@ public class HoodIOPhoenix implements HoodIO {
     hoodMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.HoodConstants.hoodEncoderID;
     hoodMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
 
-    hoodMotorConfig.MotionMagic.MotionMagicAcceleration =
-        ShooterConstants.HoodConstants.acceleration;
-    hoodMotorConfig.MotionMagic.MotionMagicCruiseVelocity = ShooterConstants.HoodConstants.velocity;
+    // hoodMotorConfig.MotionMagic.MotionMagicAcceleration =
+    //     ShooterConstants.HoodConstants.acceleration;
+    // hoodMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
+    // ShooterConstants.HoodConstants.velocity;
 
     hoodMotorConfig.Slot0 =
         new Slot0Configs()

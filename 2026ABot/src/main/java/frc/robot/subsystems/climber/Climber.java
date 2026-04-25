@@ -134,8 +134,8 @@ public class Climber extends SubsystemBase {
     climberInnerMotorDisconnected.set(!climberInputs.innerMotorConnected);
     climberOuterEncoderDisconnected.set(!climberInputs.outerEncoderConnected);
     climberInnerEncoderDisconnected.set(!climberInputs.innerEncoderConnected);
-    leftRangeDisconnected.set(!climberInputs.leftClimbRangeConnected);
-    rightRangeDisconnected.set(!climberInputs.rightClimbRangeConnected);
+    // leftRangeDisconnected.set(!climberInputs.leftClimbRangeConnected);
+    // rightRangeDisconnected.set(!climberInputs.rightClimbRangeConnected);
     centerRangeDisconnected.set(!climberInputs.centerClimbRangeConnected);
   }
 
@@ -479,9 +479,9 @@ public class Climber extends SubsystemBase {
 
   // returns true if center laser is detected and not right or left
   public boolean sensorsValid() {
-    return climberIO.centerClimbDetected()
-        && !climberIO.leftClimbDetected()
-        && !climberIO.rightClimbDetected();
+    return climberIO.centerClimbDetected();
+    // && !climberIO.leftClimbDetected()
+    // && !climberIO.rightClimbDetected();
   }
 
   public boolean beganAutoClimbing() {

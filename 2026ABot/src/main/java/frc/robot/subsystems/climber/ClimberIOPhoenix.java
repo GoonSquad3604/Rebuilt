@@ -29,7 +29,7 @@ public class ClimberIOPhoenix implements ClimberIO {
 
   private final TalonFX outerMotor, innerMotor;
   private final CANcoder outerEncoder, innerEncoder;
-  private final CANrange leftClimbRange, rightClimbRange, centerClimbRange;
+  private final CANrange centerClimbRange;
   private final TalonFXConfiguration outerMotorConfig, innerMotorConfig;
   private final CANcoderConfiguration outerEncoderConfig, innerEncoderConfig;
   private final CANrangeConfiguration leftClimbConfig, rightClimbConfig, centerClimbConfig;
@@ -57,8 +57,8 @@ public class ClimberIOPhoenix implements ClimberIO {
 
     // outer motor config
     outerMotor = new TalonFX(ClimberConstants.outerMotorID, Constants.CANBusName);
-    leftClimbRange = new CANrange(ClimberConstants.leftClimberRangeID, Constants.CANBusName);
-    rightClimbRange = new CANrange(ClimberConstants.rightClimberRangeID, Constants.CANBusName);
+    // leftClimbRange = new CANrange(ClimberConstants.leftClimberRangeID, Constants.CANBusName);
+    // rightClimbRange = new CANrange(ClimberConstants.rightClimberRangeID, Constants.CANBusName);
     centerClimbRange = new CANrange(ClimberConstants.centerClimberRangeID, Constants.CANBusName);
 
     leftClimbConfig = new CANrangeConfiguration();
@@ -81,8 +81,8 @@ public class ClimberIOPhoenix implements ClimberIO {
     centerClimbConfig.FovParams.FOVRangeX = 6.75;
     centerClimbConfig.FovParams.FOVRangeY = 6.75;
 
-    leftClimbRange.getConfigurator().apply(leftClimbConfig);
-    rightClimbRange.getConfigurator().apply(rightClimbConfig);
+    // leftClimbRange.getConfigurator().apply(leftClimbConfig);
+    // rightClimbRange.getConfigurator().apply(rightClimbConfig);
     centerClimbRange.getConfigurator().apply(centerClimbConfig);
 
     outerMotorConfig = new TalonFXConfiguration();
@@ -202,8 +202,8 @@ public class ClimberIOPhoenix implements ClimberIO {
     inputs.innerVelocity = innerEncoder.getVelocity().getValueAsDouble();
     inputs.innerPosition = innerEncoder.getAbsolutePosition().getValueAsDouble();
 
-    inputs.leftClimbRangeConnected = leftClimbRange.isConnected();
-    inputs.rightClimbRangeConnected = rightClimbRange.isConnected();
+    // inputs.leftClimbRangeConnected = leftClimbRange.isConnected();
+    // inputs.rightClimbRangeConnected = rightClimbRange.isConnected();
     inputs.centerClimbRangeConnected = centerClimbRange.isConnected();
   }
 
@@ -249,15 +249,15 @@ public class ClimberIOPhoenix implements ClimberIO {
     outerMotor.setControl(voltageRequest.withOutput(output));
   }
 
-  @Override
-  public boolean leftClimbDetected() {
-    return leftClimbRange.getIsDetected().getValue();
-  }
+  // @Override
+  // public boolean leftClimbDetected() {
+  //   return leftClimbRange.getIsDetected().getValue();
+  // }
 
-  @Override
-  public boolean rightClimbDetected() {
-    return rightClimbRange.getIsDetected().getValue();
-  }
+  // @Override
+  // public boolean rightClimbDetected() {
+  //   return rightClimbRange.getIsDetected().getValue();
+  // }
 
   @Override
   public boolean centerClimbDetected() {

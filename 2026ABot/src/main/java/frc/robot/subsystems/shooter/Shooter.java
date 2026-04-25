@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotState;
 import frc.robot.RobotState.ShooterTarget;
-import frc.robot.subsystems.shooter.ShooterConstants.HoodConstants;
 import frc.robot.subsystems.shooter.ShotCalculator.ShootingParameters;
 import frc.robot.subsystems.shooter.hood.HoodIO;
 import frc.robot.subsystems.shooter.hood.HoodIOInputsAutoLogged;
@@ -50,7 +49,7 @@ public class Shooter extends SubsystemBase {
     IDLE,
     TRACK_TARGET,
     SHOOT,
-    PASS,
+    // PASS,
     EJECT,
     TEST_SHOOT,
     CLEAN,
@@ -111,6 +110,8 @@ public class Shooter extends SubsystemBase {
       }
       shootingParameters = ShotCalculator.getInstance().getParameters();
       Logger.recordOutput("Subsystems/Shooter/WantedTurretAngle", shootingParameters.turretAngle());
+      Logger.recordOutput(
+          "Subsystems/Shooter/WantedHoodPosition", shootingParameters.hoodPosition());
     }
 
     CurrentState newState = handleStateTransitions();
@@ -132,7 +133,11 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("Hood Pose", dashboardHoodPosition);
     SmartDashboard.putNumber("Launcher Velocity", dashboardLauncherVelocity);
 
-    SmartDashboard.putBoolean("In Dead Zone", !(atValidShootingLocation()));
+    Logger.recordOutput("Subsystems/Shooter/inDeadZone", !atValidShootingLocation());
+
+    Logger.recordOutput("Subsystems/Shooter/launcherAtSetpoint", launcherAtSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/turretAtSetpoint", turretAtSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/hoodAtSetpoint", hoodAtSetpoint());
 
     hoodMotorDisconnected.set(!hoodInputs.motorConnected);
     hoodEncoderDisconnected.set(!hoodInputs.encoderConnected);
@@ -147,11 +152,9 @@ public class Shooter extends SubsystemBase {
       case SHOOT -> RobotState.getInstance().isOverride()
               && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD
           ? CurrentState.SHOOTING_FORWARD
-          : CurrentState.SHOOTING;
-      case PASS -> RobotState.getInstance().isOverride()
-              && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD
-          ? CurrentState.SHOOTING_FORWARD
-          : CurrentState.PASSING;
+          : RobotState.getInstance().getTarget() != ShooterTarget.HUB
+              ? CurrentState.PASSING
+              : CurrentState.SHOOTING;
       case EJECT -> CurrentState.EJECTING;
       case TEST_SHOOT -> CurrentState.TESTING_SHOOTING;
       case TRACK_TARGET -> CurrentState.TRACKING_TARGET;
@@ -263,11 +266,19 @@ public class Shooter extends SubsystemBase {
               hoodIO.getPosition(),
               ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
     } else {
-      hoodAtSetpoint =
-          MathUtil.isNear(
-              shootingParameters.hoodPosition(),
-              hoodIO.getPosition(),
-              ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+      if (currentState == CurrentState.PASSING) {
+        hoodAtSetpoint =
+            MathUtil.isNear(
+                ShooterConstants.HoodConstants.hoodMaxPos,
+                hoodIO.getPosition(),
+                ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+      } else {
+        hoodAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.hoodPosition(),
+                hoodIO.getPosition(),
+                ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+      }
     }
 
     return hoodAtSetpoint;
@@ -301,7 +312,7 @@ public class Shooter extends SubsystemBase {
 
   private void pass() {
     turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(HoodConstants.hoodMaxPos);
+    hoodIO.setPosition(shootingParameters.hoodPosition());
     launcherIO.setVelocity(shootingParameters.passFlywheelVelocity());
   }
 

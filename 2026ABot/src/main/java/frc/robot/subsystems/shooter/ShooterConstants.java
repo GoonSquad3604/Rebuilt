@@ -28,21 +28,21 @@ public final class ShooterConstants {
     public static final int hoodID = 9;
     public static final int hoodEncoderID = 25;
 
-    public static final double hoodP = 18; // 25
+    public static final double hoodP = 27;
     public static final double hoodI = 0;
     public static final double hoodD = 0.0;
-    public static final double hoodS = 0.3; // 0.1
-    public static final double hoodV = 0.0; // 0.25
+    public static final double hoodS = 0.5; // 0.1
+    public static final double hoodV = 0.2; // 0.25
     public static final double hoodG = 0.0;
 
-    public static final double acceleration = 16;
-    public static final double velocity = 8;
+    // public static final double acceleration = 16;
+    // public static final double velocity = 8;
 
     public static final double forwardPosition = 0.368;
-    public static final double hoodMaxPos = 0.628;
+    public static final double hoodMaxPos = 0.615;
     public static final double hoodMinPos = 0.1; // 0.05
 
-    public static final double hoodAtSetpointTolerance = 0.01;
+    public static final double hoodAtSetpointTolerance = 0.075;
 
     // ensure it is 0.05 above 0 when at minimum
     public static final double offset = 0.033;

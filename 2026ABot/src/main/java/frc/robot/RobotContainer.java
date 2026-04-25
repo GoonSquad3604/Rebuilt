@@ -228,15 +228,10 @@ public class RobotContainer {
                             () ->
                                 superstructure.getCurrentSuperState()
                                     != CurrentSuperState.INTAKING),
-                        () ->
-                            superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING
-                                || superstructure.getCurrentSuperState()
-                                    == CurrentSuperState.PASSING),
+                        () -> superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING),
                     () ->
                         superstructure.getCurrentSuperState()
-                                == CurrentSuperState.INTAKING_AND_SHOOTING
-                            || superstructure.getCurrentSuperState()
-                                == CurrentSuperState.INTAKING_AND_PASSING)
+                            == CurrentSuperState.INTAKING_AND_SHOOTING)
                 .ignoringDisable(true));
 
     // toggle shoot mode
@@ -252,15 +247,12 @@ public class RobotContainer {
                             superstructure.setWantedState(WantedSuperState.TRACK),
                             superstructure.setWantedState(WantedSuperState.SHOOT),
                             () ->
-                                superstructure.getCurrentSuperState() == CurrentSuperState.SHOOTING
-                                    || superstructure.getCurrentSuperState()
-                                        == CurrentSuperState.PASSING),
+                                superstructure.getCurrentSuperState()
+                                    == CurrentSuperState.SHOOTING),
                         () -> superstructure.getCurrentSuperState() == CurrentSuperState.INTAKING),
                     () ->
                         superstructure.getCurrentSuperState()
-                                == CurrentSuperState.INTAKING_AND_SHOOTING
-                            || superstructure.getCurrentSuperState()
-                                == CurrentSuperState.INTAKING_AND_PASSING)
+                            == CurrentSuperState.INTAKING_AND_SHOOTING)
                 .ignoringDisable(true));
 
     // Toggle ready to climb

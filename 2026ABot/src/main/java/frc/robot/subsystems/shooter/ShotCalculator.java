@@ -22,7 +22,7 @@ public class ShotCalculator {
   private double turretAngle;
   private double hoodPosition;
 
-  private static double passOffset = -20.0;
+  private static double passOffset = -13.0;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -63,10 +63,36 @@ public class ShotCalculator {
     shotFlywheelVelocityMap.put(2.0, 49.5);
     shotFlywheelVelocityMap.put(2.2, 50.5);
     shotFlywheelVelocityMap.put(2.5, 52.0);
+    shotFlywheelVelocityMap.put(2.75, 53.0);
+    shotFlywheelVelocityMap.put(3.0, 54.0);
+    shotFlywheelVelocityMap.put(3.25, 54.25);
+    shotFlywheelVelocityMap.put(3.5, 54.75);
+    shotFlywheelVelocityMap.put(3.75, 55.25);
+    shotFlywheelVelocityMap.put(4.0, 55.75);
+    shotFlywheelVelocityMap.put(4.3, 59.0);
+    shotFlywheelVelocityMap.put(4.5, 61.75);
+    shotFlywheelVelocityMap.put(4.75, 63.0);
+    shotFlywheelVelocityMap.put(5.0, 65.0);
+    shotFlywheelVelocityMap.put(5.2, 67.0);
+    shotFlywheelVelocityMap.put(7.0, 80.0);
 
-
-
-
+    passFlywheelVelocityMap.put(1.6, 46.0 + passOffset);
+    passFlywheelVelocityMap.put(1.8, 48.0 + passOffset);
+    passFlywheelVelocityMap.put(2.0, 49.5 + passOffset);
+    passFlywheelVelocityMap.put(2.2, 50.5 + passOffset);
+    passFlywheelVelocityMap.put(2.5, 52.0 + passOffset);
+    passFlywheelVelocityMap.put(2.75, 53.0 + passOffset);
+    passFlywheelVelocityMap.put(3.0, 54.0 + passOffset);
+    passFlywheelVelocityMap.put(3.25, 54.25 + passOffset);
+    passFlywheelVelocityMap.put(3.5, 54.75 + passOffset);
+    passFlywheelVelocityMap.put(3.75, 55.25 + passOffset);
+    passFlywheelVelocityMap.put(4.0, 55.75 + passOffset);
+    passFlywheelVelocityMap.put(4.3, 59.0 + passOffset);
+    passFlywheelVelocityMap.put(4.5, 61.75 + passOffset);
+    passFlywheelVelocityMap.put(4.75, 63.0 + passOffset);
+    passFlywheelVelocityMap.put(5.0, 65.0 + passOffset);
+    passFlywheelVelocityMap.put(5.2, 67.0 + passOffset);
+    passFlywheelVelocityMap.put(7.0, 90.0 + passOffset);
 
     // shotFlywheelVelocityMap.put(1.751, 44.0);
     // shotFlywheelVelocityMap.put(2.127, 45.5);
@@ -99,9 +125,17 @@ public class ShotCalculator {
     shotHoodPositionMap.put(2.0, 0.2);
     shotHoodPositionMap.put(2.2, 0.25);
     shotHoodPositionMap.put(2.5, 0.3);
-
-
-
+    shotHoodPositionMap.put(2.75, 0.35);
+    shotHoodPositionMap.put(3.0, 0.4);
+    shotHoodPositionMap.put(3.25, 0.45);
+    shotHoodPositionMap.put(3.5, 0.5);
+    shotHoodPositionMap.put(3.75, 0.55);
+    shotHoodPositionMap.put(4.0, 0.6);
+    shotHoodPositionMap.put(4.3, 0.6);
+    shotHoodPositionMap.put(4.5, 0.6);
+    shotHoodPositionMap.put(4.75, 0.6);
+    shotHoodPositionMap.put(5.0, 0.6);
+    shotHoodPositionMap.put(5.2, 0.6);
 
     // shotHoodPositionMap.put(1.751, 0.1794);
     // shotHoodPositionMap.put(2.127, 0.38);
@@ -120,9 +154,17 @@ public class ShotCalculator {
     timeOfFlightMap.put(2.0, 1.01);
     timeOfFlightMap.put(2.2, 1.02);
     timeOfFlightMap.put(2.5, 1.045);
-
-
-
+    timeOfFlightMap.put(2.5, 1.1);
+    timeOfFlightMap.put(3.0, 1.06); // idk man
+    timeOfFlightMap.put(3.25, 1.0); // idk man
+    timeOfFlightMap.put(3.5, 1.0); // idk man
+    timeOfFlightMap.put(3.75, 0.88); // idk man
+    timeOfFlightMap.put(4.0, 0.95); // idk man
+    timeOfFlightMap.put(4.3, 1.03); // idk man
+    timeOfFlightMap.put(4.5, 1.03); // idk man
+    timeOfFlightMap.put(4.75, 1.15); // idk man
+    timeOfFlightMap.put(5.0, 1.14); // idk man
+    timeOfFlightMap.put(5.2, 1.17); // idk man
 
     // timeOfFlightMap.put(1.751, 1.0);
     // timeOfFlightMap.put(2.127, 1.0);
@@ -225,11 +267,9 @@ public class ShotCalculator {
     // hood position
     hoodPosition = shotHoodPositionMap.get(lookaheadTurretToTargetDistance);
 
-    double flywheelVelocity = shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance);
-
-    flywheelVelocity +=
-        Math.abs(
-            Math.sin(estimatedPose.getRotation().getDegrees()) * ShooterConstants.maxExtraVelocity);
+    if (RobotState.getInstance().getTarget() != ShooterTarget.HUB) {
+      hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
+    }
 
     // emergency trench hood align
     if (RobotState.getInstance().nearTrench()) {
@@ -242,7 +282,7 @@ public class ShotCalculator {
             isValid,
             turretAngle,
             hoodPosition,
-            flywheelVelocity,
+            shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance),
             passFlywheelVelocityMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values

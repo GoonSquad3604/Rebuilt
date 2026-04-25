@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotState;
+import frc.robot.RobotState.ShooterTarget;
 import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
@@ -32,7 +34,6 @@ public class Kicker extends SubsystemBase {
   public enum KickerWantedState {
     IDLE,
     REV,
-    PASS,
     TEST,
     CLEAN,
     EJECT,
@@ -101,27 +102,16 @@ public class Kicker extends SubsystemBase {
   }
 
   private KickerCurrentState handleStateTransitions() {
-    switch (wantedState) {
-      case IDLE:
-        return KickerCurrentState.IDLING;
-        // case REV: return KickerCurrentState.REVVING;
-      case REV:
-        return KickerCurrentState.REVVING;
-      case PASS:
-        return KickerCurrentState.PASSING;
-      case TEST:
-        return KickerCurrentState.TESTING;
-      case CLEAN:
-        return KickerCurrentState.CLEANING;
-      case EJECT:
-        return KickerCurrentState.EJECTING;
-      case UNJAM:
-        // beganUnjamming = true;
-        // timeBeganUnjamming = Timer.getFPGATimestamp();
-        // wantedState = KickerWantedState.REV;
-        return KickerCurrentState.UNJAMMING;
-    }
-    return KickerCurrentState.IDLING;
+    return switch (wantedState) {
+      case IDLE -> KickerCurrentState.IDLING;
+      case REV -> RobotState.getInstance().getTarget() != ShooterTarget.HUB
+          ? KickerCurrentState.PASSING
+          : KickerCurrentState.REVVING;
+      case TEST -> KickerCurrentState.TESTING;
+      case CLEAN -> KickerCurrentState.CLEANING;
+      case EJECT -> KickerCurrentState.EJECTING;
+      case UNJAM -> KickerCurrentState.UNJAMMING;
+    };
   }
 
   private void applyStates() {
