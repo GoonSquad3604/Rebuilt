@@ -22,8 +22,6 @@ public class Climber extends SubsystemBase {
   private final Alert climberInnerMotorDisconnected;
   private final Alert climberOuterEncoderDisconnected;
   private final Alert climberInnerEncoderDisconnected;
-  private final Alert leftRangeDisconnected;
-  private final Alert rightRangeDisconnected;
   private final Alert centerRangeDisconnected;
 
   private SysIdRoutine climberInnerSysId;
@@ -78,8 +76,6 @@ public class Climber extends SubsystemBase {
         new Alert("Climber Outer Encoder Disconnected", Alert.AlertType.kWarning);
     climberInnerEncoderDisconnected =
         new Alert("Climber Inner Encoder Disconnected", Alert.AlertType.kWarning);
-    leftRangeDisconnected = new Alert("Left CANRange Disconnected", Alert.AlertType.kWarning);
-    rightRangeDisconnected = new Alert("Right CANRange Disconnected", Alert.AlertType.kWarning);
     centerRangeDisconnected = new Alert("Center CANRange Disconnected", Alert.AlertType.kWarning);
 
     climberInnerSysId =

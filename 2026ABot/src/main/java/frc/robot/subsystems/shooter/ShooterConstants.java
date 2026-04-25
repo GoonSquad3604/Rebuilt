@@ -45,7 +45,7 @@ public final class ShooterConstants {
     public static final double hoodAtSetpointTolerance = 0.075;
 
     // ensure it is 0.05 above 0 when at minimum
-    public static final double offset = 0.033;
+    public static final double offset = -0.089;
   }
 
   public static final class LauncherConstants {
@@ -86,10 +86,10 @@ public final class ShooterConstants {
     public static final double minAnglePosition = 18;
 
     public static final double forwardAngle = 180;
-    public static final double atSetpointTolerance = 20; // 30
+    public static final double atSetpointTolerance = 30;
 
-    public static final double turretAcceleration = 60;
-    public static final double turretVelocity = 30;
+    // public static final double turretAcceleration = 60;
+    // public static final double turretVelocity = 30;
 
     public static final double encoderOffset = -0.421;
   }

@@ -2,13 +2,12 @@ package frc.robot.autos;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.RobotContainer;
@@ -21,34 +20,30 @@ import java.util.stream.Stream;
 
 public class AutoChooser extends SendableChooser<Autos> {
 
+  private static double autoWait = 0.0;
+
   private static final List<AutoProgram> AUTO_PROGRAMS =
       List.of(
           new AutoProgram(
-              Autos.NEW_LEFT_DOUBLE_SWIPE,
-              "New Left 2Swipe",
-              AutoFactory::createNewLeftDoubleSwipeAuto),
-          new AutoProgram(Autos.LEFT_CLIMB, "Left Climb", AutoFactory::createLeftClimbAuto),
+              Autos.LEFT_DOUBLE_SWIPE, "Left 2Swipe", AutoFactory::createLeftDoubleSwipeAuto),
           new AutoProgram(
-              Autos.LEFT_DOUBLE_SWIPE_BUMP,
-              "Left Double Swipe",
-              AutoFactory::createLeftDoubleSwipeBumpAuto),
-          new AutoProgram(Autos.RIGHT_CLIMB, "Right Climb", AutoFactory::createRightClimbAuto),
+              Autos.LEFT_SWIPE_CLIMB, "Left Swipe Climb", AutoFactory::createLeftClimbAuto),
           new AutoProgram(
-              Autos.RIGHT_DOUBLE_SWIPE_BUMP,
-              "Right Double Swipe",
-              AutoFactory::createRightDoubleSwipeBumpAuto),
+              Autos.DELAYED_LEFT_SWIPE_DEPOT,
+              "Delayed Left Swipe Depot",
+              AutoFactory::createDelayedLeftSwipeDepotAuto),
           new AutoProgram(
-              Autos.MIDDLE_DEPOT_CLIMB,
-              "Middle Depot Climb",
-              AutoFactory::createMiddleDepotClimbAuto),
+              Autos.RIGHT_DOUBLE_SWIPE, "Right 2Swipe", AutoFactory::createRightDoubleSwipeAuto),
+          new AutoProgram(
+              Autos.RIGHT_SWIPE_CLIMB, "Right Swipe Climb", AutoFactory::createRightClimbAuto),
+          new AutoProgram(
+              Autos.BUMP_MIDDLE_DEPOT_CLIMB,
+              "(Bump) Middle Depot Climb",
+              AutoFactory::createBumpMiddleDepotClimbAuto),
           new AutoProgram(
               Autos.HUB_MIDDLE_DEPOT_CLIMB,
               "(Hub) Middle Depot Climb",
               AutoFactory::createHubMiddleDepotClimbAuto),
-          new AutoProgram(
-              Autos.MIDDLE_DEPOT_NEUTRAL,
-              "Middle Depot Neutral",
-              AutoFactory::createMiddleDepotNeutralAuto),
           new AutoProgram(Autos.CHAOS, "Chaos", AutoFactory::createChaos_hehe));
 
   private final Map<Autos, AutoProgram> programs;
@@ -76,7 +71,7 @@ public class AutoChooser extends SendableChooser<Autos> {
   public static AutoChooser create(final RobotContainer robotContainer) {
     var autoFactories =
         Stream.of(DriverStation.Alliance.values())
-            .map(alliance -> Map.entry(alliance, new AutoFactory(alliance, robotContainer)))
+            .map(alliance -> Map.entry(alliance, new AutoFactory(/*alliance, */ robotContainer)))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     var programs =
         AUTO_PROGRAMS.stream()
@@ -87,11 +82,11 @@ public class AutoChooser extends SendableChooser<Autos> {
 
     AUTO_PROGRAMS.forEach(
         program -> {
-          if (program.getAuto() == Autos.MAIN) {
-            autoChooser.setDefaultOption(program.getLabel(), program.getAuto());
-          } else {
-            autoChooser.addOption(program.getLabel(), program.getAuto());
-          }
+          // if (program.getAuto() == Autos.MAIN) {
+          //   autoChooser.setDefaultOption(program.getLabel(), program.getAuto());
+          // } else {
+          autoChooser.addOption(program.getLabel(), program.getAuto());
+          // }
         });
 
     autoChooser.reset(null);
@@ -116,8 +111,10 @@ public class AutoChooser extends SendableChooser<Autos> {
    * edu.wpi.first.wpilibj.shuffleboard.Shuffleboard} under the key <code>Auto/Selected</code>.
    */
   public void update() {
+    autoWait = SmartDashboard.getNumber("Wait Before Auto", 0.0);
+    SmartDashboard.putNumber("Wait Before Auto", autoWait);
+    // Logger.recordOutput("AutoFactory/autoWaitTime", autoWait);
     var selected = getSelected();
-    // System.out.println(selected);
 
     Stream.of(DriverStation.Alliance.values())
         .forEach(
@@ -141,10 +138,10 @@ public class AutoChooser extends SendableChooser<Autos> {
     Stream.of(DriverStation.Alliance.values())
         .forEach(alliance -> commandCache.get(alliance).clear());
 
-    if (key != null) {
-      var table = NetworkTableInstance.getDefault().getTable(key);
-      table.putValue("selected", NetworkTableValue.makeString("%s".formatted(Autos.MAIN)));
-    }
+    // if (key != null) {
+    //   var table = NetworkTableInstance.getDefault().getTable(key);
+    //   table.putValue("selected", NetworkTableValue.makeString("%s".formatted(Autos.MAIN)));
+    // }
   }
 
   /**
@@ -160,8 +157,9 @@ public class AutoChooser extends SendableChooser<Autos> {
         .map(
             alliance -> {
               System.out.printf("Running program %s/%s\n", alliance, selected);
-
-              return commandCache.get(alliance).get(selected).getSecond();
+              return Commands.sequence(
+                  Commands.waitSeconds(autoWait),
+                  commandCache.get(alliance).get(selected).getSecond());
             });
   }
 
@@ -183,7 +181,7 @@ public class AutoChooser extends SendableChooser<Autos> {
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
 
-    builder.publishConstString("selected", "%s".formatted(Autos.MAIN));
+    // builder.publishConstString("selected", "%s".formatted(Autos.MAIN));
   }
 
   private Command loadCommand(final DriverStation.Alliance alliance, final Autos auto) {

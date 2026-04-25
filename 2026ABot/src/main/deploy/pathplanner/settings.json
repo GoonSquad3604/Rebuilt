@@ -4,14 +4,13 @@
   "holonomicMode": true,
   "pathFolders": [
     "Chaos",
+    "DelayedLeftSwipeDepot",
     "HubMiddleDepotClimb",
-    "LeftClimb",
-    "LeftDoubleSwipeBump",
-    "MiddleDepotClimb",
-    "MiddleDepotNeutral",
+    "LeftSwipeClimb",
+    "BumpMiddleDepotClimb",
     "NewLeftDoubleSwipe",
-    "RightClimb",
-    "RightDoubleSwipeBump"
+    "RightDoubleSwipeBump",
+    "RightSwipeClimb"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,
