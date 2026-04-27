@@ -263,12 +263,21 @@ public class RobotContainer {
 
     // toggle vomit mode
     driverController
-        .a()
+        .povDown()
         .onTrue(
             Commands.either(
                 superstructure.setWantedState(WantedSuperState.EJECT),
                 superstructure.setWantedState(WantedSuperState.TRACK),
                 () -> superstructure.getCurrentSuperState() != CurrentSuperState.EJECTING));
+
+    driverController
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtClimbRotation(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> driverController.getLeftTriggerAxis() > 0.05));
 
     /* OPERATOR */
 
