@@ -16,28 +16,28 @@
     },
     {
       "anchor": {
-        "x": 0.6008111111186376,
-        "y": 6.977711111107186
+        "x": 0.6094543297746151,
+        "y": 6.665622775800712
       },
       "prevControl": {
-        "x": 0.5276120115478022,
-        "y": 6.489255508440313
+        "x": 0.4775660570792306,
+        "y": 6.189647495476127
       },
       "nextControl": {
-        "x": 0.8122444444594978,
-        "y": 8.388599999992149
+        "x": 1.0178884934756833,
+        "y": 8.139632265717676
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.492,
-        "y": 4.128
+        "x": 1.987,
+        "y": 4.196
       },
       "prevControl": {
-        "x": 2.5796002558136166,
-        "y": 4.363026280893607
+        "x": 2.0746002558136167,
+        "y": 4.431026280893606
       },
       "nextControl": null,
       "isLocked": false,
@@ -63,10 +63,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -88.8982938843864
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "LeftDepot",
+  "folder": "BumpMiddleDepotClimb",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

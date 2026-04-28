@@ -7,19 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "MiddleDepotNeutralPt1"
+            "pathName": "badNewLeftDoubleSwipePt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "MiddleDepotNeutralPt2"
+            "pathName": "NewLeftDoubleSwipePt2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "MiddleDepotNeutralPt3"
+            "pathName": "NewLeftDoubleSwipePt3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "NewLeftDoubleSwipePt4"
           }
         }
       ]

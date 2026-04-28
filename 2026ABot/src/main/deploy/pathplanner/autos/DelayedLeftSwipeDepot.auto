@@ -7,25 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftDoubleSwipeBumpPt1"
+            "pathName": "DelayedLeftSwipeDepotPt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftDoubleSwipeBumpPt2"
+            "pathName": "DelayedLeftSwipeDepotPt2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftDoubleSwipeBumpPt3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LeftDoubleSwipeBumpPt4"
+            "pathName": "DelayedLeftSwipeDepotPt3"
           }
         }
       ]

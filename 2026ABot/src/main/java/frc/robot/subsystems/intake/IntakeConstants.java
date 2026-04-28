@@ -20,7 +20,7 @@ public class IntakeConstants {
     public static final double A = 0;
     public static final double G = 0.0;
 
-    public static final double deployedPosition = 0.479;
+    public static final double deployedPosition = 0.505;
     public static final double stowedPosition = 0.310;
     public static final double kickPosition = 0.265;
 

@@ -28,7 +28,7 @@ public class Leds extends SubsystemBase {
     UNJAM
   }
 
-  public enum CurrentState {
+  private enum CurrentState {
     IDLING,
     STOWING,
     INTAKING,
@@ -121,7 +121,7 @@ public class Leds extends SubsystemBase {
         ledsIO.setColor(LedConstants.purple);
         break;
       case EJECTING:
-        ledsIO.setStrobe(LedConstants.red);
+        ledsIO.setFlow(LedConstants.red);
         break;
       case CLEANING:
         ledsIO.setColor(LedConstants.green);
@@ -134,7 +134,7 @@ public class Leds extends SubsystemBase {
         }
         break;
       case UNJAMMING:
-        ledsIO.setColor(LedConstants.green);
+        ledsIO.setStrobe(LedConstants.green);
         break;
     }
   }

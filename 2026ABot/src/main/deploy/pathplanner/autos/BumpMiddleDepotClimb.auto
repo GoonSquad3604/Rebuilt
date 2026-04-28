@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HubMiddleDepotClimbPt1"
+            "pathName": "BumpMiddleDepotClimbPt1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "HubMiddleDepotClimbPt2"
+            "pathName": "BumpMiddleDepotClimbPt2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "MiddleDepotClimbPt3"
+            "pathName": "HubMiddleDepotClimbPt3"
           }
         }
       ]

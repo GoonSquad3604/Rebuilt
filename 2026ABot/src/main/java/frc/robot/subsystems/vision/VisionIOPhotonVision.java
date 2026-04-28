@@ -5,7 +5,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.subsystems.hopper.Hopper;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,9 +15,6 @@ import org.photonvision.PhotonCamera;
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
-  protected final Transform3d robotToCamera2;
-
-  private Hopper hopper;
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -29,14 +25,7 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
-    this.robotToCamera2 = new Transform3d();
-  }
-
-  public VisionIOPhotonVision(
-      String name, Transform3d robotToCamera, Transform3d robotToCamera2, Hopper hopper) {
-    camera = new PhotonCamera(name);
-    this.robotToCamera = robotToCamera;
-    this.robotToCamera2 = robotToCamera2;
+    // this.robotToCamera2 = new Transform3d();
   }
 
   @Override

@@ -23,8 +23,8 @@ public interface ClimberIO {
     // public double innerTemperature;
     public double innerPosition;
 
-    public boolean leftClimbRangeConnected;
-    public boolean rightClimbRangeConnected;
+    // public boolean leftClimbRangeConnected;
+    // public boolean rightClimbRangeConnected;
     public boolean centerClimbRangeConnected;
   }
 
@@ -50,13 +50,13 @@ public interface ClimberIO {
     return 0.0;
   }
 
-  default boolean leftClimbDetected() {
-    return false;
-  }
+  // default boolean leftClimbDetected() {
+  //   return false;
+  // }
 
-  default boolean rightClimbDetected() {
-    return false;
-  }
+  // default boolean rightClimbDetected() {
+  //   return false;
+  // }
 
   default boolean centerClimbDetected() {
     return false;

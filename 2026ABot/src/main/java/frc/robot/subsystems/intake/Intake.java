@@ -31,7 +31,7 @@ public class Intake extends SubsystemBase {
   private SysIdRoutine rollerSysID;
 
   private double lastTimestamp = 0.0;
-  private boolean vomitReverse = false;
+  // private boolean vomitReverse = false;
 
   public enum IntakeWantedState {
     IDLE,
@@ -46,7 +46,6 @@ public class Intake extends SubsystemBase {
     IDLING,
     DEPLOYING,
     STOWING,
-    STOWED,
     INTAKING_DEPLOYED,
     IDLE_DEPLOYED,
     KICKING,
@@ -108,8 +107,7 @@ public class Intake extends SubsystemBase {
       Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
       applyStates();
     } else {
-      if ((currentState == IntakeCurrentState.KICKING
-              || currentState == IntakeCurrentState.VOMITING)
+      if (currentState == IntakeCurrentState.KICKING
           && lastTimestamp < newTimestamp - IntakeConstants.HingeConstants.kickInterval) {
         applyStates();
       }
@@ -128,7 +126,7 @@ public class Intake extends SubsystemBase {
   private IntakeCurrentState handleStateTransitions() {
     return switch (wantedState) {
       case IDLE -> isDeployed() ? IntakeCurrentState.IDLE_DEPLOYED : IntakeCurrentState.IDLING;
-      case STOW -> isStowed() ? IntakeCurrentState.STOWED : IntakeCurrentState.STOWING;
+      case STOW -> IntakeCurrentState.STOWING;
       case INTAKE -> !isDeployed()
           ? IntakeCurrentState.DEPLOYING
           : IntakeCurrentState.INTAKING_DEPLOYED;
@@ -148,8 +146,6 @@ public class Intake extends SubsystemBase {
         break;
       case STOWING:
         stow();
-        break;
-      case STOWED:
         break;
       case INTAKING_DEPLOYED:
         runRollers();
@@ -215,16 +211,16 @@ public class Intake extends SubsystemBase {
   }
 
   private void vomit() {
-    hingeIO.setPosition(IntakeConstants.HingeConstants.stowedPosition);
+    // hingeIO.setPosition(IntakeConstants.HingeConstants.stowedPosition);
 
-    lastTimestamp = Timer.getFPGATimestamp();
-    vomitReverse = !vomitReverse;
+    // lastTimestamp = Timer.getFPGATimestamp();
+    // vomitReverse = !vomitReverse;
 
-    if (vomitReverse) {
-      rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
-    } else {
-      rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
-    }
+    // if (vomitReverse) {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
+    // } else {
+    //   rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
+    // }
   }
 
   private void clean() {

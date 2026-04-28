@@ -3,7 +3,7 @@ package frc.robot.subsystems.spindexer;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Timer;
+// import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -19,8 +19,8 @@ public class Spindexer extends SubsystemBase {
 
   private SysIdRoutine sysID;
 
-  private boolean beganUnjamming;
-  private double timeBeganUnjamming;
+  // private boolean beganUnjamming;
+  // private double timeBeganUnjamming;
 
   public enum SpindexerWantedState {
     IDLE,
@@ -135,16 +135,16 @@ public class Spindexer extends SubsystemBase {
   }
 
   // checks for if jammed
-  private boolean continueUnjamming() {
-    if (!beganUnjamming) return false;
-    double newTimestamp = Timer.getFPGATimestamp();
-    boolean shouldStopUnjamming =
-        timeBeganUnjamming < newTimestamp - SpindexerConstants.unjamDuration;
-    if (shouldStopUnjamming) {
-      beganUnjamming = false;
-    }
-    return shouldStopUnjamming;
-  }
+  // private boolean continueUnjamming() {
+  //   if (!beganUnjamming) return false;
+  //   double newTimestamp = Timer.getFPGATimestamp();
+  //   boolean shouldStopUnjamming =
+  //       timeBeganUnjamming < newTimestamp - SpindexerConstants.unjamDuration;
+  //   if (shouldStopUnjamming) {
+  //     beganUnjamming = false;
+  //   }
+  //   return shouldStopUnjamming;
+  // }
 
   // testing only, remove later:
   public void setPower(double power) {

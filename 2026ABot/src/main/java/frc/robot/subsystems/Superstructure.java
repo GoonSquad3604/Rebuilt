@@ -38,8 +38,6 @@ public class Superstructure extends SubsystemBase {
   private boolean beganFiring = false;
   private boolean readyToClimb = false;
 
-  // private Timer spikeTimer = new Timer();
-
   public enum WantedSuperState {
     STOPPED,
     TRACK,
@@ -64,7 +62,9 @@ public class Superstructure extends SubsystemBase {
     INTAKING,
     STOWING,
     SHOOTING,
+    // PASSING,
     INTAKING_AND_SHOOTING,
+    // INTAKING_AND_PASSING,
     CLIMBING,
     SETTING_UP_AUTO_CLIMB,
     CLIMBING_IN_AUTO,
@@ -107,8 +107,6 @@ public class Superstructure extends SubsystemBase {
     SmartDashboard.putString("manualTarget", RobotState.getInstance().getManualTarget().toString());
 
     SmartDashboard.putString("Alliance Shift Status", decideAllianceShiftInfo());
-
-    SmartDashboard.putBoolean("isLeftSide", RobotState.getInstance().isLeftSide());
 
     currentSuperState = handleStateTransitions();
     applyStates();
@@ -178,12 +176,18 @@ public class Superstructure extends SubsystemBase {
       case SHOOTING:
         shoot();
         break;
+        // case PASSING:
+        //   pass();
+        //   break;
       case STOWING:
         stow();
         break;
       case INTAKING_AND_SHOOTING:
         intakeAndShoot();
         break;
+        // case INTAKING_AND_PASSING:
+        //   intakeAndPass();
+        //   break;
       case SETTING_UP_AUTO_CLIMB:
         setUpAutoClimb();
         break;
@@ -299,16 +303,9 @@ public class Superstructure extends SubsystemBase {
 
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
+        && shooter.hoodAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
-      // new code:
-      // if (kicker.isJammed()) {
-      //   spindexer.setWantedState(SpindexerWantedState.UNJAM);
-      //   kicker.setWantedState(KickerWantedState.UNJAM);
-      // } else {
-      // spindexer.setWantedState(SpindexerWantedState.SPIN);
-      // kicker.setWantedState(KickerWantedState.REV);
-      // }
       spindexer.setWantedState(SpindexerWantedState.SPIN);
     } else {
       spindexer.setWantedState(SpindexerWantedState.IDLE);
@@ -334,6 +331,7 @@ public class Superstructure extends SubsystemBase {
 
     if ((shooter.launcherAtSetpoint() || beganFiring)
         && shooter.turretAtSetpoint()
+        && shooter.hoodAtSetpoint()
         && shooter.atValidShootingLocation()) {
       beganFiring = true;
       spindexer.setWantedState(SpindexerWantedState.SPIN);
@@ -395,7 +393,6 @@ public class Superstructure extends SubsystemBase {
   public void climbInAuto() {
     climber.setWantedState(ClimberWantedState.CLIMB_IN_AUTO);
     leds.setWantedState(LedsWantedState.CLIMB);
-    // wantedSuperState = WantedSuperState.STOPPED;
   }
 
   private void declimb() {
@@ -409,7 +406,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void eject() {
-    hopper.setWantedState(HopperWantedState.DEPLOY);
+    // hopper.setWantedState(HopperWantedState.DEPLOY);
     intake.setWantedState(IntakeWantedState.VOMIT);
     kicker.setWantedState(KickerWantedState.REV);
     shooter.setWantedState(ShooterWantedState.SHOOT);
@@ -419,7 +416,7 @@ public class Superstructure extends SubsystemBase {
 
   private void defense() {
     climber.setWantedState(ClimberWantedState.IDLE);
-    // hopper.setWantedState(HopperWantedState.IDLE);
+    hopper.setWantedState(HopperWantedState.STOW);
     intake.setWantedState(IntakeWantedState.IDLE);
     kicker.setWantedState(KickerWantedState.IDLE);
     shooter.setWantedState(ShooterWantedState.IDLE);

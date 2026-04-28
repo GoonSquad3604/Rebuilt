@@ -22,19 +22,16 @@ public class LedsIOCANdle implements LedsIO {
 
   public LedsIOCANdle() {
     CANdle = new CANdle(LedConstants.CANdleID, Constants.CANBusName);
-    // CANdle.setControl(flow.withColor(LedConstants.purple));
 
     strobe = new StrobeAnimation(0, LedConstants.STRIP_LENGTH);
     solid = new SolidColor(0, LedConstants.STRIP_LENGTH);
-    fire = new FireAnimation(0, LedConstants.STRIP_LENGTH);
+    fire = new FireAnimation(0, LedConstants.STRIP_LENGTH).withFrameRate(15);
     flow = new ColorFlowAnimation(0, LedConstants.STRIP_LENGTH);
   }
 
   public void updateInputs(LedsIOInputs inputs) {
     inputs.CANdleConnected = CANdle.isConnected();
     inputs.temperature = CANdle.getDeviceTemp().getValueAsDouble();
-    // inputs.voltage = CANdle.getSupplyVoltage().getValueAsDouble();
-    // inputs.current = CANdle.getOutputCurrent().getValueAsDouble();
   }
 
   @Override
