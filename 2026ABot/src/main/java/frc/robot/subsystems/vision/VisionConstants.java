@@ -11,6 +11,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 public class VisionConstants {
   // AprilTag layout
@@ -18,20 +19,25 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Camera names, must match names configured on coprocessor
-  // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "Camera0"; // fr
-  public static String camera1Name = "Camera1"; // fl
+  public static String camera0Name = "Camera0"; // hopper
+  public static String camera1Name = "Camera1"; // fr
   public static String camera2Name = "Camera2"; // br
   public static String camera3Name = "Camera3"; // bl
 
   // Robot to camera transforms
-  // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          0.283, -0.2904, 0.1954, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(315)));
+          Units.inchesToMeters(7.75),
+          Units.inchesToMeters(13.375),
+          Units.inchesToMeters(20.25),
+          new Rotation3d(0.0, Math.toRadians(-2), Math.toRadians(90)));
+
   public static Transform3d robotToCamera1 =
       new Transform3d(
-          0.283, 0.2884, 0.1954, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(45)));
+          Units.inchesToMeters(7.25),
+          Units.inchesToMeters(-12.25),
+          Units.inchesToMeters(16.125),
+          new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(315)));
   public static Transform3d robotToCamera2 =
       new Transform3d(
           -0.2831, -0.2903, 0.1923, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(225)));
@@ -40,8 +46,9 @@ public class VisionConstants {
           -0.2831, 0.2883, 0.1923, new Rotation3d(0.0, Math.toRadians(-25), Math.toRadians(135)));
 
   // Basic filtering thresholds
-  public static double maxAmbiguity = 0.3;
+  public static double maxAmbiguity = 0.15;
   public static double maxZError = 0.75;
+  public static double maxDistance = 6.0;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)

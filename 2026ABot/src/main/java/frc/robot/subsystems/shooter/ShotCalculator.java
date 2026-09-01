@@ -8,23 +8,21 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.RobotState.ShooterTarget;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeomUtil;
-import org.littletonrobotics.junction.Logger;
 
 public class ShotCalculator {
-  private static ShotCalculator instance;
 
-  private Rotation2d lastTurretAngle;
-  private double lastHoodPose;
-  private Rotation2d turretAngleRotation2d;
+  private static ShotCalculator instance;
+  private boolean isValid;
   private double turretAngle;
-  private double hoodPose = Double.NaN;
-  // private double turretVelocity;
-  // private double hoodVelocity;
+  private double hoodPosition;
+
+  private static double passOffset = -13.0;
 
   public static ShotCalculator getInstance() {
     if (instance == null) instance = new ShotCalculator();
@@ -32,59 +30,152 @@ public class ShotCalculator {
   }
 
   public record ShootingParameters(
-      boolean isValid,
-      Rotation2d turretAngleRotation2d,
+      boolean validShootingLocation,
       double turretAngle,
-      // double turretVelocity,
-      double hoodPose,
-      // double hoodVelocity,
-      double flywheelSpeed) {}
+      double hoodPosition,
+      double flywheelVelocity,
+      double passFlywheelVelocity) {}
 
   // Cache parameters
   private static ShootingParameters latestParameters = null;
-
   private static double minDistance;
   private static double maxDistance;
   private static double phaseDelay;
-  private static final InterpolatingDoubleTreeMap shotHoodAngleMap =
+  private static double rotationalPhaseDelay;
+
+  private static final InterpolatingDoubleTreeMap shotFlywheelVelocityMap =
       new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap shotFlywheelSpeedMap =
+  private static final InterpolatingDoubleTreeMap passFlywheelVelocityMap =
+      new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap shotHoodPositionMap =
       new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap timeOfFlightMap =
       new InterpolatingDoubleTreeMap();
 
   static {
-    minDistance = 1.34;
-    maxDistance = 5.60;
-    phaseDelay = 0.02;
+    minDistance = 0;
+    maxDistance = 3604;
+    phaseDelay = 0.1;
+    rotationalPhaseDelay = 0.05;
 
-    shotHoodAngleMap.put(1.34, 0.1);
-    shotHoodAngleMap.put(1.78, 0.2);
-    shotHoodAngleMap.put(2.17, 0.3);
-    shotHoodAngleMap.put(2.81, 0.4);
-    shotHoodAngleMap.put(3.82, 0.425);
-    shotHoodAngleMap.put(4.09, 0.45);
-    shotHoodAngleMap.put(4.40, 0.475);
-    shotHoodAngleMap.put(4.77, 0.5);
-    shotHoodAngleMap.put(5.57, 0.6);
-    shotHoodAngleMap.put(5.60, 0.7);
+    shotFlywheelVelocityMap.put(1.6, 46.0);
+    shotFlywheelVelocityMap.put(1.8, 48.0);
+    shotFlywheelVelocityMap.put(2.0, 49.5);
+    shotFlywheelVelocityMap.put(2.2, 50.5);
+    shotFlywheelVelocityMap.put(2.5, 52.0);
+    shotFlywheelVelocityMap.put(2.75, 53.0);
+    shotFlywheelVelocityMap.put(3.0, 54.0);
+    shotFlywheelVelocityMap.put(3.25, 54.25);
+    shotFlywheelVelocityMap.put(3.5, 54.75);
+    shotFlywheelVelocityMap.put(3.75, 55.25);
+    shotFlywheelVelocityMap.put(4.0, 55.75);
+    shotFlywheelVelocityMap.put(4.3, 59.0);
+    shotFlywheelVelocityMap.put(4.5, 61.75);
+    shotFlywheelVelocityMap.put(4.75, 63.0);
+    shotFlywheelVelocityMap.put(5.0, 65.0);
+    shotFlywheelVelocityMap.put(5.2, 67.0);
+    shotFlywheelVelocityMap.put(7.0, 80.0);
 
-    shotFlywheelSpeedMap.put(1.34, 40.0);
-    shotFlywheelSpeedMap.put(1.78, 42.0);
-    shotFlywheelSpeedMap.put(2.17, 44.0);
-    shotFlywheelSpeedMap.put(2.81, 46.0);
-    shotFlywheelSpeedMap.put(3.82, 48.0);
-    shotFlywheelSpeedMap.put(4.09, 50.0);
-    shotFlywheelSpeedMap.put(4.40, 52.0);
-    shotFlywheelSpeedMap.put(4.77, 54.0);
-    shotFlywheelSpeedMap.put(5.57, 56.0);
-    shotFlywheelSpeedMap.put(5.60, 58.0);
+    passFlywheelVelocityMap.put(1.6, 46.0 + passOffset);
+    passFlywheelVelocityMap.put(1.8, 48.0 + passOffset);
+    passFlywheelVelocityMap.put(2.0, 49.5 + passOffset);
+    passFlywheelVelocityMap.put(2.2, 50.5 + passOffset);
+    passFlywheelVelocityMap.put(2.5, 52.0 + passOffset);
+    passFlywheelVelocityMap.put(2.75, 53.0 + passOffset);
+    passFlywheelVelocityMap.put(3.0, 54.0 + passOffset);
+    passFlywheelVelocityMap.put(3.25, 54.25 + passOffset);
+    passFlywheelVelocityMap.put(3.5, 54.75 + passOffset);
+    passFlywheelVelocityMap.put(3.75, 55.25 + passOffset);
+    passFlywheelVelocityMap.put(4.0, 55.75 + passOffset);
+    passFlywheelVelocityMap.put(4.3, 59.0 + passOffset);
+    passFlywheelVelocityMap.put(4.5, 61.75 + passOffset);
+    passFlywheelVelocityMap.put(4.75, 63.0 + passOffset);
+    passFlywheelVelocityMap.put(5.0, 65.0 + passOffset);
+    passFlywheelVelocityMap.put(5.2, 67.0 + passOffset);
+    passFlywheelVelocityMap.put(7.0, 90.0 + passOffset);
 
-    timeOfFlightMap.put(5.68, 1.16);
-    timeOfFlightMap.put(4.55, 1.12);
-    timeOfFlightMap.put(3.15, 1.11);
-    timeOfFlightMap.put(1.88, 1.09);
-    timeOfFlightMap.put(1.38, 0.90);
+    // shotFlywheelVelocityMap.put(1.751, 44.0);
+    // shotFlywheelVelocityMap.put(2.127, 45.5);
+    // shotFlywheelVelocityMap.put(2.5, 46.5);
+    // shotFlywheelVelocityMap.put(2.813, 47.0);
+    // shotFlywheelVelocityMap.put(3.023, 50.0);
+    // shotFlywheelVelocityMap.put(3.463, 52.0);
+    // shotFlywheelVelocityMap.put(3.6, 56.0);
+    // shotFlywheelVelocityMap.put(3.8, 60.0);
+    // shotFlywheelVelocityMap.put(4.336, 61.5);
+    // shotFlywheelVelocityMap.put(4.743, 63.0);
+    // shotFlywheelVelocityMap.put(5.0, 67.0);
+    // shotFlywheelVelocityMap.put(6.743, 81.0);
+
+    // passFlywheelVelocityMap.put(1.751, 44.0 + passOffset);
+    // passFlywheelVelocityMap.put(2.127, 45.5 + passOffset);
+    // passFlywheelVelocityMap.put(2.5, 46.5 + passOffset);
+    // passFlywheelVelocityMap.put(2.813, 47.0 + passOffset);
+    // passFlywheelVelocityMap.put(3.023, 50.0 + passOffset);
+    // passFlywheelVelocityMap.put(3.463, 52.0 + passOffset);
+    // passFlywheelVelocityMap.put(3.6, 56.0 + passOffset);
+    // passFlywheelVelocityMap.put(3.8, 60.0 + passOffset);
+    // passFlywheelVelocityMap.put(4.336, 60.0 + passOffset);
+    // passFlywheelVelocityMap.put(4.743, 63.0 + passOffset);
+    // passFlywheelVelocityMap.put(5.0, 67.0 + passOffset);
+    // passFlywheelVelocityMap.put(6.743, 81.0 + passOffset);
+
+    shotHoodPositionMap.put(1.6, 0.1);
+    shotHoodPositionMap.put(1.8, 0.15);
+    shotHoodPositionMap.put(2.0, 0.2);
+    shotHoodPositionMap.put(2.2, 0.25);
+    shotHoodPositionMap.put(2.5, 0.3);
+    shotHoodPositionMap.put(2.75, 0.35);
+    shotHoodPositionMap.put(3.0, 0.4);
+    shotHoodPositionMap.put(3.25, 0.45);
+    shotHoodPositionMap.put(3.5, 0.5);
+    shotHoodPositionMap.put(3.75, 0.55);
+    shotHoodPositionMap.put(4.0, 0.6);
+    shotHoodPositionMap.put(4.3, 0.6);
+    shotHoodPositionMap.put(4.5, 0.6);
+    shotHoodPositionMap.put(4.75, 0.6);
+    shotHoodPositionMap.put(5.0, 0.6);
+    shotHoodPositionMap.put(5.2, 0.6);
+
+    // shotHoodPositionMap.put(1.751, 0.1794);
+    // shotHoodPositionMap.put(2.127, 0.38);
+    // shotHoodPositionMap.put(2.5, 0.4261);
+    // shotHoodPositionMap.put(2.813, 0.4261);
+    // shotHoodPositionMap.put(3.023, 0.4486);
+    // shotHoodPositionMap.put(3.463, 0.471);
+    // shotHoodPositionMap.put(3.6, 0.5024);
+    // shotHoodPositionMap.put(3.8, 0.5203);
+    // shotHoodPositionMap.put(4.336, 0.5293);
+    // shotHoodPositionMap.put(4.743, 0.5383);
+    // shotHoodPositionMap.put(6.743, 0.628);
+
+    timeOfFlightMap.put(1.6, 0.92);
+    timeOfFlightMap.put(1.8, 0.98);
+    timeOfFlightMap.put(2.0, 1.01);
+    timeOfFlightMap.put(2.2, 1.02);
+    timeOfFlightMap.put(2.5, 1.045);
+    timeOfFlightMap.put(2.5, 1.1);
+    timeOfFlightMap.put(3.0, 1.06); // idk man
+    timeOfFlightMap.put(3.25, 1.0); // idk man
+    timeOfFlightMap.put(3.5, 1.0); // idk man
+    timeOfFlightMap.put(3.75, 0.88); // idk man
+    timeOfFlightMap.put(4.0, 0.95); // idk man
+    timeOfFlightMap.put(4.3, 1.03); // idk man
+    timeOfFlightMap.put(4.5, 1.03); // idk man
+    timeOfFlightMap.put(4.75, 1.15); // idk man
+    timeOfFlightMap.put(5.0, 1.14); // idk man
+    timeOfFlightMap.put(5.2, 1.17); // idk man
+
+    // timeOfFlightMap.put(1.751, 1.0);
+    // timeOfFlightMap.put(2.127, 1.0);
+    // timeOfFlightMap.put(2.5, 1.1);
+    // timeOfFlightMap.put(2.813, 1.15);
+    // timeOfFlightMap.put(3.023, 1.17);
+    // timeOfFlightMap.put(3.463, 1.25);
+    // timeOfFlightMap.put(3.8, 1.26);
+    // timeOfFlightMap.put(4.336, 1.28);
+    // timeOfFlightMap.put(4.743, 1.3);
+    // timeOfFlightMap.put(6.743, 1.45);
   }
 
   public ShootingParameters getParameters() {
@@ -93,9 +184,9 @@ public class ShotCalculator {
     if (RobotState.getInstance().getTarget() == ShooterTarget.HUB) {
       targetPose = AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
     } else if (RobotState.getInstance().getTarget() == ShooterTarget.LEFT_PASS) {
-      targetPose = AllianceFlipUtil.apply(new Translation2d(2.203, 6.125));
+      targetPose = AllianceFlipUtil.apply(ShooterConstants.leftPassPosition);
     } else {
-      targetPose = AllianceFlipUtil.apply(new Translation2d(2.203, 2.125));
+      targetPose = AllianceFlipUtil.apply(ShooterConstants.rightPassPosition);
     }
 
     Pose2d estimatedPose = RobotState.getInstance().getPose();
@@ -133,23 +224,33 @@ public class ShotCalculator {
       double offsetX = turretVelocityX * timeOfFlight;
       double offsetY = turretVelocityY * timeOfFlight;
 
-      turretAngleRotation2d = targetPose.minus(lookaheadPose.getTranslation()).getAngle();
+      Rotation2d offsetRotation =
+          targetPose
+              .minus(lookaheadPose.getTranslation())
+              .getAngle()
+              .minus(
+                  Rotation2d.fromRadians(
+                      ShooterConstants.robotToTurretLinear
+                          * robotVelocity.omegaRadiansPerSecond
+                          * rotationalPhaseDelay));
 
       lookaheadPose =
           new Pose2d(
               turretPosition.getTranslation().plus(new Translation2d(offsetX, offsetY)),
-              turretAngleRotation2d);
+              offsetRotation);
 
       lookaheadTurretToTargetDistance = targetPose.getDistance(lookaheadPose.getTranslation());
     }
 
-    // Calculate parameters accounted for imparted velocity
-    hoodPose = shotHoodAngleMap.get(lookaheadTurretToTargetDistance);
-    if (lastTurretAngle == null) lastTurretAngle = turretAngleRotation2d;
-    if (Double.isNaN(lastHoodPose)) lastHoodPose = hoodPose;
+    /* Calculate parameters accounted for predicted position */
 
-    lastTurretAngle = turretAngleRotation2d;
-    lastHoodPose = hoodPose;
+    // distance deadzone
+    isValid =
+        (lookaheadTurretToTargetDistance >= minDistance
+                && lookaheadTurretToTargetDistance <= maxDistance)
+            || RobotState.getInstance().getTarget() != ShooterTarget.HUB;
+
+    // turret angle
     turretAngle =
         lookaheadPose
             .getRotation()
@@ -160,28 +261,41 @@ public class ShotCalculator {
     } else if (turretAngle < 0) {
       turretAngle += 360;
     }
-    if (hoodPose < 0.1) {
-      hoodPose = 0.1;
-    } else if (hoodPose > 0.7) {
-      hoodPose = 0.7;
+
+    turretAngle = 360 - turretAngle;
+
+    // hood position
+    hoodPosition = shotHoodPositionMap.get(lookaheadTurretToTargetDistance);
+
+    if (RobotState.getInstance().getTarget() != ShooterTarget.HUB) {
+      hoodPosition = ShooterConstants.HoodConstants.hoodMaxPos;
     }
+
+    // emergency trench hood align
+    if (RobotState.getInstance().nearTrench()) {
+      hoodPosition = ShooterConstants.HoodConstants.hoodMinPos;
+    }
+
+    // configure parameters with calculated values
     latestParameters =
         new ShootingParameters(
-            lookaheadTurretToTargetDistance >= minDistance
-                && lookaheadTurretToTargetDistance <= maxDistance,
-            turretAngleRotation2d,
+            isValid,
             turretAngle,
-            // turretVelocity,
-            hoodPose,
-            // hoodVelocity,
-            shotFlywheelSpeedMap.get(lookaheadTurretToTargetDistance));
+            hoodPosition,
+            shotFlywheelVelocityMap.get(lookaheadTurretToTargetDistance),
+            passFlywheelVelocityMap.get(lookaheadTurretToTargetDistance));
 
     // Log calculated values
-    Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
-    Logger.recordOutput("Subsystems/Shooter/ShotCalculator/LookaheadPose", lookaheadPose);
-    Logger.recordOutput(
-        "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
-        lookaheadTurretToTargetDistance);
+    // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/Parameters", latestParameters);
+    // Logger.recordOutput("Subsystems/Shooter/ShotCalculator/LookaheadPose", lookaheadPose);
+    // Logger.recordOutput(
+    //     "Subsystems/Shooter/ShotCalculator/TurretToTargetDistance",
+    //     lookaheadTurretToTargetDistance);
+
+    // SmartDashboard.putBoolean(
+    //     "Is Under Tower", RobotState.getInstance().isUnderTower(lookaheadPose));
+    SmartDashboard.putBoolean("Is Behind Hub", RobotState.getInstance().isBehindHub(lookaheadPose));
+    SmartDashboard.putBoolean("Is Under Trench", RobotState.getInstance().nearTrench());
 
     return latestParameters;
   }

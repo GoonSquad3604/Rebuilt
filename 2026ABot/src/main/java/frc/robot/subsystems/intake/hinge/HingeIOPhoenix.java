@@ -12,11 +12,13 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -42,15 +44,16 @@ public class HingeIOPhoenix implements HingeIO {
   public HingeIOPhoenix() {
 
     // motor config:
-    hingeMotor = new TalonFX(IntakeConstants.HingeConstants.motorID);
-    hingeEncoder = new CANcoder(IntakeConstants.HingeConstants.encoderID);
+    hingeMotor = new TalonFX(IntakeConstants.HingeConstants.motorID, Constants.CANBusName);
+    hingeEncoder = new CANcoder(IntakeConstants.HingeConstants.encoderID, Constants.CANBusName);
     hingeRequest = new PositionVoltage(0).withSlot(0);
 
     motorConfig = new TalonFXConfiguration();
-    motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.Feedback.FeedbackRemoteSensorID = IntakeConstants.HingeConstants.encoderID;
     motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
     motorConfig.Slot0 =
         new Slot0Configs()
@@ -59,18 +62,22 @@ public class HingeIOPhoenix implements HingeIO {
             .withKD(IntakeConstants.HingeConstants.D)
             .withKS(IntakeConstants.HingeConstants.S)
             .withKV(IntakeConstants.HingeConstants.V)
-            .withKA(IntakeConstants.HingeConstants.A);
-    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+            .withKA(IntakeConstants.HingeConstants.A)
+            .withKG(IntakeConstants.HingeConstants.G);
+    motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 1;
 
     encoderConfig = new CANcoderConfiguration();
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoderConfig.MagnetSensor.MagnetOffset = IntakeConstants.HingeConstants.encoderOffset;
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> hingeMotor.getConfigurator().apply(motorConfig));
     PhoenixUtil.tryUntilOk(5, () -> hingeEncoder.getConfigurator().apply(encoderConfig));
 
     // base status signal
-    position = hingeMotor.getPosition();
-    velocity = hingeMotor.getVelocity();
+    position = hingeEncoder.getAbsolutePosition();
+    velocity = hingeEncoder.getVelocity();
     appliedVoltage = hingeMotor.getMotorVoltage();
     supplyCurrent = hingeMotor.getSupplyCurrent();
     torqueCurrent = hingeMotor.getTorqueCurrent();
@@ -97,18 +104,22 @@ public class HingeIOPhoenix implements HingeIO {
     inputs.encoderConnected = hingeEncoder.isConnected();
     inputs.voltage = hingeMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = hingeMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = hingeMotor.getVelocity().getValueAsDouble();
-    inputs.position = hingeMotor.getPosition().getValueAsDouble();
+    // inputs.velocity = hingeEncoder.getVelocity().getValueAsDouble();
+    inputs.position = hingeEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
   public void setPosition(double position) {
-    hingeMotor.setControl(hingeRequest.withPosition(position));
+    if (position == IntakeConstants.HingeConstants.stowedPosition) {
+      hingeMotor.setControl(hingeRequest.withPosition(position));
+    } else {
+      hingeMotor.setControl(hingeRequest.withPosition(position));
+    }
   }
 
   @Override
   public double getPosition() {
-    return hingeMotor.getPosition().getValueAsDouble();
+    return hingeEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override

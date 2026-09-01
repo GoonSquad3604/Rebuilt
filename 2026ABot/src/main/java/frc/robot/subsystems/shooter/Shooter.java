@@ -3,7 +3,8 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -25,33 +26,44 @@ public class Shooter extends SubsystemBase {
   private final TurretIO turretIO;
 
   private final SysIdRoutine launcherSysId;
-  private final SysIdRoutine turretSysId;
 
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
   private final LauncherIOInputsAutoLogged launcherInputs = new LauncherIOInputsAutoLogged();
   private final TurretIOInputsAutoLogged turretInputs = new TurretIOInputsAutoLogged();
 
+  private final Alert hoodMotorDisconnected;
+  private final Alert hoodEncoderDisconnected;
+  private final Alert turretMotorDisconnected;
+  private final Alert turretEncoderDisconnected;
+  private final Alert launcherMotorDisconnected;
+
   private ShootingParameters shootingParameters;
   private ShootingParameters lastParameters;
 
-  private boolean turretAtSetpoint = false;
-  private boolean hoodAtSetpoint = false;
-  private boolean launcherAtSetpoint = false;
+  // private boolean beganFiring = false;
+
+  private double dashboardHoodPosition;
+  private double dashboardLauncherVelocity;
 
   public enum ShooterWantedState {
     IDLE,
+    TRACK_TARGET,
     SHOOT,
+    // PASS,
+    EJECT,
+    TEST_SHOOT,
+    CLEAN,
   }
 
   private enum CurrentState {
     IDLING,
-
-    /* MANUAL SHOOTING */
-    REVVING_FORWARD,
+    TRACKING_TARGET,
+    SHOOTING,
+    PASSING,
     SHOOTING_FORWARD,
-
-    REVVING,
-    SHOOTING
+    EJECTING,
+    TESTING_SHOOTING,
+    CLEANING,
   }
 
   private ShooterWantedState wantedState = ShooterWantedState.IDLE;
@@ -59,9 +71,16 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter(HoodIO hoodIO, LauncherIO launcherIO, TurretIO turretIO) {
-    this.hoodIO = hoodIO;
     this.launcherIO = launcherIO;
+    this.hoodIO = hoodIO;
     this.turretIO = turretIO;
+
+    hoodMotorDisconnected = new Alert("Hood Motor Disconnected", Alert.AlertType.kWarning);
+    hoodEncoderDisconnected = new Alert("Hood Encoder Disconnected", Alert.AlertType.kWarning);
+    turretMotorDisconnected = new Alert("Turret Motor Disconnected", Alert.AlertType.kWarning);
+    turretEncoderDisconnected = new Alert("Turret Encoder Disconnected", Alert.AlertType.kWarning);
+    launcherMotorDisconnected = new Alert("Launcher Motor Disconnected", Alert.AlertType.kWarning);
+
     launcherSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -72,18 +91,7 @@ public class Shooter extends SubsystemBase {
                     Logger.recordOutput(
                         "Subsystems/Shooter/Launcher/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> launcherIO.setLauncherOpenLoop(voltage.in(Volts)), null, this));
-
-    turretSysId =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                null,
-                null,
-                null,
-                (state) ->
-                    Logger.recordOutput("Subsystems/Shooter/Turret/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> turretIO.setTurretOpenLoop(voltage.in(Volts)), null, this));
+                (voltage) -> launcherIO.setOpenLoop(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -96,49 +104,62 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Subsystems/Shooter/Launcher", launcherInputs);
     Logger.processInputs("Subsystems/Shooter/Turret", turretInputs);
 
-    Logger.recordOutput("Subsystems/Shooter/WantedState", wantedState);
-
-    Logger.recordOutput("Subsystems/Shooter/TurretAtSetpoint", turretAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/HoodAtSetpoint", hoodAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/LauncherAtSetpoint", launcherAtSetpoint);
-    Logger.recordOutput("Subsystems/Shooter/ReachedSetpoint", reachedSetpoints());
-
     if (ShotCalculator.getInstance().getParameters() != null) {
       if (lastParameters == null) {
         lastParameters = ShotCalculator.getInstance().getParameters();
       }
       shootingParameters = ShotCalculator.getInstance().getParameters();
       Logger.recordOutput("Subsystems/Shooter/WantedTurretAngle", shootingParameters.turretAngle());
+      Logger.recordOutput(
+          "Subsystems/Shooter/WantedHoodPosition", shootingParameters.hoodPosition());
     }
 
     CurrentState newState = handleStateTransitions();
-    if (newState != currentState
-        || lastParameters.turretAngle() != shootingParameters.turretAngle()
-        || lastParameters.hoodPose() != shootingParameters.hoodPose()
-        || lastParameters.flywheelSpeed() != shootingParameters.flywheelSpeed()) {
+    if (newState != currentState || lastParameters != shootingParameters) {
+
       currentState = newState;
       lastParameters = shootingParameters;
       Logger.recordOutput("Subsystems/Shooter/CurrentState", currentState);
       applyStates();
     }
-    RobotState.getInstance().setTurretAngle(Rotation2d.fromDegrees(turretIO.getAngle()));
+
+    SmartDashboard.putNumber(
+        "TurretToHubMeters", RobotState.getInstance().getDistanceToHubMeters());
+
+    dashboardHoodPosition =
+        SmartDashboard.getNumber("Hood Pose", ShooterConstants.HoodConstants.hoodMinPos);
+    dashboardLauncherVelocity = SmartDashboard.getNumber("Launcher Velocity", 0);
+
+    SmartDashboard.putNumber("Hood Pose", dashboardHoodPosition);
+    SmartDashboard.putNumber("Launcher Velocity", dashboardLauncherVelocity);
+
+    Logger.recordOutput("Subsystems/Shooter/inDeadZone", !atValidShootingLocation());
+
+    Logger.recordOutput("Subsystems/Shooter/launcherAtSetpoint", launcherAtSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/turretAtSetpoint", turretAtSetpoint());
+    Logger.recordOutput("Subsystems/Shooter/hoodAtSetpoint", hoodAtSetpoint());
+
+    hoodMotorDisconnected.set(!hoodInputs.motorConnected);
+    hoodEncoderDisconnected.set(!hoodInputs.encoderConnected);
+    turretMotorDisconnected.set(!turretInputs.motorConnected);
+    turretEncoderDisconnected.set(!turretInputs.encoderConnected);
+    launcherMotorDisconnected.set(!launcherInputs.motorConnected);
   }
 
   public CurrentState handleStateTransitions() {
-
-    switch (wantedState) {
-      case IDLE:
-        return CurrentState.IDLING;
-      case SHOOT:
-        if (!(RobotState.getInstance().isOverride())) {
-          return reachedSetpoints() ? CurrentState.SHOOTING : CurrentState.REVVING;
-        } else if (RobotState.getInstance().getTarget() != ShooterTarget.FORWARD) {
-          return reachedSetpoints() ? CurrentState.SHOOTING : CurrentState.REVVING;
-        } else {
-          return reachedSetpoints() ? CurrentState.SHOOTING_FORWARD : CurrentState.REVVING_FORWARD;
-        }
-    }
-    return CurrentState.IDLING;
+    return switch (wantedState) {
+      case IDLE -> CurrentState.IDLING;
+      case SHOOT -> RobotState.getInstance().isOverride()
+              && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD
+          ? CurrentState.SHOOTING_FORWARD
+          : RobotState.getInstance().getTarget() != ShooterTarget.HUB
+              ? CurrentState.PASSING
+              : CurrentState.SHOOTING;
+      case EJECT -> CurrentState.EJECTING;
+      case TEST_SHOOT -> CurrentState.TESTING_SHOOTING;
+      case TRACK_TARGET -> CurrentState.TRACKING_TARGET;
+      case CLEAN -> CurrentState.CLEANING;
+    };
   }
 
   public void applyStates() {
@@ -149,34 +170,122 @@ public class Shooter extends SubsystemBase {
       case SHOOTING:
         shoot();
         break;
+      case PASSING:
+        pass();
+        break;
+      case EJECTING:
+        eject();
+        break;
       case SHOOTING_FORWARD:
         shootForward();
         break;
-      default:
+      case TESTING_SHOOTING:
+        testShoot();
+        break;
+      case TRACKING_TARGET:
+        trackTarget();
+        break;
+      case CLEANING:
+        clean();
         break;
     }
   }
 
-  public boolean reachedSetpoints() {
-    if (shootingParameters != null && wantedState == ShooterWantedState.SHOOT) {
+  public boolean launcherAtSetpoint() {
+    if (shootingParameters == null) return false;
 
-      // check systems for if at desired positions
-      turretAtSetpoint = MathUtil.isNear(shootingParameters.turretAngle(), turretIO.getAngle(), 20);
-      hoodAtSetpoint = MathUtil.isNear(shootingParameters.hoodPose(), hoodIO.getPosition(), 0.2);
+    boolean launcherAtSetpoint = false;
+
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
       launcherAtSetpoint =
-          MathUtil.isNear(shootingParameters.flywheelSpeed(), launcherIO.getVelocity(), 20);
-
-      if (RobotState.getInstance().isOverride()
-          && RobotState.getInstance().getTarget() == ShooterTarget.FORWARD) {
-        // if overriding for forward shot
-        return MathUtil.isNear(45, launcherIO.getVelocity(), 2);
-      } else {
-        // default shooting
-        return turretAtSetpoint && hoodAtSetpoint && launcherAtSetpoint;
-      }
+          MathUtil.isNear(
+              ShooterConstants.LauncherConstants.forwardVelocity,
+              launcherIO.getVelocity(),
+              ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+    } else if (currentState == CurrentState.TESTING_SHOOTING) {
+      launcherAtSetpoint =
+          MathUtil.isNear(
+              dashboardLauncherVelocity,
+              launcherIO.getVelocity(),
+              ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
     } else {
+      if (currentState == CurrentState.PASSING) {
+        launcherAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.passFlywheelVelocity(),
+                launcherIO.getVelocity(),
+                ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+      } else {
+        launcherAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.flywheelVelocity(),
+                launcherIO.getVelocity(),
+                ShooterConstants.LauncherConstants.launcherAtSetpointTolerance);
+      }
+    }
+
+    return launcherAtSetpoint;
+  }
+
+  public boolean turretAtSetpoint() {
+    if (shootingParameters == null) return false;
+
+    boolean turretAtSetpoint = false;
+
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
+      turretAtSetpoint =
+          MathUtil.isNear(
+              ShooterConstants.TurretConstants.forwardAngle,
+              turretIO.getAngle(),
+              ShooterConstants.TurretConstants.atSetpointTolerance);
+    } else {
+      turretAtSetpoint =
+          MathUtil.isNear(
+              shootingParameters.turretAngle(),
+              turretIO.getAngle(),
+              ShooterConstants.TurretConstants.atSetpointTolerance);
+    }
+
+    if (shootingParameters.turretAngle() > ShooterConstants.TurretConstants.maxAnglePosition
+        || shootingParameters.turretAngle() < ShooterConstants.TurretConstants.minAnglePosition) {
       return false;
     }
+
+    return turretAtSetpoint;
+  }
+
+  public boolean hoodAtSetpoint() {
+    if (shootingParameters == null) return false;
+
+    boolean hoodAtSetpoint = false;
+
+    if (currentState == CurrentState.SHOOTING_FORWARD) {
+      hoodAtSetpoint =
+          MathUtil.isNear(
+              ShooterConstants.HoodConstants.forwardPosition,
+              hoodIO.getPosition(),
+              ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+    } else {
+      if (currentState == CurrentState.PASSING) {
+        hoodAtSetpoint =
+            MathUtil.isNear(
+                ShooterConstants.HoodConstants.hoodMaxPos,
+                hoodIO.getPosition(),
+                ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+      } else {
+        hoodAtSetpoint =
+            MathUtil.isNear(
+                shootingParameters.hoodPosition(),
+                hoodIO.getPosition(),
+                ShooterConstants.HoodConstants.hoodAtSetpointTolerance);
+      }
+    }
+
+    return hoodAtSetpoint;
+  }
+
+  public boolean atValidShootingLocation() {
+    return shootingParameters.validShootingLocation();
   }
 
   public void setWantedState(ShooterWantedState wantedState) {
@@ -190,15 +299,45 @@ public class Shooter extends SubsystemBase {
   }
 
   private void shootForward() {
-    turretIO.setAngle(ShooterConstants.TurretConstants.forwardPosition);
+    turretIO.setAngle(ShooterConstants.TurretConstants.forwardAngle);
     hoodIO.setPosition(ShooterConstants.HoodConstants.forwardPosition);
     launcherIO.setVelocity(ShooterConstants.LauncherConstants.forwardVelocity);
   }
 
   private void shoot() {
     turretIO.setAngle(shootingParameters.turretAngle());
-    hoodIO.setPosition(shootingParameters.hoodPose());
-    launcherIO.setVelocity(shootingParameters.flywheelSpeed());
+    hoodIO.setPosition(shootingParameters.hoodPosition());
+    launcherIO.setVelocity(shootingParameters.flywheelVelocity());
+  }
+
+  private void pass() {
+    turretIO.setAngle(shootingParameters.turretAngle());
+    hoodIO.setPosition(shootingParameters.hoodPosition());
+    launcherIO.setVelocity(shootingParameters.passFlywheelVelocity());
+  }
+
+  private void eject() {
+    turretIO.setPower(0.0);
+    hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);
+    launcherIO.setVelocity(shootingParameters.flywheelVelocity());
+  }
+
+  private void testShoot() {
+    launcherIO.setVelocity(dashboardLauncherVelocity);
+    hoodIO.setPosition(dashboardHoodPosition);
+    turretIO.setAngle(shootingParameters.turretAngle());
+  }
+
+  private void trackTarget() {
+    turretIO.setAngle(shootingParameters.turretAngle());
+    launcherIO.setPower(0.0);
+    hoodIO.setPosition(ShooterConstants.HoodConstants.hoodMinPos);
+  }
+
+  private void clean() {
+    turretIO.setPower(0.0);
+    launcherIO.setPower(ShooterConstants.LauncherConstants.cleanSpeed);
+    hoodIO.setPower(0.0);
   }
 
   // testcontroller:
@@ -207,32 +346,40 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setTurretPos(double position) {
-    turretIO.setAngle(position);
+    turretIO.setPosition(position);
+  }
+
+  public void setHoodPower(double power) {
+    hoodIO.setPower(power);
+  }
+
+  public void setHoodPosition(double position) {
+    hoodIO.setPosition(position);
+  }
+
+  public void setPrimaryLauncherPower(double power) {
+    launcherIO.setPower(power);
+  }
+
+  public void setPrimaryLauncherVelocity(double velocity) {
+    launcherIO.setVelocity(velocity);
+  }
+
+  public void setDashboardSetpoints() {
+    hoodIO.setPosition(dashboardHoodPosition);
+    launcherIO.setVelocity(dashboardLauncherVelocity);
   }
 
   public Command launcherSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> launcherIO.setLauncherOpenLoop(0.0))
+    return run(() -> launcherIO.setOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(launcherSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command launcherSysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> launcherIO.setLauncherOpenLoop(0.0))
+    return run(() -> launcherIO.setOpenLoop(0.0))
         .withTimeout(1.0)
         .andThen(launcherSysId.dynamic(direction));
-  }
-
-  public Command turretSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> turretIO.setTurretOpenLoop(0.0))
-        .withTimeout(1.0)
-        .andThen(turretSysId.quasistatic(direction));
-  }
-
-  /** Returns a command to run a dynamic test in the specified direction. */
-  public Command turretSysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> turretIO.setTurretOpenLoop(0.0))
-        .withTimeout(1.0)
-        .andThen(turretSysId.dynamic(direction));
   }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.util.PhoenixUtil;
 
 /** Add your docs here. */
@@ -34,12 +35,13 @@ public class KickerIOPhoenix implements KickerIO {
   public KickerIOPhoenix() {
 
     // motor config:
-    kickerMotor = new TalonFX(KickerConstants.motorID);
+    kickerMotor = new TalonFX(KickerConstants.motorID, Constants.CANBusName);
     kickerRequest = new VelocityVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    motorConfig.CurrentLimits.SupplyCurrentLimit = 60;
+    motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     motorConfig.Slot0 =
         new Slot0Configs()
             .withKP(KickerConstants.P)
@@ -82,7 +84,7 @@ public class KickerIOPhoenix implements KickerIO {
     inputs.voltage = kickerMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = kickerMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = kickerMotor.getVelocity().getValueAsDouble();
-    inputs.position = kickerMotor.getPosition().getValueAsDouble();
+    // inputs.position = kickerMotor.getPosition().getValueAsDouble();
   }
 
   @Override
@@ -103,5 +105,9 @@ public class KickerIOPhoenix implements KickerIO {
   @Override
   public void setOpenLoop(double output) {
     kickerMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  public double getCurrent() {
+    return kickerMotor.getSupplyCurrent().getValueAsDouble();
   }
 }

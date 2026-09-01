@@ -3,6 +3,7 @@ package frc.robot.subsystems.hopper;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -13,21 +14,29 @@ public class Hopper extends SubsystemBase {
   private HopperIOPhoenix hopperIO = new HopperIOPhoenix();
   private HopperIOInputsAutoLogged hopperInputs = new HopperIOInputsAutoLogged();
 
+  private final Alert hopperMotorDisconnected;
+  private final Alert stowedDetectorDisconnected;
+
   private SysIdRoutine sysID;
 
-  private boolean deployed = false;
+  // private boolean recentlyStowed = true;
+  // private boolean wasDeployed = false;
 
   public enum HopperWantedState {
     IDLE,
     STOW,
-    DEPLOY
+    DEPLOY,
+    // HOLD_IN
   }
 
   private enum HopperCurrentState {
     IDLING,
-    STOWING_FAST,
-    STOWING_SLOW,
+    // HOLDING_IN,
+    // STOWING_PID,
+    STOWING_POWER,
+    // STOWED,
     DEPLOYING,
+    // DEPLOYED
   }
 
   private HopperCurrentState currentState = HopperCurrentState.IDLING;
@@ -36,6 +45,11 @@ public class Hopper extends SubsystemBase {
   /** Creates a new Hopper. */
   public Hopper(HopperIOPhoenix io) {
     this.hopperIO = io;
+
+    hopperMotorDisconnected = new Alert("Hopper Motor Disconnected", Alert.AlertType.kWarning);
+    stowedDetectorDisconnected =
+        new Alert("Stowed Detector Disconnected", Alert.AlertType.kWarning);
+
     sysID =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -50,29 +64,23 @@ public class Hopper extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
     hopperIO.updateInputs(hopperInputs);
     Logger.processInputs("Subsystems/Hopper", hopperInputs);
+    // Logger.recordOutput("Subsystems/Hopper/isDeployed", isDeployed());
+    // Logger.recordOutput("Subsystems/Hopper/isStowed", isStowed());
 
     HopperCurrentState newState = handleStateTransitions();
-    if (newState != currentState) {
+    if (newState != currentState || (wantedState == HopperWantedState.STOW && !isStowed())) {
       currentState = newState;
       Logger.recordOutput("Subsystems/Hopper/CurrentState", currentState);
       applyStates();
-    } else {
-      if (currentState == HopperCurrentState.STOWING_SLOW && hopperIO.stowedDetectorTriggered()) {
-        this.setWantedState(HopperWantedState.IDLE);
-        hopperIO.resetPosition();
-      }
     }
 
-    if (MathUtil.isNear(HopperConstants.extendedPos, hopperIO.getPosition(), 5)) {
-      deployed = true;
-    } else {
-      deployed = false;
-    }
+    // Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
 
-    Logger.recordOutput("Subsystems/Hopper/WantedState", wantedState);
+    // alerts
+    hopperMotorDisconnected.set(!hopperInputs.motorConnected);
+    stowedDetectorDisconnected.set(!hopperInputs.stowedDetectorConnected);
   }
 
   public void setWantedState(HopperWantedState state) {
@@ -80,32 +88,50 @@ public class Hopper extends SubsystemBase {
   }
 
   private HopperCurrentState handleStateTransitions() {
-    return switch (wantedState) {
-      case IDLE -> HopperCurrentState.IDLING;
-      case DEPLOY -> HopperCurrentState.DEPLOYING;
-      case STOW -> MathUtil.isNear(
-              HopperConstants.stowTargetPosition,
-              hopperIO.getPosition(),
-              HopperConstants.atSetpointTolerance)
-          ? HopperCurrentState.STOWING_SLOW
-          : HopperCurrentState.STOWING_FAST;
-    };
+    switch (wantedState) {
+      case IDLE:
+        return HopperCurrentState.IDLING;
+      case DEPLOY:
+        return HopperCurrentState.DEPLOYING;
+      case STOW:
+        if (isStowed()) {
+          return HopperCurrentState.IDLING;
+        } else {
+          return HopperCurrentState.STOWING_POWER;
+        }
+        // case HOLD_IN:
+        //   if (!isStowed()) {
+        //     return HopperCurrentState.HOLDING_IN;
+        //   } else {
+        //     return HopperCurrentState.IDLING;
+        //   }
+    }
+    return HopperCurrentState.IDLING;
   }
 
   private void applyStates() {
     switch (currentState) {
-      case DEPLOYING:
-        deploy();
-        break;
       case IDLING:
         idling();
         break;
-      case STOWING_FAST:
-        stowFast();
+        // case HOLDING_IN:
+        //   holdIn();
+        //   break;
+      case DEPLOYING:
+        deploy();
         break;
-      case STOWING_SLOW:
+        // case DEPLOYED:
+        //   deployed();
+        //   break;
+        // case STOWING_PID:
+        //   stowFast();
+        //   break;
+      case STOWING_POWER:
         stowSlow();
         break;
+        // case STOWED:
+        //   stowed();
+        //   break;
     }
   }
 
@@ -113,11 +139,13 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPosition(HopperConstants.extendedPos);
   }
 
-  private void stowFast() {
-    hopperIO.setPosition(HopperConstants.stowTargetPosition);
-  }
+  // private void holdIn() {
+  // hopperIO.setPower(HopperConstants.holdHopperInPower);
+  // hopperIO.setPower(0.0);
+  // }
 
   private void stowSlow() {
+    // wasDeployed = false;
     hopperIO.setPower(HopperConstants.slowStowingPower);
   }
 
@@ -125,8 +153,23 @@ public class Hopper extends SubsystemBase {
     hopperIO.setPower(0);
   }
 
+  // private void stowed() {
+  //   wasDeployed = false;
+  //   hopperIO.setPower(0);
+  // }
+
   public boolean isDeployed() {
-    return deployed;
+    return MathUtil.isNear(
+        HopperConstants.extendedPos, hopperIO.getPosition(), HopperConstants.atSetpointTolerance);
+    // || wasDeployed;
+  }
+
+  public boolean isStowed() {
+    // if (!recentlyStowed) {
+    //   recentlyStowed = true;
+    hopperIO.setEncoderPosition(0.0);
+    // }
+    return hopperIO.stowedDetectorTriggered();
   }
 
   // testing only, remove later:

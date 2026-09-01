@@ -7,13 +7,15 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -32,19 +34,20 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 import frc.robot.generated.TunerConstants;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +56,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
   // TunerConstants doesn't include these constants, so they are declared locally
-  static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
+  static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 150.0 : 100.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
@@ -101,7 +104,7 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
-  private final Field2d m_field;
+  // private final Field2d m_field;
 
   public Drive(
       GyroIO gyroIO,
@@ -135,11 +138,11 @@ public class Drive extends SubsystemBase {
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+          // Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          // Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
 
     // Configure SysId
@@ -153,7 +156,7 @@ public class Drive extends SubsystemBase {
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
 
-    m_field = new Field2d();
+    // m_field = new Field2d();
   }
 
   @Override
@@ -175,8 +178,8 @@ public class Drive extends SubsystemBase {
 
     // Log empty setpoint states when disabled
     if (DriverStation.isDisabled()) {
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      // Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+      // Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
     // Update odometry
@@ -217,8 +220,16 @@ public class Drive extends SubsystemBase {
     RobotState.getInstance().resetPose(getPose());
     RobotState.getInstance().setRobotVelocity(getChassisSpeeds());
 
-    m_field.setRobotPose(getPose());
-    SmartDashboard.putData("Field", m_field);
+    // m_field.setRobotPose(getPose());
+    // SmartDashboard.putData("Field", m_field);
+
+    // delete this later
+    // Logger.recordOutput(
+    //     "Subsystems/Drive/LeftTrenchPos",
+    //     new Pose2d(5.0, FieldConstants.LeftTrench.midPoint, new Rotation2d()));
+    // Logger.recordOutput(
+    //     "Subsystems/Drive/RightTrenchPos",
+    //     new Pose2d(5.0, FieldConstants.RightTrench.midPoint, new Rotation2d()));
   }
 
   /**
@@ -233,8 +244,8 @@ public class Drive extends SubsystemBase {
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    // Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    // Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -242,7 +253,7 @@ public class Drive extends SubsystemBase {
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    // Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
@@ -368,5 +379,36 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public Command pathfindToClimb() {
+    boolean isLeft = getPose().getY() >= (FieldConstants.fieldWidth / 2.0) ? true : false;
+    Pose2d targetPose;
+    if (isLeft) targetPose = new Pose2d(1.677, 4.128, new Rotation2d(Units.degreesToRadians(-90)));
+    else targetPose = new Pose2d(1.667, 3.5, new Rotation2d(Units.degreesToRadians(-90)));
+    PathConstraints constraints =
+        new PathConstraints(
+            DriveConstants.PATHFIND_MAX_SPEED,
+            DriveConstants.PATHFIND_MAX_ACCEL,
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_SPEED_ANGULAR),
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_ACCEL_ANGULAR));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0);
+  }
+
+  public Command pathfindToClimb(boolean isLeft) {
+    Pose2d targetPose;
+    if (isLeft) targetPose = AllianceFlipUtil.apply(DriveConstants.leftClimbFirstPose);
+    else targetPose = AllianceFlipUtil.apply(DriveConstants.rightClimbFirstPose);
+
+    RobotState.getInstance().setTargetPathfindPose(targetPose);
+    PathConstraints constraints =
+        new PathConstraints(
+            DriveConstants.PATHFIND_MAX_SPEED,
+            DriveConstants.PATHFIND_MAX_ACCEL,
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_SPEED_ANGULAR),
+            Units.degreesToRadians(DriveConstants.PATHFIND_MAX_ACCEL_ANGULAR));
+
+    return AutoBuilder.pathfindToPose(targetPose, constraints, 0);
   }
 }

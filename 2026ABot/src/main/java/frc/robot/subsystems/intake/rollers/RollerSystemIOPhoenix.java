@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.util.PhoenixUtil;
 
@@ -35,7 +36,7 @@ public class RollerSystemIOPhoenix implements RollerSystemIO {
   public RollerSystemIOPhoenix() {
 
     // motor config:
-    rollerSystemMotor = new TalonFX(IntakeConstants.RollerConstants.motorID);
+    rollerSystemMotor = new TalonFX(IntakeConstants.RollerConstants.motorID, Constants.CANBusName);
     rollerSystemRequest = new VelocityVoltage(0).withSlot(0);
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -83,7 +84,7 @@ public class RollerSystemIOPhoenix implements RollerSystemIO {
     inputs.voltage = rollerSystemMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = rollerSystemMotor.getSupplyCurrent().getValueAsDouble();
     inputs.velocity = rollerSystemMotor.getVelocity().getValueAsDouble();
-    inputs.position = rollerSystemMotor.getPosition().getValueAsDouble();
+    // inputs.position = rollerSystemMotor.getPosition().getValueAsDouble();
   }
 
   @Override

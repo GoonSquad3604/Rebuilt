@@ -107,11 +107,23 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledPeriodic() {
     autoChooser.update();
+    // AutoFactory.updateAutoWaitTime();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    // resets hopper motor encoder to 0
+    robotContainer.getHopper().isStowed();
+    // SydId autos:
+    // autonomousCommand = robotContainer.getSysIdRoutine();
+
+    // if (autonomousCommand != null) {
+    //   CommandScheduler.getInstance().schedule(autonomousCommand);
+    // }
+
+    // normal autos:
+
     autoChooser.getSelectedCommand().ifPresent(CommandScheduler.getInstance()::schedule);
   }
 

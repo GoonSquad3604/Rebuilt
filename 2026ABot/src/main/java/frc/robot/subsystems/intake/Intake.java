@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,28 +23,34 @@ public class Intake extends SubsystemBase {
       new RollerSystemIOInputsAutoLogged();
   private final HingeIOInputsAutoLogged hingeInputs = new HingeIOInputsAutoLogged();
 
+  private final Alert hingeMotorDisconnected;
+  private final Alert hingeEncoderDisconnected;
+  private final Alert rollerSystemMotorDisconnected;
+
   private SysIdRoutine hingeSysID;
   private SysIdRoutine rollerSysID;
 
   private double lastTimestamp = 0.0;
+  // private boolean vomitReverse = false;
 
   public enum IntakeWantedState {
     IDLE,
     INTAKE,
     STOW,
     KICK,
-    VOMIT
+    VOMIT,
+    CLEAN
   }
 
   private enum IntakeCurrentState {
     IDLING,
     DEPLOYING,
     STOWING,
-    STOWED,
     INTAKING_DEPLOYED,
     IDLE_DEPLOYED,
     KICKING,
     VOMITING,
+    CLEANING
   }
 
   private IntakeWantedState wantedState = IntakeWantedState.IDLE;
@@ -53,6 +60,11 @@ public class Intake extends SubsystemBase {
   public Intake(RollerSystemIOPhoenix rollerSystemIO, HingeIOPhoenix hingeIO) {
     this.rollerSystemIO = rollerSystemIO;
     this.hingeIO = hingeIO;
+
+    hingeMotorDisconnected = new Alert("Hinge Motor Disconnected", Alert.AlertType.kWarning);
+    hingeEncoderDisconnected = new Alert("Hinge Encoder Disconnected", Alert.AlertType.kWarning);
+    rollerSystemMotorDisconnected =
+        new Alert("Roller System Motor Disconnected", Alert.AlertType.kWarning);
 
     hingeSysID =
         new SysIdRoutine(
@@ -85,12 +97,14 @@ public class Intake extends SubsystemBase {
     hingeIO.updateInputs(hingeInputs);
     Logger.processInputs("Subsystems/Intake/RollerSystem", rollerSystemInputs);
     Logger.processInputs("Subsystems/Intake/Hinge", hingeInputs);
+    // Logger.recordOutput("Subsystems/Intake/Hinge/isDeployed", isDeployed());
+    // Logger.recordOutput("Subsystems/Intake/Hinge/isStowed", isStowed());
 
     IntakeCurrentState newState = handleStateTransitions();
     double newTimestamp = Timer.getFPGATimestamp();
     if (newState != currentState) {
       currentState = newState;
-      Logger.recordOutput("Subsystems/Intake", currentState);
+      Logger.recordOutput("Subsystems/Intake/CurrentState", currentState);
       applyStates();
     } else {
       if (currentState == IntakeCurrentState.KICKING
@@ -98,6 +112,11 @@ public class Intake extends SubsystemBase {
         applyStates();
       }
     }
+    // Logger.recordOutput("Subsystems/Intake/WantedState", wantedState);
+
+    hingeMotorDisconnected.set(!hingeInputs.motorConnected);
+    hingeEncoderDisconnected.set(!hingeInputs.encoderConnected);
+    rollerSystemMotorDisconnected.set(!rollerSystemInputs.motorConnected);
   }
 
   public void setWantedState(IntakeWantedState wantedState) {
@@ -107,12 +126,13 @@ public class Intake extends SubsystemBase {
   private IntakeCurrentState handleStateTransitions() {
     return switch (wantedState) {
       case IDLE -> isDeployed() ? IntakeCurrentState.IDLE_DEPLOYED : IntakeCurrentState.IDLING;
-      case STOW -> isStowed() ? IntakeCurrentState.STOWED : IntakeCurrentState.STOWING;
-      case INTAKE -> isStowed()
+      case STOW -> IntakeCurrentState.STOWING;
+      case INTAKE -> !isDeployed()
           ? IntakeCurrentState.DEPLOYING
           : IntakeCurrentState.INTAKING_DEPLOYED;
       case KICK -> IntakeCurrentState.KICKING;
       case VOMIT -> IntakeCurrentState.VOMITING;
+      case CLEAN -> IntakeCurrentState.CLEANING;
     };
   }
 
@@ -127,19 +147,20 @@ public class Intake extends SubsystemBase {
       case STOWING:
         stow();
         break;
-      case STOWED:
-        break;
       case INTAKING_DEPLOYED:
         runRollers();
         break;
       case IDLE_DEPLOYED:
-        idling();
+        idleDeployed();
         break;
       case KICKING:
         kick();
         break;
       case VOMITING:
-        vomitRollers();
+        vomit();
+        break;
+      case CLEANING:
+        clean();
         break;
     }
   }
@@ -147,6 +168,11 @@ public class Intake extends SubsystemBase {
   private void idling() {
     rollerSystemIO.setPower(0);
     hingeIO.setPower(0);
+  }
+
+  private void idleDeployed() {
+    rollerSystemIO.setPower(0);
+    hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
   private void deploy() {
@@ -164,20 +190,42 @@ public class Intake extends SubsystemBase {
   }
 
   private void kick() {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.kickIntakeSpeed);
+    // rollerSystemIO.setPower(0);
+    lastTimestamp = Timer.getFPGATimestamp();
     if (MathUtil.isNear(
         IntakeConstants.HingeConstants.kickPosition,
         hingeIO.getPosition(),
         IntakeConstants.HingeConstants.nearPositionTolerance)) {
       // kick down
       hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
-    } else {
+    } else if (MathUtil.isNear(
+        IntakeConstants.HingeConstants.deployedPosition,
+        hingeIO.getPosition(),
+        IntakeConstants.HingeConstants.nearPositionTolerance)) {
       // kick up
+      hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
+    } else {
       hingeIO.setPosition(IntakeConstants.HingeConstants.kickPosition);
     }
   }
 
-  private void vomitRollers() {
+  private void vomit() {
+    // hingeIO.setPosition(IntakeConstants.HingeConstants.stowedPosition);
+
+    // lastTimestamp = Timer.getFPGATimestamp();
+    // vomitReverse = !vomitReverse;
+
+    // if (vomitReverse) {
     rollerSystemIO.setPower(IntakeConstants.RollerConstants.vomitSpeed);
+    // } else {
+    //   rollerSystemIO.setPower(IntakeConstants.RollerConstants.intakeSpeed);
+    // }
+  }
+
+  private void clean() {
+    rollerSystemIO.setPower(IntakeConstants.RollerConstants.cleanSpeed);
+    hingeIO.setPosition(IntakeConstants.HingeConstants.deployedPosition);
   }
 
   public boolean isDeployed() {
@@ -201,6 +249,10 @@ public class Intake extends SubsystemBase {
 
   public void setHingePower(double power) {
     hingeIO.setPower(power);
+  }
+
+  public void setHingePosition(double position) {
+    hingeIO.setPosition(position);
   }
 
   public Command hingeSysIdQuasistatic(SysIdRoutine.Direction direction) {

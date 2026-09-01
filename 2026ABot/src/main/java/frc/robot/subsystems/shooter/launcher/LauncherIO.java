@@ -10,13 +10,13 @@ public interface LauncherIO {
     public double voltage;
     public double current;
     public double velocity;
-    public double temperature;
+    // public double temperature;
     public double position;
   }
 
   default void updateInputs(LauncherIOInputs inputs) {}
 
-  default void setLauncherOpenLoop(double output) {}
+  default void setOpenLoop(double output) {}
 
   default void setPower(double power) {}
 

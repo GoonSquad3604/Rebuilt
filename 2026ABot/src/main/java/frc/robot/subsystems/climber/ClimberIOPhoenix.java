@@ -3,15 +3,19 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.signals.UpdateModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -25,11 +29,13 @@ public class ClimberIOPhoenix implements ClimberIO {
 
   private final TalonFX outerMotor, innerMotor;
   private final CANcoder outerEncoder, innerEncoder;
+  private final CANrange centerClimbRange;
   private final TalonFXConfiguration outerMotorConfig, innerMotorConfig;
   private final CANcoderConfiguration outerEncoderConfig, innerEncoderConfig;
+  private final CANrangeConfiguration leftClimbConfig, rightClimbConfig, centerClimbConfig;
 
-  private final PositionVoltage innerRequest;
-  private final PositionVoltage outerRequest;
+  private final MotionMagicVoltage outerRequest = new MotionMagicVoltage(0.0);
+  private final MotionMagicVoltage innerRequest = new MotionMagicVoltage(0.0);
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
@@ -49,15 +55,42 @@ public class ClimberIOPhoenix implements ClimberIO {
 
   public ClimberIOPhoenix() {
 
-    innerRequest = new PositionVoltage(0).withSlot(0);
-    outerRequest = new PositionVoltage(0).withSlot(0);
-
     // outer motor config
     outerMotor = new TalonFX(ClimberConstants.outerMotorID, Constants.CANBusName);
+    // leftClimbRange = new CANrange(ClimberConstants.leftClimberRangeID, Constants.CANBusName);
+    // rightClimbRange = new CANrange(ClimberConstants.rightClimberRangeID, Constants.CANBusName);
+    centerClimbRange = new CANrange(ClimberConstants.centerClimberRangeID, Constants.CANBusName);
+
+    leftClimbConfig = new CANrangeConfiguration();
+    rightClimbConfig = new CANrangeConfiguration();
+    centerClimbConfig = new CANrangeConfiguration();
+
+    leftClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
+    leftClimbConfig.ProximityParams.ProximityThreshold = 0.5;
+    leftClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
+
+    rightClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
+    rightClimbConfig.ProximityParams.ProximityThreshold = 0.5;
+    rightClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
+
+    centerClimbConfig.ProximityParams.MinSignalStrengthForValidMeasurement = 2500;
+    centerClimbConfig.ProximityParams.ProximityThreshold = 0.5;
+    centerClimbConfig.ToFParams.UpdateMode = UpdateModeValue.LongRangeUserFreq;
+    // centerClimbConfig.FovParams.FOVCenterX = -5;
+    // centerClimbConfig.FovParams.FOVCenterY = -5;
+    centerClimbConfig.FovParams.FOVRangeX = 6.75;
+    centerClimbConfig.FovParams.FOVRangeY = 6.75;
+
+    // leftClimbRange.getConfigurator().apply(leftClimbConfig);
+    // rightClimbRange.getConfigurator().apply(rightClimbConfig);
+    centerClimbRange.getConfigurator().apply(centerClimbConfig);
+
     outerMotorConfig = new TalonFXConfiguration();
     outerMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     outerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    outerMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    outerMotorConfig.Feedback.FeedbackRemoteSensorID = ClimberConstants.outerEncoderID;
+    outerMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    outerMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
     outerMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ClimberConstants.outerP)
@@ -75,7 +108,7 @@ public class ClimberIOPhoenix implements ClimberIO {
     innerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     innerMotorConfig.Feedback.FeedbackRemoteSensorID = ClimberConstants.innerEncoderID;
     innerMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    innerMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    innerMotorConfig.CurrentLimits.SupplyCurrentLimit = 60;
     innerMotorConfig.Slot0 =
         new Slot0Configs()
             .withKP(ClimberConstants.innerP)
@@ -89,10 +122,20 @@ public class ClimberIOPhoenix implements ClimberIO {
     // outer encoder config
     outerEncoder = new CANcoder(ClimberConstants.outerEncoderID, Constants.CANBusName);
     outerEncoderConfig = new CANcoderConfiguration();
-
+    outerEncoderConfig.MagnetSensor.MagnetOffset = 0.2; // 0.8;
+    outerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    outerEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
     // inner encoder config
     innerEncoder = new CANcoder(ClimberConstants.innerEncoderID, Constants.CANBusName);
     innerEncoderConfig = new CANcoderConfiguration();
+    innerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+
+    // motion magic
+    innerMotorConfig.MotionMagic.MotionMagicAcceleration = ClimberConstants.innerAcceleration;
+    innerMotorConfig.MotionMagic.MotionMagicCruiseVelocity = ClimberConstants.innerVelocity;
+
+    outerMotorConfig.MotionMagic.MotionMagicAcceleration = ClimberConstants.outerAcceleration;
+    outerMotorConfig.MotionMagic.MotionMagicCruiseVelocity = ClimberConstants.outerVelocity;
 
     // apply configs
     PhoenixUtil.tryUntilOk(5, () -> outerMotor.getConfigurator().apply(outerMotorConfig));
@@ -101,12 +144,12 @@ public class ClimberIOPhoenix implements ClimberIO {
     PhoenixUtil.tryUntilOk(5, () -> innerEncoder.getConfigurator().apply(innerEncoderConfig));
 
     // outer base status signal
-    outerPosition = innerMotor.getPosition();
-    outerVelocity = innerMotor.getVelocity();
-    outerAppliedVoltage = innerMotor.getMotorVoltage();
-    outerSupplyCurrent = innerMotor.getSupplyCurrent();
-    outerTorqueCurrent = innerMotor.getTorqueCurrent();
-    outerTempCelsius = innerMotor.getDeviceTemp();
+    outerPosition = outerEncoder.getAbsolutePosition();
+    outerVelocity = outerEncoder.getVelocity();
+    outerAppliedVoltage = outerMotor.getMotorVoltage();
+    outerSupplyCurrent = outerMotor.getSupplyCurrent();
+    outerTorqueCurrent = outerMotor.getTorqueCurrent();
+    outerTempCelsius = outerMotor.getDeviceTemp();
     PhoenixUtil.tryUntilOk(
         5,
         () ->
@@ -120,8 +163,8 @@ public class ClimberIOPhoenix implements ClimberIO {
                 outerTempCelsius));
 
     // inner base status signal
-    innerPosition = innerMotor.getPosition();
-    innerVelocity = innerMotor.getVelocity();
+    innerPosition = innerEncoder.getAbsolutePosition();
+    innerVelocity = innerEncoder.getVelocity();
     innerAppliedVoltage = innerMotor.getMotorVoltage();
     innerSupplyCurrent = innerMotor.getSupplyCurrent();
     innerTorqueCurrent = innerMotor.getTorqueCurrent();
@@ -147,23 +190,27 @@ public class ClimberIOPhoenix implements ClimberIO {
   public void updateInputs(ClimberIOInputs inputs) {
     inputs.outerMotorConnected = outerMotor.isConnected();
     inputs.outerEncoderConnected = outerEncoder.isConnected();
-    inputs.outerVelocity = outerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.outerVoltage = outerMotor.getMotorVoltage().getValueAsDouble();
     inputs.outerCurrent = outerMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.outerVelocity = outerMotor.getVelocity().getValueAsDouble();
-    inputs.outerPosition = outerMotor.getPosition().getValueAsDouble();
+    inputs.outerVelocity = outerEncoder.getVelocity().getValueAsDouble();
+    inputs.outerPosition = outerEncoder.getPosition().getValueAsDouble();
 
     inputs.innerMotorConnected = innerMotor.isConnected();
     inputs.innerEncoderConnected = innerEncoder.isConnected();
-    inputs.innerVelocity = innerMotor.getMotorVoltage().getValueAsDouble();
+    inputs.innerVoltage = innerMotor.getMotorVoltage().getValueAsDouble();
     inputs.innerCurrent = innerMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.innerVelocity = innerMotor.getVelocity().getValueAsDouble();
-    inputs.innerPosition = innerMotor.getPosition().getValueAsDouble();
+    inputs.innerVelocity = innerEncoder.getVelocity().getValueAsDouble();
+    inputs.innerPosition = innerEncoder.getAbsolutePosition().getValueAsDouble();
+
+    // inputs.leftClimbRangeConnected = leftClimbRange.isConnected();
+    // inputs.rightClimbRangeConnected = rightClimbRange.isConnected();
+    inputs.centerClimbRangeConnected = centerClimbRange.isConnected();
   }
 
   // Inner
   @Override
   public void setInnerPosition(double position) {
-    innerMotor.setControl(innerRequest.withPosition(position));
+    innerMotor.setControl(innerRequest.withPosition(position).withEnableFOC(true));
   }
 
   @Override
@@ -184,21 +231,36 @@ public class ClimberIOPhoenix implements ClimberIO {
   // Outer
   @Override
   public void setOuterPosition(double position) {
-    innerMotor.setControl(outerRequest.withPosition(position));
+    outerMotor.setControl(outerRequest.withPosition(position).withEnableFOC(true));
   }
 
   @Override
   public double getOuterPosition() {
-    return innerMotor.getPosition().getValueAsDouble();
+    return outerMotor.getPosition().getValueAsDouble();
   }
 
   @Override
   public void setOuterPower(double power) {
-    innerMotor.set(power);
+    outerMotor.set(power);
   }
 
   @Override
   public void setOuterOpenLoop(double output) {
-    innerMotor.setControl(voltageRequest.withOutput(output));
+    outerMotor.setControl(voltageRequest.withOutput(output));
+  }
+
+  // @Override
+  // public boolean leftClimbDetected() {
+  //   return leftClimbRange.getIsDetected().getValue();
+  // }
+
+  // @Override
+  // public boolean rightClimbDetected() {
+  //   return rightClimbRange.getIsDetected().getValue();
+  // }
+
+  @Override
+  public boolean centerClimbDetected() {
+    return centerClimbRange.getIsDetected().getValue();
   }
 }

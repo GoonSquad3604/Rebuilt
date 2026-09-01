@@ -1,10 +1,3 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -32,6 +25,7 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
+    // this.robotToCamera2 = new Transform3d();
   }
 
   @Override
@@ -59,6 +53,21 @@ public class VisionIOPhotonVision implements VisionIO {
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        // if (robotToCamera2.equals(new Transform3d())) {
+        //   // camera position as normal
+
+        // } else {
+        //   // camera position based on hopper position
+        //   if (hopper.isStowed()) {
+        //     // use stowed position
+        //     fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
+        //   } else if (hopper.isDeployed()) {
+        //     // use extended position
+        //     fieldToRobot = fieldToCamera.plus(robotToCamera2.inverse());
+        //   } else {
+        //     fieldToRobot = new Transform3d();
+        //   }
+        // }
         Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance
@@ -116,10 +125,10 @@ public class VisionIOPhotonVision implements VisionIO {
     }
 
     // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
-    int i = 0;
-    for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
-    }
+    // inputs.tagIds = new int[tagIds.size()];
+    // int i = 0;
+    // for (int id : tagIds) {
+    //   inputs.tagIds[i++] = id;
+    // }
   }
 }

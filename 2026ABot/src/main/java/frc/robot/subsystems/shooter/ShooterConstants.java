@@ -2,74 +2,95 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 public final class ShooterConstants {
 
-  public static final double loopPeriodSecs = 0.02;
+  // public static final double loopPeriodSecs = 0.02;
 
   public static Transform3d robotToTurret =
       new Transform3d(
-          Units.inchesToMeters(7.5),
-          Units.inchesToMeters(0.0),
-          Units.inchesToMeters(36),
+          Units.inchesToMeters(-6),
+          Units.inchesToMeters(2),
+          Units.inchesToMeters(18),
           Rotation3d.kZero);
+
+  public static double robotToTurretLinear = 6.3245553203;
+
+  public static Translation2d leftPassPosition = new Translation2d(1.2, 6.125);
+  public static Translation2d rightPassPosition = new Translation2d(1.2, 2.125);
+
+  public static final double maxExtraVelocity = 5;
 
   public static final class HoodConstants {
 
-    public static final int hoodID = 14;
-    public static final int hoodEncoderID = 27;
+    public static final int hoodID = 9;
+    public static final int hoodEncoderID = 25;
 
-    public static final double hoodP = 24;
+    public static final double hoodP = 27;
     public static final double hoodI = 0;
-    public static final double hoodD = 0;
-    public static final double hoodS = 0.1;
-    public static final double hoodV = 0;
+    public static final double hoodD = 0.0;
+    public static final double hoodS = 0.5; // 0.1
+    public static final double hoodV = 0.2; // 0.25
+    public static final double hoodG = 0.0;
 
-    public static final double forwardPosition = 0.1;
+    // public static final double acceleration = 16;
+    // public static final double velocity = 8;
+
+    public static final double forwardPosition = 0.368;
+    public static final double hoodMaxPos = 0.615;
+    public static final double hoodMinPos = 0.1; // 0.05
+
+    public static final double hoodAtSetpointTolerance = 0.075;
+
+    // ensure it is 0.05 above 0 when at minimum
+    public static final double offset = -0.089;
   }
 
   public static final class LauncherConstants {
 
-    public static final int launcherID = 9;
+    public static final int launcherID = 14;
 
-    public static final double launcherP = 0.061342;
+    public static final double launcherP = 0.18937;
     public static final double launcherI = 0;
     public static final double launcherD = 0;
-    public static final double launcherS = 0.14383;
-    public static final double launcherV = 0.12361;
-    public static final double launcherA = 0.038879;
+    public static final double launcherS = 0.0955;
+    public static final double launcherV = 0.12313;
+    public static final double launcherA = 0.041093;
 
-    public static final double forwardVelocity = 45;
+    public static final double forwardVelocity = 50;
+    public static final double cleanSpeed = 0.1;
+
+    public static final double launcherAtSetpointTolerance = 3;
   }
 
   public static final class TurretConstants {
 
-    public static final int turretID = 11;
-    public static final int turretEncoderID = 26;
+    public static final int motorID = 5;
+    public static final int encoderID = 30;
 
-    public static final double turretP = 12;
-    public static final double turretI = 0;
-    public static final double turretD = 0;
-    public static final double turretS = 0;
-    public static final double turretV = 0;
+    public static final double P = 24; // 32
+    public static final double I = 0.0; // 0
+    public static final double D = 0.0; // .25
+    public static final double S = 0.9; // .4
+    public static final double V = 0.2; // 0
+    public static final double A = 0.0; // 0
 
-    public static final double maxEncoderPosition = 0.5;
-    public static final double minEncoderPosition = 0.0;
-    public static final double maxAnglePosition = 180;
-    public static final double minAnglePosition = 0;
+    public static final double rampRate = 0.05; // .15
 
-    public static final double forwardPosition = 0;
-  }
+    public static final double maxEncoderPosition = 0.927;
+    public static final double minEncoderPosition = 0.05;
 
-  public static final class KickerConstants {
-    public static final int kickerID = 6;
+    public static final double maxAnglePosition = 333.72;
+    public static final double minAnglePosition = 18;
 
-    public static final double kickerP = 1.6687E-07;
-    public static final double kickerI = 0;
-    public static final double kickerD = 0;
-    public static final double kickerS = 0.38727;
-    public static final double kickerV = 0.0018981;
-    public static final double kickerA = 0.00017089;
+    public static final double forwardAngle = 180;
+    public static final double atSetpointTolerance = 30;
+
+    // public static final double turretAcceleration = 60;
+    // public static final double turretVelocity = 30;
+
+    public static final double encoderOffset = -0.421;
   }
 }

@@ -1,18 +1,16 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.GeomUtil;
 import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
@@ -25,27 +23,15 @@ public class RobotState {
   }
 
   private Pose2d targetPose = new Pose2d();
-  private Rotation2d turretAngle;
 
   private ShooterTarget target = ShooterTarget.HUB;
   private ShooterTarget manualTarget = ShooterTarget.HUB;
 
   private boolean override = false;
 
-  private static final double poseBufferSizeSec = 2.0;
-  private static final double turretAngleBufferSizeSec = 2.0;
-  private static final Matrix<N3, N1> odometryStateStdDevs =
-      new Matrix<>(VecBuilder.fill(0.003, 0.003, 0.002));
-
   // Pose estimation fields
   private Pose2d odometryPose = Pose2d.kZero;
   private Pose2d estimatedPose = Pose2d.kZero;
-
-  private final TimeInterpolatableBuffer<Pose2d> poseBuffer =
-      TimeInterpolatableBuffer.createBuffer(poseBufferSizeSec);
-  private final TimeInterpolatableBuffer<Rotation2d> turretAngleBuffer =
-      TimeInterpolatableBuffer.createBuffer(turretAngleBufferSizeSec);
-  private final Matrix<N3, N1> qStdDevs = new Matrix<>(Nat.N3(), Nat.N1());
 
   // Odometry fields
   private Rotation2d gyroOffset = Rotation2d.kZero;
@@ -59,12 +45,7 @@ public class RobotState {
     return instance;
   }
 
-  private RobotState() {
-    for (int i = 0; i < 3; ++i) {
-      qStdDevs.set(i, 0, Math.pow(odometryStateStdDevs.get(i, 0), 2));
-    }
-    Logger.recordOutput("RobotState/TargetPathfindPose", targetPose);
-  }
+  private RobotState() {}
 
   /** Reset the pose estimate and odometry pose to the given pose. */
   public void resetPose(Pose2d pose) {
@@ -73,25 +54,40 @@ public class RobotState {
     gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
     estimatedPose = pose;
     odometryPose = pose;
-    poseBuffer.clear();
   }
 
-  public boolean isLeftSide(Pose2d pose) {
-    if (AllianceFlipUtil.shouldFlip()) {
-      return pose.getY() < FieldConstants.Hub.topCenterPoint.getY();
-    } else {
-      return pose.getY() > FieldConstants.Hub.topCenterPoint.getY();
-    }
+  // public boolean isLeftSide() {
+  //   if (getPose().getY() >= FieldConstants.fieldWidth / 2.0) {
+  //     // left
+  //     return DriverStation.getAlliance().get() == Alliance.Blue ? true : false;
+  //   } else {
+  //     // right
+  //     return DriverStation.getAlliance().get() == Alliance.Blue ? false : true;
+  //   }
+  // }
+
+  // public boolean isInMiddle() {
+  //   return getPose().getY() > 3.25 && getPose().getY() < 4.5;
+  // }
+
+  public boolean isUnderTower(Pose2d pose) {
+    return pose.getX() < AllianceFlipUtil.apply(FieldConstants.Tower.leftUpright).getX()
+        && pose.getY() > AllianceFlipUtil.apply(FieldConstants.Tower.rightUpright).getY()
+        && pose.getY() < AllianceFlipUtil.apply(FieldConstants.Tower.leftUpright).getY();
   }
 
-  public boolean isInMiddle(Pose2d pose) {
-    if (AllianceFlipUtil.shouldFlip()) {
-      return pose.getY() < FieldConstants.Hub.leftFace.getY()
-          && pose.getY() > FieldConstants.Hub.rightFace.getY();
-    } else {
-      return pose.getY() > FieldConstants.Hub.leftFace.getY()
-          && pose.getY() < FieldConstants.Hub.rightFace.getY();
-    }
+  public boolean isBehindHub(Pose2d pose) {
+    return pose.getX() > AllianceFlipUtil.apply(FieldConstants.Hub.farLeftCorner).getX()
+        && pose.getX() < AllianceFlipUtil.applyX(7.0)
+        && pose.getY() > AllianceFlipUtil.apply(FieldConstants.Hub.farRightCorner).getY()
+        && pose.getY() < AllianceFlipUtil.apply(FieldConstants.Hub.farLeftCorner).getY();
+  }
+
+  public boolean nearTrench() {
+    // blue
+    return (getPose().getX() > 3.8 && getPose().getX() < 5.8)
+        // red
+        || (getPose().getX() > 10.884 && getPose().getX() < 13);
   }
 
   /** Get the rotation of the estimated pose. */
@@ -110,11 +106,6 @@ public class RobotState {
   public Pose2d getPose() {
     return estimatedPose;
   }
-
-  // @AutoLogOutput
-  // public Optional<Rotation2d> getTurretAngle(double timestamp) {
-  //   return turretAngleBuffer.getSample(timestamp);
-  // }
 
   public ShooterTarget getTarget() {
     // checks override
@@ -140,9 +131,9 @@ public class RobotState {
       target = manualTarget;
     }
 
-    Logger.recordOutput("RobotState/ShotTarget", target);
-    Logger.recordOutput("RobotState/ManualTarget", manualTarget);
-    Logger.recordOutput("RobotState/Override", override);
+    // Logger.recordOutput("RobotState/ShotTarget", target);
+    // Logger.recordOutput("RobotState/ManualTarget", manualTarget);
+    // Logger.recordOutput("RobotState/Override", override);
 
     return target;
   }
@@ -151,20 +142,16 @@ public class RobotState {
     return Commands.runOnce(() -> manualTarget = newTarget);
   }
 
+  public ShooterTarget getManualTarget() {
+    return manualTarget;
+  }
+
   public Command toggleManualShooting() {
     return Commands.runOnce(() -> override = !override);
   }
 
   public boolean isOverride() {
     return override;
-  }
-
-  public void setTurretAngle(Rotation2d newAngle) {
-    turretAngle = newAngle;
-  }
-
-  public Rotation2d getTurretAngle() {
-    return turretAngle;
   }
 
   public void setTargetPathfindPose(Pose2d newPose) {
@@ -179,5 +166,27 @@ public class RobotState {
   public boolean atDrivePosition(Pose2d position) {
     return MathUtil.isNear(position.getX(), getPose().getX(), .1)
         && MathUtil.isNear(position.getY(), getPose().getY(), .1);
+  }
+
+  public boolean isAwayFromTower() {
+    Translation2d towerPose = AllianceFlipUtil.apply(new Translation2d(1.8, 3.7));
+    return towerPose.getDistance(getPose().getTranslation()) > 1.5;
+  }
+
+  public double getDistanceToHubInches() {
+    Translation2d hubPose =
+        AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+    Pose2d turretPosition =
+        getPose().transformBy(GeomUtil.toTransform2d(ShooterConstants.robotToTurret));
+    return Units.metersToInches(hubPose.getDistance(turretPosition.getTranslation()));
+  }
+
+  public double getDistanceToHubMeters() {
+    Translation2d hubPose =
+        AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+    Pose2d turretPosition =
+        AllianceFlipUtil.apply(getPose())
+            .transformBy(GeomUtil.toTransform2d(ShooterConstants.robotToTurret));
+    return hubPose.getDistance(turretPosition.getTranslation());
   }
 }

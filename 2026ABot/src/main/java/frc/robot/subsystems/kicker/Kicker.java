@@ -3,9 +3,13 @@ package frc.robot.subsystems.kicker;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotState;
+import frc.robot.RobotState.ShooterTarget;
 import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
@@ -14,16 +18,36 @@ public class Kicker extends SubsystemBase {
   private KickerIOPhoenix kickerIO = new KickerIOPhoenix();
   private KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
 
+  private final Alert kickerMotorDisconnected;
+
   private SysIdRoutine sysID;
+
+  private double dashboardKickerVelocity;
+
+  private boolean isJammed = false;
+  // private boolean beganJamming = false;
+  // private double timeBeganJamming;
+
+  // private boolean beganUnjamming;
+  // private double timeBeganUnjamming;
 
   public enum KickerWantedState {
     IDLE,
-    REV
+    REV,
+    TEST,
+    CLEAN,
+    EJECT,
+    UNJAM
   }
 
   public enum KickerCurrentState {
     IDLING,
     REVVING,
+    PASSING,
+    TESTING,
+    CLEANING,
+    EJECTING,
+    UNJAMMING
   }
 
   private KickerCurrentState currentState = KickerCurrentState.IDLING;
@@ -32,6 +56,8 @@ public class Kicker extends SubsystemBase {
   /** Creates a new Kicker. */
   public Kicker(KickerIOPhoenix io) {
     this.kickerIO = io;
+
+    kickerMotorDisconnected = new Alert("Kicker Motor Disconnected", Alert.AlertType.kWarning);
 
     sysID =
         new SysIdRoutine(
@@ -58,17 +84,33 @@ public class Kicker extends SubsystemBase {
       applyStates();
     }
 
-    Logger.recordOutput("Subsystems/Kicker/WantedState", wantedState);
+    // if (currentState == KickerCurrentState.REVVING) {
+    //   updateisJammed();
+    // }
+
+    dashboardKickerVelocity =
+        SmartDashboard.getNumber("Kicker Velocity", KickerConstants.shootingVelocity);
+    SmartDashboard.putNumber("Kicker Velocity", dashboardKickerVelocity);
+
+    // Logger.recordOutput("Subsystems/Kicker/WantedState", wantedState);
+
+    kickerMotorDisconnected.set(!kickerInputs.motorConnected);
   }
 
   public void setWantedState(KickerWantedState state) {
-    wantedState = state;
+    this.wantedState = state;
   }
 
   private KickerCurrentState handleStateTransitions() {
     return switch (wantedState) {
       case IDLE -> KickerCurrentState.IDLING;
-      case REV -> KickerCurrentState.REVVING;
+      case REV -> RobotState.getInstance().getTarget() != ShooterTarget.HUB
+          ? KickerCurrentState.PASSING
+          : KickerCurrentState.REVVING;
+      case TEST -> KickerCurrentState.TESTING;
+      case CLEAN -> KickerCurrentState.CLEANING;
+      case EJECT -> KickerCurrentState.EJECTING;
+      case UNJAM -> KickerCurrentState.UNJAMMING;
     };
   }
 
@@ -80,6 +122,21 @@ public class Kicker extends SubsystemBase {
       case REVVING:
         rev();
         break;
+      case PASSING:
+        pass();
+        break;
+      case TESTING:
+        test();
+        break;
+      case CLEANING:
+        clean();
+        break;
+      case EJECTING:
+        eject();
+        break;
+      case UNJAMMING:
+        unjam();
+        break;
     }
   }
 
@@ -88,7 +145,58 @@ public class Kicker extends SubsystemBase {
   }
 
   private void rev() {
-    kickerIO.setPower(KickerConstants.shootingVelocity);
+    kickerIO.setVelocity(KickerConstants.shootingVelocity);
+  }
+
+  private void pass() {
+    kickerIO.setVelocity(KickerConstants.passingVelocity);
+  }
+
+  private void test() {
+    kickerIO.setVelocity(dashboardKickerVelocity);
+  }
+
+  private void clean() {
+    kickerIO.setPower(KickerConstants.cleanSpeed);
+  }
+
+  private void eject() {
+    kickerIO.setPower(.9);
+  }
+
+  private void unjam() {
+    kickerIO.setVelocity(KickerConstants.unjamVelocity);
+  }
+
+  // private boolean continueUnjamming() {
+  //   if (!beganUnjamming) return false;
+  //   double newTimestamp = Timer.getFPGATimestamp();
+  //   boolean shouldStopUnjamming = timeBeganUnjamming < newTimestamp -
+  // KickerConstants.unjamDuration;
+  //   if (shouldStopUnjamming) {
+  //     beganUnjamming = false;
+  //   }
+  //   return shouldStopUnjamming;
+  // }
+
+  // private void updateisJammed() {
+  //   if (kickerIO.getVelocity() > KickerConstants.minJammedVelocity) {
+  //     if (!beganJamming) {
+  //       timeBeganJamming = Timer.getFPGATimestamp();
+  //     }
+  //     beganJamming = true;
+  //     double newTimestamp = Timer.getFPGATimestamp();
+  //     if (timeBeganJamming < newTimestamp - KickerConstants.jamCheckTimeDuration) {
+  //       isJammed = true;
+  //     }
+  //   } else {
+  //     beganJamming = false;
+  //     isJammed = false;
+  //   }
+  // }
+
+  public boolean isJammed() {
+    return isJammed;
   }
 
   public boolean atVelocity() {
@@ -101,6 +209,10 @@ public class Kicker extends SubsystemBase {
   // testing only, remove later:
   public void setPower(double power) {
     kickerIO.setPower(power);
+  }
+
+  public void setVelocity(double velocity) {
+    kickerIO.setVelocity(velocity);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

@@ -6,16 +6,16 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.ExternalFeedbackSensorSourceValue;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -28,15 +28,17 @@ import frc.robot.util.PhoenixUtil;
 public class TurretIOPhoenix implements TurretIO {
 
   // motor
-  private final TalonFXS turretMotor;
+  private final TalonFX turretMotor;
+  // private final MotionMagicVoltage turretRequest = new MotionMagicVoltage(0.0);
   private final PositionVoltage turretRequest;
-  private final TalonFXSConfiguration turretMotorConfig;
+
+  private final TalonFXConfiguration turretMotorConfig;
 
   // encoder
   private final CANcoder turretEncoder;
   private final CANcoderConfiguration turretEncoderConfig;
 
-  private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final VoltageOut voltageRequest;
 
   // status signals
   private final StatusSignal<Angle> position;
@@ -48,42 +50,52 @@ public class TurretIOPhoenix implements TurretIO {
 
   public TurretIOPhoenix() {
 
-    turretMotor = new TalonFXS(ShooterConstants.TurretConstants.turretID, Constants.CANBusName);
-    turretRequest = new PositionVoltage(0);
+    // motor config
+    turretMotor = new TalonFX(ShooterConstants.TurretConstants.motorID, Constants.CANBusName);
+    turretMotorConfig = new TalonFXConfiguration();
 
-    turretEncoder =
-        new CANcoder(ShooterConstants.TurretConstants.turretEncoderID, Constants.CANBusName);
+    turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
+    turretMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+    turretMotorConfig.Feedback.FeedbackRemoteSensorID = ShooterConstants.TurretConstants.encoderID;
+    turretMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+
+    // encoder config
+    turretEncoder = new CANcoder(ShooterConstants.TurretConstants.encoderID, Constants.CANBusName);
     turretEncoderConfig = new CANcoderConfiguration();
 
     turretEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    turretEncoderConfig.MagnetSensor.MagnetOffset = -.936;
-    turretEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+    turretEncoderConfig.MagnetSensor.MagnetOffset = ShooterConstants.TurretConstants.encoderOffset;
+    turretEncoderConfig.MagnetSensor.SensorDirection =
+        SensorDirectionValue.CounterClockwise_Positive;
 
-    turretEncoder.getConfigurator().apply(turretEncoderConfig);
+    // pid configs
 
-    turretMotorConfig = new TalonFXSConfiguration();
+    voltageRequest = new VoltageOut(0);
+    turretRequest = new PositionVoltage(0.0);
+    // turretMotorConfig.MotionMagic.MotionMagicAcceleration =
+    //     ShooterConstants.TurretConstants.turretAcceleration;
+    // turretMotorConfig.MotionMagic.MotionMagicCruiseVelocity =
+    //     ShooterConstants.TurretConstants.turretVelocity;
 
-    turretMotorConfig.ClosedLoopGeneral.ContinuousWrap = false;
-    turretMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    turretMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    turretMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    turretMotorConfig.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
-    turretMotorConfig.ExternalFeedback.FeedbackRemoteSensorID =
-        ShooterConstants.TurretConstants.turretEncoderID;
-    turretMotorConfig.ExternalFeedback.ExternalFeedbackSensorSource =
-        ExternalFeedbackSensorSourceValue.RemoteCANcoder;
     turretMotorConfig.Slot0 =
         new Slot0Configs()
-            .withKP(ShooterConstants.TurretConstants.turretP)
-            .withKI(ShooterConstants.TurretConstants.turretI)
-            .withKD(ShooterConstants.TurretConstants.turretD)
-            .withKS(ShooterConstants.TurretConstants.turretS)
-            .withKV(ShooterConstants.TurretConstants.turretV);
-    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+            .withKP(ShooterConstants.TurretConstants.P)
+            .withKI(ShooterConstants.TurretConstants.I)
+            .withKD(ShooterConstants.TurretConstants.D)
+            .withKS(ShooterConstants.TurretConstants.S)
+            .withKV(ShooterConstants.TurretConstants.V)
+            .withKA(ShooterConstants.TurretConstants.A);
+    turretMotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod =
+        ShooterConstants.TurretConstants.rampRate;
+
+    // apply configs
+    PhoenixUtil.tryUntilOk(5, () -> turretEncoder.getConfigurator().apply(turretEncoderConfig));
     PhoenixUtil.tryUntilOk(5, () -> turretMotor.getConfigurator().apply(turretMotorConfig));
 
-    position = turretMotor.getPosition();
-    velocity = turretMotor.getVelocity();
+    position = turretEncoder.getAbsolutePosition();
+    velocity = turretEncoder.getVelocity();
     appliedVoltage = turretMotor.getMotorVoltage();
     supplyCurrent = turretMotor.getSupplyCurrent();
     torqueCurrent = turretMotor.getTorqueCurrent();
@@ -109,8 +121,8 @@ public class TurretIOPhoenix implements TurretIO {
     inputs.encoderConnected = turretEncoder.isConnected();
     inputs.voltage = turretMotor.getMotorVoltage().getValueAsDouble();
     inputs.current = turretMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocity = turretEncoder.getVelocity().getValueAsDouble();
-    inputs.temperature = turretMotor.getDeviceTemp().getValueAsDouble();
+    // inputs.velocity = turretEncoder.getVelocity().getValueAsDouble();
+    // inputs.temperature = turretMotor.getDeviceTemp().getValueAsDouble();
     inputs.position = turretEncoder.getAbsolutePosition().getValueAsDouble();
     inputs.angle = turretEncoder.getAbsolutePosition().getValue().in(Degrees);
     inputs.motorPosition = turretMotor.getPosition().getValueAsDouble();
@@ -123,7 +135,14 @@ public class TurretIOPhoenix implements TurretIO {
 
   @Override
   public void setPosition(double position) {
-    turretMotor.setControl(turretRequest.withPosition(position));
+    turretMotor.setControl(
+        turretRequest
+            .withPosition(
+                MathUtil.clamp(
+                    position,
+                    ShooterConstants.TurretConstants.minEncoderPosition,
+                    ShooterConstants.TurretConstants.maxEncoderPosition))
+            .withEnableFOC(true));
   }
 
   @Override
@@ -135,6 +154,7 @@ public class TurretIOPhoenix implements TurretIO {
   public double getPosition() {
     return turretMotor.getPosition().getValueAsDouble();
   }
+
   // my favorite angle is 210 -lucas
   @Override
   public double getAngle() {
@@ -147,7 +167,7 @@ public class TurretIOPhoenix implements TurretIO {
   }
 
   private double convertAngleToRotations(double angle) {
-    double newValue = angle / 360;
+    double newValue = (angle) / 360;
     if (newValue > ShooterConstants.TurretConstants.maxEncoderPosition) {
       newValue = ShooterConstants.TurretConstants.maxEncoderPosition;
     } else if (newValue < ShooterConstants.TurretConstants.minEncoderPosition) {
